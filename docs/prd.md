@@ -1,7 +1,7 @@
-# BT Servant Log Viewer — PRD v0.3
+# BT Servant Log Viewer — PRD v0.4
 **Owner:** Ian Lindsley
 **Date:** 2025-10-16
-**Status:** Draft → Scaffold-ready → Enhanced
+**Status:** Draft → Scaffold-ready → Enhanced → Flow Visualization Added
 **Guiding Style:** *Zero-warning policy*, clean/onion/hexagonal architecture, same UI stack & dark/techy theme as ChessCoachAI.
 
 ---
@@ -133,6 +133,14 @@ We will additionally derive or extract: **language**, **client IP** (when added)
   - **Entries (virtualized table)** with filters: time, **level**, **logger**, **cid**, **user**, **language**, **region**, **intent**; quick search (powered by MiniSearch); badges: "perf", "intent", "reference", "resources".
   - **Right-pane Detail** (for one entry): **Original**, **Preprocessed**, **Language**, **Region/Country**, **Intents**, **Final Message**; JSON viewer for **PerfReport** and **spans**.
   - **Trace View**: waterfall timeline (spans), PV charts (tokens/cost), duration histograms.
+  - **Intent Flow Visualization**: Interactive directed graph showing request processing pipeline:
+    - Nodes represent processing steps (start, language detection, preprocessing, intent determination, intent handlers, response)
+    - Color-coded by performance (green <100ms, yellow 100-500ms, red >500ms)
+    - Node size indicates token usage/cost
+    - Edges show flow with timing labels
+    - Branching paths for multi-intent requests
+    - Interactive: hover for details, click to expand logs, filter by performance
+    - Graph libraries: React Flow (preferred) or Cytoscape.js
   - **Insights Dashboard**: top loggers, hottest spans, slowest traces, token/cost over time, **language/region distributions**, **intent mix**, error rate trends.
   - **Live Tail View**: real-time log streaming with auto-scroll, pause/resume, filter application.
 - **Perf**: virtualized table for large datasets; indexed search; smooth filters; Web Worker-based parsing.
@@ -239,6 +247,39 @@ scripts/           # build, deploy, maintenance scripts
 - `POST /api/logs/ingest` → `{ files[], dateRange }` → `{ sessionId, counts, parseErrors[], estimatedTime }`
 - `GET /api/logs/:sessionId/entries` (filters: level, logger, cid, user, **intent**, **lang**, **region**, q, range, limit, offset)
 - `GET /api/logs/:sessionId/traces/:traceId` → Full trace with spans and metrics
+- `GET /api/logs/:sessionId/traces/:traceId/flow` → Intent flow graph structure for visualization
+  ```json
+  {
+    "nodes": [
+      {
+        "id": "start",
+        "type": "start",
+        "name": "brain:start_node",
+        "duration_ms": 10,
+        "tokens": 0,
+        "cost_usd": 0
+      },
+      {
+        "id": "intent_det",
+        "type": "intent_detection",
+        "name": "brain:determine_intents_node",
+        "duration_ms": 245,
+        "tokens": 150,
+        "cost_usd": 0.003
+      }
+    ],
+    "edges": [
+      {
+        "from": "start",
+        "to": "intent_det",
+        "duration_ms": 10,
+        "label": "10ms"
+      }
+    ],
+    "intents": ["retrieve-scripture", "get-translation-helps"],
+    "total_duration_ms": 2145
+  }
+  ```
 - `GET /api/logs/:sessionId/insights` (top loggers/spans/intents, token/cost over time, **lang/region distributions**)
 - `GET /api/logs/:sessionId/export` (csv|json|jsonl; filters applied; gzip option)
 - `GET /api/health` → System metrics (memory, parse queue, active workers)
@@ -310,6 +351,7 @@ Add these endpoints to BT-Servant application (see `/docs/bt-servant-log-api-spe
 - **Filter application**: < 200ms
 - **Search response**: < 200ms (P95)
 - **Trace view render**: < 500ms (P95)
+- **Intent flow diagram render**: < 300ms (including graph layout calculation)
 - **Virtualized table**: 60fps scrolling with 100k+ entries
 
 ### Monitoring
@@ -369,11 +411,17 @@ For BT-Servant application:
 - Cross-file filtering and unified timeline.
 - User-based filtering across all logs.
 
-### Phase 4 — Trace View & Insights (Week 4)
+### Phase 4 — Trace View, Intent Flow & Insights (Week 4)
 - Timeline/waterfall visualization for traces.
+- **Intent Flow Visualization**:
+  - Interactive directed graph using React Flow or Cytoscape.js
+  - Node coloring by performance thresholds
+  - Multi-intent branching visualization
+  - Click-through to detailed logs
+  - Performance: Flow diagram renders < 300ms
 - Insights dashboard with charts and metrics.
 - Export with compression options.
-- Deep-linking support.
+- Deep-linking support for traces and flow diagrams.
 - Intent-specific UI optimizations.
 
 ### Phase 5 — Production Hardening (Week 5)
@@ -530,6 +578,40 @@ type LoadedFile = {
   dateRange: { start: Date; end: Date };
   parseErrors: number;
 };
+
+// Intent Flow Visualization Types
+type FlowNode = {
+  id: string;
+  type: 'start' | 'language_detection' | 'preprocessing' | 'intent_detection' |
+        'intent_handler' | 'response' | 'translation' | 'end';
+  name: string;                // e.g., "brain:determine_intents_node"
+  duration_ms: number;
+  tokens?: number;
+  cost_usd?: number;
+  intent?: string;             // For intent_handler nodes
+  status: 'success' | 'error' | 'warning';
+  metadata?: Record<string, any>;
+};
+
+type FlowEdge = {
+  from: string;                // Node ID
+  to: string;                  // Node ID
+  duration_ms: number;
+  label?: string;              // e.g., "245ms"
+  type?: 'sequential' | 'parallel' | 'conditional';
+};
+
+type IntentFlow = {
+  trace_id: string;
+  nodes: FlowNode[];
+  edges: FlowEdge[];
+  intents: string[];          // All intents detected in this flow
+  total_duration_ms: number;
+  total_tokens: number;
+  total_cost_usd: number;
+  parallel_branches?: number;  // Number of parallel intent paths
+  critical_path?: string[];    // Node IDs of the slowest path
+};
 ```
 
 ---
@@ -604,6 +686,7 @@ type LoadedFile = {
 - **Known intents**: All 13 intents recognized and categorized
 - **Performance**: 21 days of logs (~200MB) loads in < 10s
 - **Trace view**: Timeline with spans renders < 500ms
+- **Intent flow**: Interactive graph visualization renders < 300ms, shows multi-intent branching
 - **Insights**: Charts for intent mix, language/region distribution, token costs
 - **Export**: JSON/CSV with optional compression, honors all active filters
 - **Quality**: Zero warnings, all CI checks green
@@ -619,4 +702,4 @@ type LoadedFile = {
 
 ---
 
-### End of BT Servant Log Viewer — PRD v0.3
+### End of BT Servant Log Viewer — PRD v0.4
