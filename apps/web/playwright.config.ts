@@ -42,8 +42,9 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: "pnpm run dev",
+    command: "pnpm exec svelte-kit sync && pnpm run dev",
     url: "http://127.0.0.1:5173",
+    timeout: 120_000,
     reuseExistingServer: !process.env["CI"],
   },
 });
