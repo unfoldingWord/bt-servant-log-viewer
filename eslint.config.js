@@ -13,6 +13,7 @@ export default tseslint.config(
       "**/.turbo/**",
       "**/.pnpm-store/**",
       "**/tooling/**/*.js",
+      "**/*.config.ts",
     ],
   },
   eslint.configs.recommended,

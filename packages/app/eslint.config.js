@@ -5,7 +5,7 @@ import prettier from "eslint-config-prettier";
 
 export default tseslint.config(
   {
-    ignores: ["node_modules/**", "dist/**", ".turbo/**"],
+    ignores: ["node_modules/**", "dist/**", ".turbo/**", "*.config.ts", "*.config.js"],
   },
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked,

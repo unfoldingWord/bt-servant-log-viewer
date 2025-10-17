@@ -51,7 +51,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
-      "eslint --max-warnings=0 --fix",
+      "eslint --max-warnings=0 --no-warn-ignored --fix",
       "prettier --write",
       "node tooling/scan-forbidden.js"
     ],
