@@ -1,7 +1,7 @@
-# BT Servant Log Viewer — PRD v0.4
+# BT Servant Log Viewer — PRD v0.5
 **Owner:** Ian Lindsley
 **Date:** 2025-10-16
-**Status:** Draft → Scaffold-ready → Enhanced → Flow Visualization Added
+**Status:** Draft → Scaffold-ready → Enhanced → Flow Visualization → Mobile-First Design
 **Guiding Style:** *Zero-warning policy*, clean/onion/hexagonal architecture, same UI stack & dark/techy theme as ChessCoachAI.
 
 ---
@@ -22,9 +22,10 @@ From day zero: **strict typing**, **linting**, **import boundaries**, **tests**,
 
 ## 2) Goals & Non-Goals
 ### Goals
+- **Mobile-first responsive design**: Full functionality on ALL devices (phones, tablets, desktops) with touch-optimized UI.
 - **Multi-file support**: Auto-load last 21 days of logs on app open; allow date range adjustment.
 - Parse BT-Servant logs into a normalized model (entries, spans, traces, intents, language, geo, messages, references, searched resources).
-- Provide instant, responsive UX: filter by **level/logger/cid/trace_id/intent/language/region/user**, full-text search, drill-down into **PerfReport** spans.
+- Provide instant, responsive UX across all screen sizes: filter by **level/logger/cid/trace_id/intent/language/region/user**, full-text search, drill-down into **PerfReport** spans.
 - Visualize **duration histograms**, **waterfall timelines**, **token/cost breakdowns**, **intent mix**, and **traffic by language/region**.
 - Server-assisted log loading via API endpoints on BT-Servant.
 - Same **SvelteKit + Tailwind + shadcn-svelte** stack and **dark/techy** theme as ChessCoachAI.
@@ -146,6 +147,74 @@ We will additionally derive or extract: **language**, **client IP** (when added)
 - **Perf**: virtualized table for large datasets; indexed search; smooth filters; Web Worker-based parsing.
 - **Deep-linking**: shareable URLs with query+filters.
 - **Accessibility**: ARIA labels, keyboard navigation, screen reader support.
+
+---
+
+## 5a) Mobile-First Responsive Design 🏁 CRITICAL REQUIREMENT
+
+### Core Principle
+**This app MUST work flawlessly on mobile phones.** Engineers need to debug issues on-the-go, often from their phones during incidents. Desktop is an enhancement, not the primary target.
+
+### Responsive Breakpoints
+- **320px+**: Minimum supported width (small phones)
+- **640px+**: Standard mobile
+- **768px+**: Tablets and large phones
+- **1024px+**: Desktop
+- **1280px+**: Wide desktop
+
+### Mobile Layout (320-767px)
+- **Single-column layout** with priority on content
+- **Collapsible filters**: Slide-out drawer or bottom sheet
+- **Card-based log entries**: Swipeable for actions
+- **Entry details**: Full-screen modal or bottom sheet
+- **Intent flow**: Vertical layout, pinch-to-zoom, pan gestures
+- **Touch targets**: Minimum 44x44px for all interactive elements
+- **Sticky headers**: Fixed search bar and filter button
+- **Bottom navigation**: Primary actions within thumb reach
+
+### Tablet Layout (768-1023px)
+- **Two-column layout**: Filters + content
+- **Persistent sidebar**: Collapsible filter panel
+- **Split view**: List + detail view side-by-side
+- **Modal overlays**: For complex interactions
+
+### Desktop Layout (1024px+)
+- **Three-column layout**: Filters + list + details
+- **Full feature set**: All panels visible
+- **Hover interactions**: Enhanced for mouse users
+- **Keyboard shortcuts**: Power user features
+
+### Touch Optimizations
+- **Swipe gestures**:
+  - Swipe right: Mark as read/dismiss
+  - Swipe left: Show actions
+  - Pull-to-refresh: Reload logs
+- **Long press**: Context menu for entries
+- **Pinch-to-zoom**: Intent flow diagrams
+- **Touch feedback**: Visual response within 100ms
+- **No hover-only features**: Everything accessible via touch
+
+### Performance on Mobile
+- **Initial bundle**: < 150KB JavaScript for mobile
+- **Critical CSS**: Inline above-the-fold styles
+- **Progressive enhancement**: Core features work on 3G
+- **Service Worker**: Offline support and caching
+- **Virtual scrolling**: REQUIRED for mobile performance
+
+### Mobile-Specific Features
+- **Responsive tables**: Transform to cards on mobile
+- **Progressive disclosure**: Show summary, expand for details
+- **Native-like navigation**: Smooth transitions, back gestures
+- **Smart filtering**: Voice input for search on mobile
+- **Adaptive UI**: Reduce visual complexity on small screens
+
+### Testing Requirements
+- **Real device testing**: iPhone SE, iPhone 14, Pixel 7, iPad
+- **Network conditions**: 3G, 4G, offline scenarios
+- **Orientation**: Both portrait and landscape
+- **Touch simulation**: In all E2E tests
+
+> **Remember**: If it doesn't work on a phone during a 3am incident, it's not production-ready.
 
 ---
 
@@ -347,12 +416,15 @@ Add these endpoints to BT-Servant application (see `/docs/bt-servant-log-api-spe
 - **21 days typical load**: < 10s for ~200MB of logs
 
 ### UI Performance
-- **Initial load**: < 2s (FCP < 1s)
-- **Filter application**: < 200ms
+- **Initial load**: < 2s (FCP < 1s) on desktop, < 3s on 4G mobile
+- **Filter application**: < 200ms on all devices
 - **Search response**: < 200ms (P95)
 - **Trace view render**: < 500ms (P95)
 - **Intent flow diagram render**: < 300ms (including graph layout calculation)
 - **Virtualized table**: 60fps scrolling with 100k+ entries
+- **Touch response**: < 100ms visual feedback
+- **Mobile Time to Interactive**: < 3s on 4G
+- **Mobile bundle size**: < 150KB initial JavaScript
 
 ### Monitoring
 - **Structured logs** (JSON format) with correlation IDs
@@ -389,13 +461,15 @@ For BT-Servant application:
 - **Docs**: `ARCHITECTURE.md`, `AGENTS.md`, `SECURITY.md`, `CONTRIBUTING.md`, `PERFORMANCE.md`.
 
 ### Phase 1 — Multi-File UI & Auto-Load (Week 1)
-- SvelteKit dark theme + shadcn-svelte.
+- SvelteKit dark theme + shadcn-svelte with **mobile-first responsive design**.
 - **Auto-load last 21 days** of logs on app open.
 - Date range selector with presets.
 - BT-Servant API client for fetching log files.
 - Web Worker integration for non-blocking parsing.
 - Progress bar showing file-by-file loading status.
 - Basic entries table with filters.
+- **Mobile layouts**: Single column, touch-optimized, swipe gestures.
+- **Responsive breakpoints**: 320px, 640px, 768px, 1024px, 1280px.
 
 ### Phase 2 — Complete Parser & Extractors (Week 2)
 - Full parser implementation with error recovery.
@@ -678,6 +752,9 @@ type IntentFlow = {
 ---
 
 ## 18) Acceptance Criteria Snapshot (v1)
+- **Mobile-first**: ALL features work on phones (iPhone SE 375px minimum), tablets, and desktops
+- **Responsive**: Passes Google Mobile-Friendly Test, Lighthouse Mobile score > 90
+- **Touch-optimized**: All interactions work via touch, 44px minimum touch targets
 - **Auto-load**: App opens and loads last 21 days of logs automatically
 - **Multi-file**: Unified view across all loaded log files
 - **Filtering**: By level, logger, cid, user, intent, language, region works across all files
@@ -685,9 +762,10 @@ type IntentFlow = {
 - **References**: Correctly extracts biblical references (not text)
 - **Known intents**: All 13 intents recognized and categorized
 - **Performance**: 21 days of logs (~200MB) loads in < 10s
+- **Mobile performance**: < 3s Time to Interactive on 4G, < 150KB initial JS bundle
 - **Trace view**: Timeline with spans renders < 500ms
-- **Intent flow**: Interactive graph visualization renders < 300ms, shows multi-intent branching
-- **Insights**: Charts for intent mix, language/region distribution, token costs
+- **Intent flow**: Interactive graph visualization renders < 300ms, pinch-to-zoom on mobile
+- **Insights**: Charts responsive on all screen sizes
 - **Export**: JSON/CSV with optional compression, honors all active filters
 - **Quality**: Zero warnings, all CI checks green
 - **Deployment**: Fly staging deploys on `main` merge
@@ -702,4 +780,4 @@ type IntentFlow = {
 
 ---
 
-### End of BT Servant Log Viewer — PRD v0.4
+### End of BT Servant Log Viewer — PRD v0.5
