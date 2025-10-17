@@ -1,7 +1,7 @@
-# BT Servant Log Viewer — PRD v0.5
+# BT Servant Log Viewer — PRD v0.6
 **Owner:** Ian Lindsley
 **Date:** 2025-10-16
-**Status:** Draft → Scaffold-ready → Enhanced → Flow Visualization → Mobile-First Design
+**Status:** Draft → Scaffold-ready → Enhanced → Flow Visualization → Mobile-First → Phase 1 Split for Bot Competition
 **Guiding Style:** *Zero-warning policy*, clean/onion/hexagonal architecture, same UI stack & dark/techy theme as ChessCoachAI.
 
 ---
@@ -460,32 +460,56 @@ For BT-Servant application:
 - **Fly.io**: `fly.toml` stubs (staging/prod); secrets via `fly secrets`.
 - **Docs**: `ARCHITECTURE.md`, `AGENTS.md`, `SECURITY.md`, `CONTRIBUTING.md`, `PERFORMANCE.md`.
 
-### Phase 1 — Multi-File UI & Auto-Load (Week 1)
+### Phase 1a — Pure UI Shell with Mock Data (Week 1)
+**Focus: Visual design and interaction patterns only - Perfect for bot competition**
 - SvelteKit dark theme + shadcn-svelte with **mobile-first responsive design**.
-- **Auto-load last 21 days** of logs on app open.
-- Date range selector with presets.
-- BT-Servant API client for fetching log files.
-- Web Worker integration for non-blocking parsing.
-- Progress bar showing file-by-file loading status.
-- Basic entries table with filters.
-- **Mobile layouts**: Single column, touch-optimized, swipe gestures.
+- **Mock data only** - No API calls, use static sample log data for development.
 - **Responsive breakpoints**: 320px, 640px, 768px, 1024px, 1280px.
+- **Mobile layouts**: Single column, touch-optimized, swipe gestures.
+- **UI Components** (all with mock data):
+  - Date range selector with presets
+  - Log entries table (desktop) / cards (mobile) - virtualized
+  - Filter sidebar: level, logger, cid, user, intent, language, region
+  - Entry detail view: bottom sheet (mobile) / side panel (desktop)
+  - Loading states and skeleton screens
+  - Progress indicators
+  - Search bar with mock instant results
+- **Touch interactions**: swipe left/right, pull-to-refresh, pinch-to-zoom
+- **Transitions**: Smooth animations between states
+- **Dark theme**: Matching ChessCoachAI aesthetic
 
-### Phase 2 — Complete Parser & Extractors (Week 2)
+**Deliverables:** Complete UI shell that looks and feels production-ready but uses static mock data. All interactions work but with fake data.
+
+### Phase 1b — Backend Integration (Week 2)
+**Focus: Connect the chosen UI from Phase 1a to real systems**
+- **BT-Servant API client** for fetching log files.
+- **Auto-load last 21 days** of logs on app open.
+- **Web Worker integration** for non-blocking parsing.
+- Real data fetching and streaming.
+- Connect filters to actual parsed data.
+- Implement real search with MiniSearch.
+- Loading progress with actual file processing.
+- Error handling and retry logic.
+- Session management for loaded files.
+- Cache management for performance.
+
+**Deliverables:** Fully functional app with the chosen UI connected to real data sources.
+
+### Phase 2 — Complete Parser & Extractors (Week 3)
 - Full parser implementation with error recovery.
 - All derived field extractors (intents, language, references, etc.).
 - Handle missing fields gracefully.
 - MiniSearch integration for text search.
 - Golden file test suite with real log samples.
 
-### Phase 3 — Live Tail & Advanced Features (Week 3)
+### Phase 3 — Live Tail & Advanced Features (Week 4)
 - WebSocket-based live tail implementation.
 - SQLite adapter for > 100MB cumulative data.
 - Advanced search DSL.
 - Cross-file filtering and unified timeline.
 - User-based filtering across all logs.
 
-### Phase 4 — Trace View, Intent Flow & Insights (Week 4)
+### Phase 4 — Trace View, Intent Flow & Insights (Week 5)
 - Timeline/waterfall visualization for traces.
 - **Intent Flow Visualization**:
   - Interactive directed graph using React Flow or Cytoscape.js
@@ -498,7 +522,7 @@ For BT-Servant application:
 - Deep-linking support for traces and flow diagrams.
 - Intent-specific UI optimizations.
 
-### Phase 5 — Production Hardening (Week 5)
+### Phase 5 — Production Hardening (Week 6)
 - Rate limiting implementation.
 - Security headers and CSP.
 - Monitoring integration.
@@ -780,4 +804,4 @@ type IntentFlow = {
 
 ---
 
-### End of BT Servant Log Viewer — PRD v0.5
+### End of BT Servant Log Viewer — PRD v0.6
