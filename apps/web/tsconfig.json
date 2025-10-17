@@ -2,6 +2,7 @@
   "extends": "./.svelte-kit/tsconfig.json",
   "compilerOptions": {
     // Strict mode - ZERO warnings policy
+    // Note: Only override strict options, let SvelteKit control everything else
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -10,22 +11,12 @@
     "strictPropertyInitialization": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
-
-    // Additional strict checks
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
     "noPropertyAccessFromIndexSignature": true,
-    "noImplicitOverride": true,
-
-    // Other options needed for compatibility
-    "resolveJsonModule": true,
-    "allowJs": true,
-    "checkJs": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "noImplicitOverride": true
   }
 }
