@@ -5,7 +5,7 @@ import prettier from "eslint-config-prettier";
 
 export default tseslint.config(
   {
-    ignores: ["node_modules/**", "dist/**", ".turbo/**", "*.config.js", "*.config.ts"],
+    ignores: ["node_modules/**", "dist/**", ".turbo/**", "*.config.ts", "*.config.js"],
   },
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
@@ -18,6 +18,13 @@ export default tseslint.config(
         tsconfigRootDir: import.meta.dirname,
       },
     },
+  },
+  {
+    // Disable type-aware linting for JS files (including this config file)
+    files: ["**/*.js"],
+    ...tseslint.configs.disableTypeChecked,
+  },
+  {
     rules: {
       // API server is allowed to use console for logging via Fastify logger
       // But we still enforce structured logging through Fastify

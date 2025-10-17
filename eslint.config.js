@@ -12,8 +12,6 @@ export default tseslint.config(
       "**/build/**",
       "**/.turbo/**",
       "**/.pnpm-store/**",
-      "**/*.config.js",
-      "**/*.config.ts",
       "**/tooling/**/*.js",
     ],
   },
@@ -28,6 +26,15 @@ export default tseslint.config(
         tsconfigRootDir: import.meta.dirname,
       },
     },
+  },
+  {
+    // Disable type-aware linting for JS files (including this config file)
+    files: ["**/*.js"],
+    ...tseslint.configs.disableTypeChecked,
+  },
+  {
+    // Apply strict rules only to TypeScript files
+    files: ["**/*.ts", "**/*.tsx"],
     rules: {
       // Zero-warning policy: No escape hatches
       "no-console": "error",

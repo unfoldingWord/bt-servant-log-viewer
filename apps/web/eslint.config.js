@@ -13,9 +13,9 @@ export default tseslint.config(
       "build/**",
       "dist/**",
       ".turbo/**",
-      "*.config.js",
-      "*.config.ts",
       "tests/e2e/**",
+      "*.config.ts",
+      "*.config.js",
     ],
   },
   eslint.configs.recommended,
@@ -32,6 +32,13 @@ export default tseslint.config(
         extraFileExtensions: [".svelte"],
       },
     },
+  },
+  {
+    // Disable type-aware linting for JS files (including this config file)
+    files: ["**/*.js"],
+    ...tseslint.configs.disableTypeChecked,
+  },
+  {
     rules: {
       // Zero-warning policy
       "no-console": "error",

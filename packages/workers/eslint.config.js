@@ -23,6 +23,13 @@ export default tseslint.config(
         addEventListener: "readonly",
       },
     },
+  },
+  {
+    // Disable type-aware linting for JS files (including this config file)
+    files: ["**/*.js"],
+    ...tseslint.configs.disableTypeChecked,
+  },
+  {
     rules: {
       // Zero-warning policy
       "no-console": "error",
