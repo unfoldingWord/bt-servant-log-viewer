@@ -23,8 +23,7 @@ const FORBIDDEN_PATTERNS = [
   },
   {
     pattern: /console\.(log|debug|info|warn|error|trace)/g,
-    message:
-      "console.* is forbidden (use proper logging or remove debug statements)",
+    message: "console.* is forbidden (use proper logging or remove debug statements)",
     allowInFiles: ["apps/api/"],
   },
 ];

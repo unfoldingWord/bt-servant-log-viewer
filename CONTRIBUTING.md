@@ -67,6 +67,7 @@ pnpm verify
 ### Zero-Warning Policy
 
 **Absolutely forbidden**:
+
 - `// eslint-disable` comments
 - `@ts-ignore` (use `@ts-expect-error` with description if truly needed)
 - `@ts-nocheck`
@@ -82,6 +83,7 @@ Pre-commit hooks will reject commits with these patterns.
 - Handle `undefined` with optional chaining: `obj?.prop`
 
 Example:
+
 ```typescript
 // ✅ Good
 function parseTimestamp(raw: string): Date | undefined {
@@ -103,6 +105,7 @@ function parseTimestamp(raw: string) {
 - Test both happy paths and error cases
 
 Example test:
+
 ```typescript
 import { describe, expect, it } from "vitest";
 import { parseLogEntry } from "./parser";
@@ -137,6 +140,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 ```
 
 Types:
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -149,6 +153,7 @@ Types:
 - `chore`: Maintenance tasks
 
 Examples:
+
 ```
 feat: add multi-file log loading
 fix: correct timestamp parsing in perf reports
@@ -169,6 +174,7 @@ We follow **Clean/Onion/Hexagonal Architecture**:
 **Key rule**: Dependencies point inward. Domain has ZERO dependencies.
 
 Validate with:
+
 ```bash
 pnpm arch
 ```
@@ -180,6 +186,7 @@ See `docs/ARCHITECTURE.md` for details.
 **Critical**: This tool must work on mobile phones (320px+).
 
 When adding UI:
+
 - Test at 320px width (iPhone SE)
 - Touch targets ≥44x44px
 - Use responsive Tailwind classes
@@ -188,6 +195,7 @@ When adding UI:
 ## Pull Request Process
 
 1. **Create a branch**:
+
    ```bash
    git checkout -b feat/your-feature-name
    ```
@@ -198,18 +206,22 @@ When adding UI:
    - Update documentation if needed
 
 3. **Verify locally**:
+
    ```bash
    pnpm verify
    ```
 
 4. **Commit changes**:
+
    ```bash
    git add .
    git commit -m "feat: add your feature"
    ```
+
    (Pre-commit hooks will run automatically)
 
 5. **Push to GitHub**:
+
    ```bash
    git push origin feat/your-feature-name
    ```
@@ -233,6 +245,7 @@ When adding UI:
 We're currently in **Phase 0: Scaffold**.
 
 See `docs/prd.md` for the full roadmap:
+
 - **Phase 0**: Scaffold and tooling ✅
 - **Phase 1a**: UI shell with mock data (bot competition)
 - **Phase 1b**: Backend integration

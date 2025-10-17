@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 BT Servant Log Viewer is a fast, dark-themed, web-based log viewer for BT-Servant telemetry. It automatically loads the last 21 days of logs on startup, parses structured fields across multiple files, and provides unified filtering and analysis capabilities. The app focuses on extracting and surfacing critical AI/NLP workflow information including language detection, geo-location, message processing, intent detection, biblical references, and resource searches.
 
 **Key Features:**
+
 - **Multi-file support**: Auto-loads last 21 days of logs on app open
 - Parse BT-Servant logs into normalized entries with structured fields
 - Extract and surface critical fields: language codes, IP→Region mapping (when present), messages (original/preprocessed/final), intents, biblical references, searched resources
@@ -19,18 +20,21 @@ BT Servant Log Viewer is a fast, dark-themed, web-based log viewer for BT-Servan
 ## Technology Stack
 
 ### Frontend
+
 - **Framework:** SvelteKit (with TypeScript strict mode)
 - **Styling:** Tailwind CSS + shadcn-svelte components
 - **Theme:** Dark/techy theme (matching ChessCoachAI style)
 - **Testing:** Vitest + Testing Library + Playwright (E2E)
 
 ### Backend
+
 - **Runtime:** Node.js 22+
 - **Framework:** Fastify (API server)
 - **Validation:** Zod for typed route validation
 - **Architecture:** Clean/Onion/Hexagonal with ports & adapters
 
 ### Infrastructure
+
 - **Monorepo:** pnpm + Turborepo
 - **Deployment:** Docker + Fly.io (staging/prod)
 - **CI/CD:** GitHub Actions with strict quality gates
@@ -39,6 +43,7 @@ BT Servant Log Viewer is a fast, dark-themed, web-based log viewer for BT-Servan
 ## Architecture (Clean/Onion/Hexagonal)
 
 ### Layers
+
 - **Domain:** Pure TypeScript types and logic (LogEntry, PerfReport, Span, Trace, Intent)
 - **Application:** Use cases (ParseLog, IndexLog, QueryEntries, GetTrace, ExportSlice)
 - **Ports:** Interfaces for external dependencies
@@ -46,6 +51,7 @@ BT Servant Log Viewer is a fast, dark-themed, web-based log viewer for BT-Servan
 - **Drivers:** SvelteKit app, Fastify API, DI wiring
 
 ### Monorepo Structure
+
 ```
 apps/
   web/             # SvelteKit UI application
@@ -62,6 +68,7 @@ tests/
 ```
 
 ### Dependency Rules (Enforced)
+
 - `domain` → nothing
 - `app` → `domain` only
 - `adapters/*` → `app|domain` (no UI imports)
@@ -73,6 +80,7 @@ tests/
 **CRITICAL:** This project enforces a strict zero-warning policy. Never suppress warnings, disable rules, or use @ts-ignore.
 
 ### Enforced Rules
+
 - TypeScript: `strict: true`, `noImplicitAny`, `noUnusedLocals`, `noUnusedParameters`
 - ESLint: `--max-warnings=0`, no `eslint-disable` comments allowed
 - Import boundaries: Enforced via eslint-plugin-boundaries + dependency-cruiser
@@ -82,6 +90,7 @@ tests/
 - Test requirements: No `.only`, coverage gates enforced
 
 ### Verification Commands
+
 ```bash
 pnpm verify           # Run all checks
 pnpm typecheck        # TypeScript type checking
@@ -95,17 +104,21 @@ pnpm scan:forbidden   # Check for forbidden patterns
 ## Log Parsing Specifications
 
 ### Log Format
+
 ```
 [YYYY-MM-DD HH:MM:SS] [LEVEL] [logger.module.path] [cid=correlation_id]: message
 ```
 
 Example:
+
 ```
 [2025-10-15 20:28:48] [INFO] [bt_servant_engine.apps.api.routes.webhooks] [cid=466256e...]: text message from ... received.
 ```
 
 ### Critical Extractions
+
 The parser must extract these fields when present (all fields are optional and handled gracefully):
+
 1. **Language code:** Detected language (e.g., `en`, `es`)
 2. **IP → Region/Country:** GeoIP lookup for client locations (country-level resolution)
 3. **Messages:**
@@ -118,14 +131,18 @@ The parser must extract these fields when present (all fields are optional and h
 7. **User ID:** For filtering all activity by specific user across files
 
 ### PerfReport JSON Blocks
+
 Multi-line JSON blocks starting with `PerfReport {`:
+
 - Capture using balanced brace parsing
 - Contains: trace_id, total_ms, spans[], token counts, costs, grouped_totals_by_intent
 - Parse tolerantly; attach raw if malformed
 - Handle all fields as optional
 
 ### Known Intents
+
 The system recognizes 13 known intents (with potential for dynamic discovery of new ones):
+
 - `get-bible-translation-assistance`
 - `consult-fia-resources`
 - `get-passage-summary`
@@ -143,6 +160,7 @@ The system recognizes 13 known intents (with potential for dynamic discovery of 
 ## Development Workflow
 
 ### Initial Setup
+
 ```bash
 # Install dependencies
 pnpm install
@@ -157,7 +175,9 @@ pnpm verify       # Must pass before any commit
 ```
 
 ### BT-Servant Integration
+
 The log viewer requires API endpoints on the BT-Servant application:
+
 ```python
 # Required endpoints to add to BT-Servant:
 GET /api/logs/files          # List available log files
@@ -197,16 +217,19 @@ GET /api/logs/recent?days=21 # Get files from last N days
 ## Testing Requirements
 
 ### Unit Tests
+
 - Parser functions with edge cases
 - Domain logic with property-based testing
 - Use golden files from `tests/fixtures/`
 
 ### Integration Tests
+
 - API endpoints with various payloads
 - File upload and parsing pipeline
 - Export functionality
 
 ### E2E Tests
+
 - Critical user journeys
 - File upload → parse → filter → export
 - Performance benchmarks
@@ -214,6 +237,7 @@ GET /api/logs/recent?days=21 # Get files from last N days
 ## Common Tasks
 
 ### Adding a New Parser Field
+
 1. Update domain types in `packages/domain/`
 2. Add extraction logic in `packages/adapters/parser/`
 3. Add golden-file test cases
@@ -221,6 +245,7 @@ GET /api/logs/recent?days=21 # Get files from last N days
 5. Run `pnpm verify` to ensure no regressions
 
 ### Creating a New Filter
+
 1. Add filter type to domain model
 2. Implement indexing in adapter
 3. Add API query parameter
@@ -239,6 +264,7 @@ GET /api/logs/recent?days=21 # Get files from last N days
 ## Phase 0 Deliverables (Scaffold)
 
 When setting up the initial scaffold:
+
 1. Monorepo structure with pnpm workspaces
 2. SvelteKit app with Tailwind + shadcn-svelte
 3. Fastify API with health check endpoint

@@ -44,6 +44,7 @@ pnpm dev
 ```
 
 Open:
+
 - Web app: http://localhost:5173
 - API: http://localhost:8080
 
@@ -56,6 +57,7 @@ pnpm verify
 ```
 
 This runs:
+
 - Type checking (`tsc`)
 - Linting (ESLint, zero warnings)
 - Unit tests (Vitest)
@@ -126,6 +128,7 @@ Domain (types) ← App (ports) ← Adapters (impl) ← Apps (drivers)
 ```
 
 Key principles:
+
 - Dependencies point inward
 - Domain layer has ZERO dependencies
 - All layers are testable in isolation
@@ -137,6 +140,7 @@ See `docs/ARCHITECTURE.md` for details.
 ### Zero-Warning Policy
 
 **Forbidden patterns** (enforced by pre-commit hooks):
+
 - `// eslint-disable` comments
 - `@ts-ignore` (use `@ts-expect-error` with description)
 - `@ts-nocheck`
@@ -145,6 +149,7 @@ See `docs/ARCHITECTURE.md` for details.
 ### TypeScript Strict Mode
 
 All code uses strict TypeScript:
+
 - `strict: true`
 - `noUncheckedIndexedAccess: true`
 - `exactOptionalPropertyTypes: true`
@@ -160,6 +165,7 @@ pnpm test:watch
 ```
 
 Tests are colocated with source:
+
 ```
 src/
   parser.ts
@@ -173,6 +179,7 @@ pnpm test:e2e
 ```
 
 Tests include mobile viewports:
+
 - Desktop Chrome, Firefox, Safari
 - Mobile Chrome (Pixel 5)
 - Mobile Safari (iPhone 12)
@@ -207,6 +214,7 @@ pnpm deploy:prod
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
 **Quick checklist**:
+
 1. Fork and clone the repository
 2. Create a branch: `git checkout -b feat/your-feature`
 3. Make changes following code quality standards

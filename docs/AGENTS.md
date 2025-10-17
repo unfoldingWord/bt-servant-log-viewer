@@ -23,6 +23,7 @@ Domain (core types) ← App (ports) ← Adapters (implementations) ← Apps (dri
 ### Zero-Warning Policy
 
 **Absolutely forbidden**:
+
 - `// eslint-disable` comments
 - `@ts-ignore` (use `@ts-expect-error` with 10+ char description if needed)
 - `@ts-nocheck`
@@ -33,6 +34,7 @@ Pre-commit hooks enforce this. If you try to commit forbidden patterns, the comm
 ### TypeScript
 
 All code uses **strict mode**:
+
 ```typescript
 // tsconfig.base.json
 {
@@ -45,6 +47,7 @@ All code uses **strict mode**:
 ```
 
 **All function signatures must have explicit return types**:
+
 ```typescript
 // ❌ Bad
 function parseLog(content: string) {
@@ -69,6 +72,7 @@ function parseLog(content: string): LogEntry {
 **THIS IS CRITICAL**: If it doesn't work on a phone during a 3am incident, it's not production-ready.
 
 ### Responsive Breakpoints
+
 ```typescript
 // Tailwind config
 {
@@ -81,11 +85,13 @@ function parseLog(content: string): LogEntry {
 ```
 
 ### Touch Targets
+
 - Minimum: 44x44px (iOS guideline)
 - Spacing between targets: ≥8px
 - Use `touch-action` CSS for gestures
 
 ### Performance Targets
+
 - Initial load: <3s on 3G
 - Time to Interactive: <5s
 - Log parsing: <2s for 10MB file
@@ -108,6 +114,7 @@ function parseLog(content: string): LogEntry {
 ### Before Committing
 
 Pre-commit hooks run automatically, but manually verify:
+
 ```bash
 pnpm format:check
 pnpm typecheck
@@ -120,6 +127,7 @@ pnpm knip       # Detects dead code
 ### Commit Messages
 
 Follow Conventional Commits:
+
 ```
 feat: add multi-file log loading
 fix: correct timestamp parsing for perf reports
@@ -148,6 +156,7 @@ test: add E2E tests for mobile viewport
 ### Adding a New Route
 
 For SvelteKit (`apps/web`):
+
 ```
 apps/web/src/routes/
   +page.svelte              # Home: /
@@ -180,16 +189,19 @@ All intent fields in `LogEntry` are optional to handle partial log parsing grace
 ## Debugging Tips
 
 ### Parser Issues
+
 - Check `apps/web/src/lib/test-logs/` for example logs
 - Use `ParseWorker` to avoid blocking main thread
 - All derived fields should be optional
 
 ### UI Issues on Mobile
+
 - Test in Chrome DevTools mobile emulation
 - Use `pnpm test:e2e` to run Playwright tests on mobile viewports
 - Remember: minimum width is 320px (iPhone SE)
 
 ### Build Failures
+
 - Check Turborepo cache: `rm -rf .turbo && pnpm build`
 - Verify TypeScript: `pnpm typecheck`
 - Check architecture: `pnpm arch`

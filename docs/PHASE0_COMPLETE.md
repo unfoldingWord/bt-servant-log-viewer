@@ -12,7 +12,7 @@ Phase 0 scaffold has been successfully completed with all quality gates, tooling
 
 ### 1. Monorepo Structure ✅
 
-- **pnpm workspaces**: Configured for apps/* and packages/*
+- **pnpm workspaces**: Configured for apps/_ and packages/_
 - **Turborepo**: Set up for parallel builds and caching
 - **Package manager**: pnpm 9.14.4 with Node.js ≥22.0.0
 
@@ -26,6 +26,7 @@ Phase 0 scaffold has been successfully completed with all quality gates, tooling
 ### 3. Code Quality Tools ✅
 
 **ESLint**:
+
 - Flat config format (eslint.config.js)
 - TypeScript strict rules with typescript-eslint
 - Zero-warning policy enforcement
@@ -33,11 +34,13 @@ Phase 0 scaffold has been successfully completed with all quality gates, tooling
 - No escape hatches: banned `eslint-disable`, `@ts-ignore`, `@ts-nocheck`
 
 **Prettier**:
+
 - Configured for TypeScript, JavaScript, Svelte, JSON, Markdown
 - Format on save in VSCode
 - Pre-commit hook integration
 
 **Custom Scanner**:
+
 - `tooling/scan-forbidden.js`: Detects forbidden patterns
 - Runs in pre-commit hook
 - Prevents commits with `console.*`, `@ts-ignore`, etc.
@@ -45,6 +48,7 @@ Phase 0 scaffold has been successfully completed with all quality gates, tooling
 ### 4. Architecture Validation ✅
 
 **dependency-cruiser**:
+
 - Enforces clean architecture boundaries
 - Domain has ZERO dependencies
 - App depends only on Domain
@@ -52,6 +56,7 @@ Phase 0 scaffold has been successfully completed with all quality gates, tooling
 - Workers depend only on Domain
 
 **knip**:
+
 - Detects unused exports (dead code)
 - Configured for monorepo structure
 - Runs in CI/CD pipeline
@@ -59,11 +64,13 @@ Phase 0 scaffold has been successfully completed with all quality gates, tooling
 ### 5. Testing Framework ✅
 
 **Vitest**:
+
 - Unit testing for all packages
 - Coverage reporting (v8 provider)
 - Configured in each app/package
 
 **Playwright**:
+
 - E2E testing for web app
 - Mobile viewports: Pixel 5, iPhone 12
 - Desktop browsers: Chrome, Firefox, Safari
@@ -72,26 +79,31 @@ Phase 0 scaffold has been successfully completed with all quality gates, tooling
 ### 6. Git Hooks ✅
 
 **Husky**:
+
 - Pre-commit: Runs lint-staged
 - Commit-msg: Validates conventional commits
 
 **lint-staged**:
+
 - Auto-fixes ESLint issues
 - Formats with Prettier
 - Scans for forbidden patterns
 
 **Commitlint**:
+
 - Enforces conventional commit format
 - Configured types: feat, fix, docs, style, refactor, perf, test, build, ci, chore
 
 ### 7. CI/CD Workflows ✅
 
 **GitHub Actions**:
+
 - `ci.yml`: Runs verify, e2e, build on every push/PR
 - `deploy-staging.yml`: Auto-deploys develop branch to Fly.io staging
 - `deploy-production.yml`: Auto-deploys main branch to Fly.io production
 
 **Jobs**:
+
 - Parallel execution for faster feedback
 - Artifact uploads for build outputs and test reports
 - Environment protection for production
@@ -99,17 +111,20 @@ Phase 0 scaffold has been successfully completed with all quality gates, tooling
 ### 8. Docker Configuration ✅
 
 **Dockerfiles**:
+
 - Multi-stage builds for apps/web and apps/api
 - Optimized layer caching with pnpm
 - Non-root user for security
 - Health checks included
 
 **Docker Compose**:
+
 - Local development setup
 - API + Web services
 - Health check dependencies
 
 **Fly.io**:
+
 - Staging and production configs
 - Auto-scaling configuration
 - Health check monitoring
@@ -117,21 +132,25 @@ Phase 0 scaffold has been successfully completed with all quality gates, tooling
 ### 9. Clean Architecture Packages ✅
 
 **Domain** (`packages/domain`):
+
 - Pure TypeScript types
 - Zero dependencies
 - Core business entities: LogEntry, PerfReport, Span, Intent
 
 **App** (`packages/app`):
+
 - Port interfaces: ParsingPort, IndexPort, StoragePort
 - Use case contracts
 - Depends only on Domain
 
 **Adapters** (`packages/adapters`):
+
 - Concrete implementations
 - Log parser skeleton
 - Future: IndexedDB, BT-Servant API client
 
 **Workers** (`packages/workers`):
+
 - Web Worker skeletons
 - Parse worker for non-blocking parsing
 - Depends only on Domain
@@ -139,12 +158,14 @@ Phase 0 scaffold has been successfully completed with all quality gates, tooling
 ### 10. Applications ✅
 
 **Web App** (`apps/web`):
+
 - SvelteKit 2.x with Svelte 5.x
 - Tailwind CSS dark theme (ChessCoachAI style)
 - Responsive breakpoints: 320px to 1280px+
 - Placeholder landing page
 
 **API App** (`apps/api`):
+
 - Fastify server
 - Zod validation
 - Health check endpoint: GET /healthz
@@ -154,6 +175,7 @@ Phase 0 scaffold has been successfully completed with all quality gates, tooling
 ### 11. Documentation ✅
 
 **Core Docs**:
+
 - `README.md`: Project overview, quick start, development guide
 - `CONTRIBUTING.md`: Contribution guidelines and workflow
 - `SECURITY.md`: Security policy and best practices
@@ -163,18 +185,21 @@ Phase 0 scaffold has been successfully completed with all quality gates, tooling
 - `docs/bt-servant-log-api-spec.md`: API specification (already existed)
 
 **Config Files**:
+
 - All tools documented inline with comments
 - VSCode settings for optimal developer experience
 
 ### 12. Developer Experience ✅
 
 **VSCode**:
+
 - Recommended extensions
 - Format on save
 - ESLint auto-fix
 - TypeScript workspace SDK
 
 **Scripts**:
+
 - `pnpm dev`: Start all dev servers
 - `pnpm verify`: Run all quality checks
 - `pnpm build`: Build all packages

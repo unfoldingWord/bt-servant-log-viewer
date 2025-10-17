@@ -9,12 +9,14 @@ BT Servant Log Viewer follows Clean/Onion/Hexagonal architecture principles for 
 **Purpose**: Pure business logic and data structures
 
 **Rules**:
+
 - No external dependencies
 - No I/O operations
 - Only TypeScript types and interfaces
 - All derived fields are optional for robust parsing
 
 **Contents**:
+
 - `LogEntry`: Core log entry type with all 13 known intents
 - `PerfReport`: Performance metrics structure
 - `Span`: Distributed tracing span
@@ -26,12 +28,14 @@ BT Servant Log Viewer follows Clean/Onion/Hexagonal architecture principles for 
 **Purpose**: Use case orchestration and port definitions
 
 **Rules**:
+
 - Depends only on Domain layer
 - Defines interfaces (ports) for external systems
 - No implementation details
 - Framework-agnostic
 
 **Contents**:
+
 - Port interfaces: `ParsingPort`, `IndexPort`, `StoragePort`
 - Use case interfaces
 - Application services contracts
@@ -41,12 +45,14 @@ BT Servant Log Viewer follows Clean/Onion/Hexagonal architecture principles for 
 **Purpose**: Implements ports with concrete technology
 
 **Rules**:
+
 - Depends on Domain and Application layers
 - Contains all I/O logic
 - Framework-specific implementations
 - Swappable implementations
 
 **Contents**:
+
 - Log parser implementation
 - IndexedDB wrapper
 - Browser storage adapter
@@ -57,12 +63,14 @@ BT Servant Log Viewer follows Clean/Onion/Hexagonal architecture principles for 
 **Purpose**: Web Workers for non-blocking operations
 
 **Rules**:
+
 - Depends only on Domain layer
 - No DOM access
 - Pure computation
 - Message-based communication
 
 **Contents**:
+
 - Parse worker for large log files
 - Future: Index worker, search worker
 
@@ -71,12 +79,14 @@ BT Servant Log Viewer follows Clean/Onion/Hexagonal architecture principles for 
 **Purpose**: Entry points and framework integration
 
 #### Web App (`apps/web`)
+
 - SvelteKit 2.x with Svelte 5.x
 - Tailwind CSS dark theme
 - Mobile-first responsive design
 - Consumes all inner layers
 
 #### API App (`apps/api`)
+
 - Fastify server
 - Zod validation
 - Health checks and metrics
@@ -114,6 +124,7 @@ apps/api ──┘                                 ↑
 ## Quality Gates
 
 All code must pass:
+
 - **Zero warnings**: No eslint-disable, no @ts-ignore
 - **Type safety**: TypeScript strict mode
 - **Architecture validation**: dependency-cruiser enforces layer boundaries

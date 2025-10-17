@@ -40,6 +40,7 @@ We will acknowledge receipt within 48 hours and provide a timeline for a fix.
 **Phase 1a**: No authentication (public tool)
 
 **Future phases** (TBD):
+
 - Optional API key for BT-Servant integration
 - Rate limiting on API endpoints
 - HTTPS only for production deployments
@@ -65,6 +66,7 @@ We will acknowledge receipt within 48 hours and provide a timeline for a fix.
    - Hardcoded passwords or sensitive data
 
 2. **Use environment variables**:
+
    ```typescript
    // ❌ Bad
    const apiKey = "sk-1234567890";
@@ -74,6 +76,7 @@ We will acknowledge receipt within 48 hours and provide a timeline for a fix.
    ```
 
 3. **Validate all inputs**:
+
    ```typescript
    import { z } from "zod";
 
@@ -125,6 +128,7 @@ Content-Security-Policy: default-src 'self'
 ## Compliance
 
 This tool is designed for internal engineering use and does not handle:
+
 - Personal Identifiable Information (PII)
 - Financial data
 - Health information (HIPAA)

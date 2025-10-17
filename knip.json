@@ -18,30 +18,14 @@
       "project": ["src/**/*.{svelte,ts}"]
     },
     "apps/api": {
-      "entry": [
-        "src/server.ts",
-        "vitest.config.ts"
-      ],
+      "entry": ["src/server.ts", "vitest.config.ts"],
       "project": ["src/**/*.ts"]
     },
     "packages/*": {
-      "entry": [
-        "src/index.ts",
-        "src/**/*.test.ts",
-        "src/**/*.spec.ts"
-      ],
+      "entry": ["src/index.ts", "src/**/*.test.ts", "src/**/*.spec.ts"],
       "project": ["src/**/*.ts"]
     }
   },
-  "ignore": [
-    "**/*.test.ts",
-    "**/*.spec.ts",
-    "**/dist/**",
-    "**/build/**",
-    "**/.svelte-kit/**"
-  ],
-  "ignoreDependencies": [
-    "@sveltejs/adapter-node",
-    "tslib"
-  ]
+  "ignore": ["**/*.test.ts", "**/*.spec.ts", "**/dist/**", "**/build/**", "**/.svelte-kit/**"],
+  "ignoreDependencies": ["@sveltejs/adapter-node", "tslib"]
 }
