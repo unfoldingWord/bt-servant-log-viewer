@@ -16,7 +16,7 @@
     return colors[level] ?? "text-text-secondary border-surface";
   }
 
-  function toggleLevel(level: string) {
+  function toggleLevel(level: string): void {
     if (selectedLevels.includes(level)) {
       selectedLevels = selectedLevels.filter((l) => l !== level);
     } else {
@@ -24,7 +24,7 @@
     }
   }
 
-  function toggleLanguage(lang: string) {
+  function toggleLanguage(lang: string): void {
     if (selectedLanguages.includes(lang)) {
       selectedLanguages = selectedLanguages.filter((l) => l !== lang);
     } else {
@@ -32,7 +32,7 @@
     }
   }
 
-  function clearAll() {
+  function clearAll(): void {
     selectedLevels = [];
     selectedLanguages = [];
   }
