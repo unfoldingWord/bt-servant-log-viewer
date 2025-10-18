@@ -4,9 +4,12 @@ This document explains the pre-commit hook setup that ensures code quality befor
 
 ## What Gets Checked Pre-Commit
 
-The pre-commit hook runs **lint-staged**, which automatically processes only the files you're committing. This makes it fast and focused.
+The pre-commit hook runs two stages:
 
-### File Type Processing
+1. **lint-staged** - processes only the files you're committing (fast and focused)
+2. **typecheck** - runs full TypeScript/Svelte type checking across the entire project
+
+### File Type Processing (lint-staged)
 
 #### TypeScript/JavaScript/Svelte Files (`*.{ts,tsx,js,jsx,svelte}`)
 
@@ -29,7 +32,8 @@ The pre-commit hook runs **lint-staged**, which automatically processes only the
 3. **Pre-commit hook** automatically runs:
    - Runs lint-staged on all staged files
    - Fixes issues automatically where possible (ESLint --fix, Prettier --write)
-   - Fails the commit if there are unfixable issues
+   - Runs full typecheck (`pnpm typecheck`) across entire project
+   - Fails the commit if there are unfixable issues or type errors
 4. **Commit-msg hook** validates commit message format
 
 ## What Gets Caught
@@ -43,7 +47,7 @@ The pre-commit hook runs **lint-staged**, which automatically processes only the
 ✅ **Caught and Blocks Commit:**
 
 - ESLint errors that can't be auto-fixed
-- Type errors (if running typecheck)
+- TypeScript/Svelte type errors (via `pnpm typecheck`)
 - Forbidden patterns (eslint-disable comments, console.log, debugger statements)
 - Invalid commit message format
 
@@ -89,8 +93,11 @@ This ensures if your commit passes pre-commit hooks, it should pass CI.
 
 The configuration lives in:
 
-- `.husky/pre-commit` - Runs lint-staged
+- `.husky/pre-commit` - Runs lint-staged and typecheck
 - `.husky/commit-msg` - Validates commit messages
 - `package.json` → `lint-staged` section - Defines what runs on which files
 
-To modify what runs pre-commit, edit the `lint-staged` section in root `package.json`.
+To modify what runs pre-commit:
+
+- Edit the `lint-staged` section in root `package.json` for file-based checks
+- Edit `.husky/pre-commit` to add/remove project-wide checks like typecheck

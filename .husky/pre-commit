@@ -1,1 +1,5 @@
 pnpm lint-staged
+
+# Run typecheck to catch type errors before CI
+echo "Running typecheck..."
+pnpm typecheck
