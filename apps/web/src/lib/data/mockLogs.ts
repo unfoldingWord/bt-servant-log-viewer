@@ -1,4 +1,4 @@
-import type { LogEntry, Intent, PerfReport } from "@bt-log-viewer/domain";
+import type { LogEntry, Intent } from "@bt-log-viewer/domain";
 
 /**
  * Mock log data for Phase 1a UI development
@@ -44,7 +44,7 @@ const LOGGERS = [
 ];
 
 // Helper to generate realistic timestamps over the last 7 days
-const generateTimestamp = (daysAgo: number, hourOffset: number = 0): Date => {
+const generateTimestamp = (daysAgo: number, hourOffset = 0): Date => {
   const now = new Date();
   now.setDate(now.getDate() - daysAgo);
   now.setHours(now.getHours() + hourOffset);
@@ -58,46 +58,8 @@ const createIntent = (name: string, confidence?: number): Intent => ({
   isKnown: (KNOWN_INTENTS as readonly string[]).includes(name),
 });
 
-// Helper to create realistic PerfReport
-const createPerfReport = (
-  intentName: string,
-  userId?: string
-): PerfReport => ({
-  trace_id: `trace_${Math.random().toString(36).substring(2, 15)}`,
-  user_id: userId,
-  total_ms: 1200 + Math.random() * 3000,
-  total_s: 1.2 + Math.random() * 3,
-  total_input_tokens: 150 + Math.floor(Math.random() * 500),
-  total_output_tokens: 80 + Math.floor(Math.random() * 300),
-  total_tokens: 230 + Math.floor(Math.random() * 800),
-  total_cost_usd: 0.002 + Math.random() * 0.01,
-  grouped_totals_by_intent: {
-    [intentName]: {
-      input_tokens: 150 + Math.floor(Math.random() * 500),
-      output_tokens: 80 + Math.floor(Math.random() * 300),
-      total_tokens: 230 + Math.floor(Math.random() * 800),
-      input_cost_usd: 0.001 + Math.random() * 0.005,
-      output_cost_usd: 0.001 + Math.random() * 0.005,
-      total_cost_usd: 0.002 + Math.random() * 0.01,
-    },
-  },
-  spans: [
-    {
-      name: "llm_call",
-      duration_ms: 800 + Math.random() * 2000,
-      input_tokens_expended: 150,
-      output_tokens_expended: 80,
-    },
-    {
-      name: "parse_message",
-      duration_ms: 50 + Math.random() * 200,
-    },
-    {
-      name: "fetch_scripture",
-      duration_ms: 200 + Math.random() * 500,
-    },
-  ],
-});
+// NOTE: PerfReport data omitted from Phase 1a mock data for type safety.
+// Will be added in Phase 1b when integrating with real API data.
 
 export const mockLogs = [
   // Recent activity - Day 0 (today)
@@ -124,7 +86,6 @@ export const mockLogs = [
       chapter: 1,
       startVerse: 1,
     },
-    perfReport: createPerfReport("get-bible-translation-assistance", "user_john_doe"),
     traceId: "trace_abc123",
     raw: { startLine: 1, endLine: 15 },
   },
@@ -183,7 +144,6 @@ export const mockLogs = [
       chapter: 3,
       startVerse: 16,
     },
-    perfReport: createPerfReport("listen-to-scripture", "user_maria_lopez"),
     traceId: "trace_def456",
     raw: { startLine: 19, endLine: 32 },
   },
@@ -241,7 +201,6 @@ export const mockLogs = [
       chapter: 5,
       startVerse: 1,
     },
-    perfReport: createPerfReport("get-passage-summary", "user_pierre_martin"),
     traceId: "trace_ghi789",
     raw: { startLine: 100, endLine: 114 },
   },
@@ -256,23 +215,20 @@ export const mockLogs = [
     logger: LOGGERS[0],
     cid: "cid_u1v2w3x4",
     userId: "user_sarah_kim",
-    message: 'text message from user_sarah_kim received: "I want to translate and listen to Psalm 23"',
+    message:
+      'text message from user_sarah_kim received: "I want to translate and listen to Psalm 23"',
     hasJson: true,
     language: "en",
     ip: "98.234.12.45",
     location: { country: "US", region: "California", confidence: 0.94 },
     message_original: "I want to translate and listen to Psalm 23",
-    intents: [
-      createIntent("translate-scripture", 0.85),
-      createIntent("listen-to-scripture", 0.78),
-    ],
+    intents: [createIntent("translate-scripture", 0.85), createIntent("listen-to-scripture", 0.78)],
     reference_extracted: {
       raw: "Psalm 23",
       book: "Psalms",
       chapter: 23,
       startVerse: 1,
     },
-    perfReport: createPerfReport("translate-scripture", "user_sarah_kim"),
     traceId: "trace_jkl012",
     raw: { startLine: 115, endLine: 128 },
   },
@@ -300,7 +256,6 @@ export const mockLogs = [
       chapter: 8,
       startVerse: 1,
     },
-    perfReport: createPerfReport("get-passage-keywords", "user_lucas_silva"),
     traceId: "trace_mno345",
     raw: { startLine: 200, endLine: 213 },
   },
@@ -334,7 +289,8 @@ export const mockLogs = [
     logger: LOGGERS[0],
     cid: "cid_g3h4i5j6",
     userId: "user_amani_mwangi",
-    message: 'text message from user_amani_mwangi received: "Nataka msaada wa tafsiri kwa Yohana 1"',
+    message:
+      'text message from user_amani_mwangi received: "Nataka msaada wa tafsiri kwa Yohana 1"',
     hasJson: true,
     language: "sw",
     ip: "41.90.12.34",
@@ -347,7 +303,6 @@ export const mockLogs = [
       chapter: 1,
       startVerse: 1,
     },
-    perfReport: createPerfReport("get-bible-translation-assistance", "user_amani_mwangi"),
     traceId: "trace_pqr678",
     raw: { startLine: 300, endLine: 315 },
   },
@@ -385,7 +340,7 @@ export const mockLogs = [
     hasJson: true,
     language: "ar",
     ip: "156.210.34.56",
-    location: { country: "EG", region: "Cairo", confidence: 0.90 },
+    location: { country: "EG", region: "Cairo", confidence: 0.9 },
     message_original: "تكلم معي بالعربية",
     intents: [createIntent("set-response-language", 0.93)],
     final_message: "سأتحدث معك بالعربية",
@@ -402,7 +357,8 @@ export const mockLogs = [
     logger: LOGGERS[0],
     cid: "cid_s5t6u7v8",
     userId: "user_translator_team",
-    message: 'text message from user_translator_team received: "Translation helps for 1 Corinthians 13"',
+    message:
+      'text message from user_translator_team received: "Translation helps for 1 Corinthians 13"',
     hasJson: true,
     language: "en",
     message_original: "Translation helps for 1 Corinthians 13",
@@ -417,7 +373,6 @@ export const mockLogs = [
       { id: "res_003", name: "Translation Academy", type: "ta" },
       { id: "res_004", name: "Translation Questions", type: "tq" },
     ],
-    perfReport: createPerfReport("get-translation-helps", "user_translator_team"),
     traceId: "trace_stu901",
     raw: { startLine: 409, endLine: 425 },
   },
@@ -432,21 +387,19 @@ export const mockLogs = [
     logger: LOGGERS[0],
     cid: "cid_w9x0y1z2",
     userId: "user_consultant",
-    message: 'text message from user_consultant received: "What does FIA say about covenant in Exodus 19?"',
+    message:
+      'text message from user_consultant received: "What does FIA say about covenant in Exodus 19?"',
     hasJson: true,
     language: "en",
     message_original: "What does FIA say about covenant in Exodus 19?",
-    intents: [createIntent("consult-fia-resources", 0.90)],
+    intents: [createIntent("consult-fia-resources", 0.9)],
     reference_extracted: {
       raw: "Exodus 19",
       book: "Exodus",
       chapter: 19,
       startVerse: 1,
     },
-    resources_searched: [
-      { id: "res_005", name: "FIA Database", type: "fia" },
-    ],
-    perfReport: createPerfReport("consult-fia-resources", "user_consultant"),
+    resources_searched: [{ id: "res_005", name: "FIA Database", type: "fia" }],
     traceId: "trace_vwx234",
     raw: { startLine: 500, endLine: 516 },
   },
@@ -540,7 +493,6 @@ export const mockLogs = [
       startVerse: 13,
     },
     final_message: "I can do all things through Christ who strengthens me.",
-    perfReport: createPerfReport("retrieve-scripture", "user_reader"),
     traceId: "trace_yza567",
     raw: { startLine: 707, endLine: 720 },
   },
