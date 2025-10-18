@@ -1,0 +1,13 @@
+# Run full lint suite before pushing to catch issues that lint-staged might miss
+echo "Running full lint suite..."
+pnpm lint
+
+# Exit with error if lint fails
+if [ $? -ne 0 ]; then
+  echo "❌ Lint check failed! Fix errors before pushing."
+  echo "💡 Tip: If you see unexpected errors, try clearing ESLint cache:"
+  echo "   rm -rf node_modules/.cache"
+  exit 1
+fi
+
+echo "✅ Lint check passed!"
