@@ -1,6 +1,8 @@
 // @ts-check
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
+import sveltePlugin from "eslint-plugin-svelte";
+import svelteParser from "svelte-eslint-parser";
 import prettier from "eslint-config-prettier";
 
 export default tseslint.config(
@@ -19,12 +21,15 @@ export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
+  ...sveltePlugin.configs["flat/recommended"],
+  ...sveltePlugin.configs["flat/prettier"],
   prettier,
   {
     languageOptions: {
       parserOptions: {
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
+        extraFileExtensions: [".svelte"],
       },
     },
   },
@@ -76,6 +81,22 @@ export default tseslint.config(
       eqeqeq: ["error", "always"],
       "prefer-const": "error",
       "no-var": "error",
+    },
+  },
+  {
+    // Svelte files configuration
+    files: ["**/*.svelte"],
+    languageOptions: {
+      parser: svelteParser,
+      parserOptions: {
+        parser: tseslint.parser,
+      },
+    },
+    rules: {
+      // Svelte-specific
+      "svelte/no-at-html-tags": "error",
+      "svelte/no-target-blank": "error",
+      "svelte/button-has-type": "error",
     },
   }
 );
