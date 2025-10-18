@@ -1,9 +1,11 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   import type { LogEntry } from "@bt-log-viewer/domain";
+  import LogDetailInline from "./LogDetailInline.svelte";
 
   export let logs: LogEntry[];
   export let selectedId: string | null = null;
+  export let selectedLog: LogEntry | null = null;
 
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   const dispatch = createEventDispatcher<{ select: string }>();
@@ -294,6 +296,15 @@
             {/if}
           </td>
         </tr>
+
+        <!-- Inline detail row (expands below the clicked row) -->
+        {#if selectedId === log.id && selectedLog}
+          <tr class="detail-row">
+            <td colspan="6" class="p-0">
+              <LogDetailInline log={selectedLog} />
+            </td>
+          </tr>
+        {/if}
       {/each}
     </tbody>
   </table>

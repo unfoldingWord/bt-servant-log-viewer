@@ -1,9 +1,11 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   import type { LogEntry } from "@bt-log-viewer/domain";
+  import LogDetailInline from "./LogDetailInline.svelte";
 
   export let logs: LogEntry[];
   export let selectedId: string | null = null;
+  export let selectedLog: LogEntry | null = null;
 
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   const dispatch = createEventDispatcher<{ select: string }>();
@@ -232,9 +234,12 @@
 
       <!-- Footer: Tap indicator with chevron -->
       <div class="flex items-center justify-between border-t border-surface pt-2.5">
-        <span class="text-xs font-medium text-accent-cyan">Tap for full details</span>
+        <span class="text-xs font-medium text-accent-cyan">
+          {selectedId === log.id ? "Tap to collapse" : "Tap for full details"}
+        </span>
         <svg
           class="h-4 w-4 text-accent-cyan transition-transform group-active:translate-x-1"
+          class:rotate-90={selectedId === log.id}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -243,6 +248,13 @@
         </svg>
       </div>
     </div>
+
+    <!-- Inline detail (expands below the card) -->
+    {#if selectedId === log.id && selectedLog}
+      <div class="mx-3 mb-3 overflow-hidden rounded-xl">
+        <LogDetailInline log={selectedLog} />
+      </div>
+    {/if}
   {/each}
 </div>
 

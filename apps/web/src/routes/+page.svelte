@@ -4,17 +4,12 @@
   import FilterSidebar from "$lib/components/FilterSidebar.svelte";
   import LogTable from "$lib/components/LogTable.svelte";
   import LogCards from "$lib/components/LogCards.svelte";
-  import LogDetailPanel from "$lib/components/LogDetailPanel.svelte";
   import type { LogEntry } from "@bt-log-viewer/domain";
 
   let filteredLogs: LogEntry[] = mockLogs;
   let searchQuery = "";
   let selectedLogId: string | null = null;
   let showFilters = false;
-  let showDetailPanel = false;
-  let detailPanelHeight = 400; // Default height in pixels
-  let isResizing = false;
-  let mainContentEl: HTMLElement | undefined;
 
   $: selectedLog = selectedLogId
     ? (filteredLogs.find((log) => log.id === selectedLogId) ?? null)
@@ -38,38 +33,10 @@
   }
 
   function handleLogSelect(logId: string): void {
-    selectedLogId = logId;
-    showDetailPanel = true;
-  }
-
-  function handleCloseDetail(): void {
-    showDetailPanel = false;
-    // Keep selection but close panel
-  }
-
-  function handleMouseDown(e: MouseEvent): void {
-    isResizing = true;
-    e.preventDefault();
-  }
-
-  function handleMouseMove(e: MouseEvent): void {
-    if (!isResizing || !mainContentEl) return;
-
-    const rect = mainContentEl.getBoundingClientRect();
-    const newHeight = rect.bottom - e.clientY;
-
-    // Constrain between 200px and 80% of available height
-    const minHeight = 200;
-    const maxHeight = rect.height * 0.8;
-    detailPanelHeight = Math.max(minHeight, Math.min(newHeight, maxHeight));
-  }
-
-  function handleMouseUp(): void {
-    isResizing = false;
+    // Toggle selection: if clicking same log, deselect it
+    selectedLogId = selectedLogId === logId ? null : logId;
   }
 </script>
-
-<svelte:window on:mousemove={handleMouseMove} on:mouseup={handleMouseUp} />
 
 <svelte:head>
   <title>BT Servant Log Viewer</title>
@@ -79,7 +46,7 @@
 <div class="flex h-screen flex-col bg-background">
   <!-- Header with gradient background and animations -->
   <header
-    class="relative flex items-center justify-between overflow-hidden border-b-2 border-accent-cyan/20 bg-gradient-to-r from-background-secondary via-background-secondary to-background px-4 py-5 shadow-lg shadow-black/5 md:px-6"
+    class="relative flex items-center justify-between gap-3 overflow-hidden border-b-2 border-accent-cyan/20 bg-gradient-to-r from-background-secondary via-background-secondary to-background px-4 py-4 shadow-lg shadow-black/5 md:px-6"
   >
     <!-- Animated gradient glow effect -->
     <div
@@ -96,10 +63,11 @@
       ></div>
     </div>
 
-    <div class="relative z-10 flex items-center gap-3 md:gap-4">
+    <!-- Left side: Logo and Title -->
+    <div class="relative z-10 flex items-center gap-3">
       <!-- Logo/Icon with pulse animation -->
       <div
-        class="group relative flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-accent-cyan via-accent-teal to-accent-cyan p-2.5 shadow-xl shadow-accent-cyan/30 transition-all duration-300 hover:scale-110 hover:shadow-accent-cyan/50 md:h-12 md:w-12 animate-logo-glow"
+        class="group relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-accent-cyan via-accent-teal to-accent-cyan p-2 shadow-xl shadow-accent-cyan/30 transition-all duration-300 hover:scale-110 hover:shadow-accent-cyan/50 animate-logo-glow"
       >
         <div
           class="absolute inset-0 rounded-xl bg-gradient-to-br from-accent-cyan to-accent-teal opacity-0 blur-md transition-opacity group-hover:opacity-50"
@@ -120,18 +88,18 @@
       </div>
 
       <!-- Title with shimmer animation -->
-      <div class="flex flex-col gap-0.5">
+      <div class="hidden flex-col gap-0.5 md:flex">
         <h1
-          class="relative bg-gradient-to-r from-accent-cyan via-accent-teal to-accent-cyan bg-clip-text text-xl font-bold tracking-tight text-transparent md:text-2xl animate-shimmer"
+          class="relative bg-gradient-to-r from-accent-cyan via-accent-teal to-accent-cyan bg-clip-text text-lg font-bold tracking-tight text-transparent animate-shimmer"
           style="background-size: 200% 100%;"
         >
           BT Servant Log Viewer
         </h1>
-        <span class="text-xs font-medium text-text-dim md:text-sm">Real-time telemetry viewer</span>
+        <span class="text-xs font-medium text-text-dim">Real-time telemetry viewer</span>
       </div>
 
       <span
-        class="relative overflow-hidden rounded-full border border-accent-teal/40 bg-gradient-to-r from-accent-teal/10 to-accent-cyan/10 px-3 py-1 text-xs font-semibold text-accent-teal shadow-md shadow-accent-teal/10 transition-all hover:scale-105 hover:shadow-accent-teal/20"
+        class="relative overflow-hidden rounded-full border border-accent-teal/40 bg-gradient-to-r from-accent-teal/10 to-accent-cyan/10 px-2.5 py-1 text-xs font-semibold text-accent-teal shadow-md shadow-accent-teal/10 transition-all hover:scale-105 hover:shadow-accent-teal/20"
       >
         <span class="relative z-10">v1.0-alpha</span>
         <div
@@ -140,50 +108,50 @@
       </span>
     </div>
 
-    <!-- Enhanced filter toggle button -->
-    <button
-      type="button"
-      on:click={() => (showFilters = !showFilters)}
-      class="group relative z-10 overflow-hidden rounded-xl border-2 border-surface-active bg-gradient-to-br from-surface to-surface/80 px-4 py-2.5 text-sm font-semibold text-text-secondary shadow-md transition-all duration-300 hover:border-accent-cyan/50 hover:bg-gradient-to-br hover:from-surface-hover hover:to-surface hover:text-accent-cyan hover:shadow-lg hover:shadow-accent-cyan/10 active:scale-95 md:px-5"
-    >
-      <span class="relative z-10 flex items-center gap-2">
-        <svg
-          class="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-12"
-          class:rotate-180={showFilters}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
-          />
-        </svg>
-        <span class="hidden sm:inline">{showFilters ? "Hide" : "Show"} Filters</span>
-        <span class="sm:hidden">{showFilters ? "Hide" : "Filters"}</span>
-      </span>
-      <!-- Hover glow effect -->
-      <div
-        class="absolute inset-0 translate-y-full bg-gradient-to-t from-accent-cyan/10 to-transparent transition-transform group-hover:translate-y-0"
-      ></div>
-    </button>
+    <!-- Right side: Search bar and filter button -->
+    <div class="relative z-10 flex flex-1 items-center gap-3 md:max-w-xl">
+      <!-- Search bar (smaller) -->
+      <div class="flex-1">
+        <SearchBar
+          on:search={(e) => {
+            handleSearch(e.detail as string);
+          }}
+        />
+      </div>
+
+      <!-- Enhanced filter toggle button -->
+      <button
+        type="button"
+        on:click={() => (showFilters = !showFilters)}
+        class="group relative overflow-hidden rounded-xl border-2 border-surface-active bg-gradient-to-br from-surface to-surface/80 px-3 py-2 text-sm font-semibold text-text-secondary shadow-md transition-all duration-300 hover:border-accent-cyan/50 hover:bg-gradient-to-br hover:from-surface-hover hover:to-surface hover:text-accent-cyan hover:shadow-lg hover:shadow-accent-cyan/10 active:scale-95 md:px-4"
+      >
+        <span class="relative z-10 flex items-center gap-2">
+          <svg
+            class="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-12"
+            class:rotate-180={showFilters}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+            />
+          </svg>
+          <span class="hidden lg:inline">{showFilters ? "Hide" : "Show"} Filters</span>
+        </span>
+        <!-- Hover glow effect -->
+        <div
+          class="absolute inset-0 translate-y-full bg-gradient-to-t from-accent-cyan/10 to-transparent transition-transform group-hover:translate-y-0"
+        ></div>
+      </button>
+    </div>
   </header>
 
-  <!-- Search bar with enhanced container -->
-  <div
-    class="relative border-b-2 border-surface/50 bg-gradient-to-b from-background-secondary to-background px-4 py-4 shadow-inner md:px-6"
-  >
-    <SearchBar
-      on:search={(e) => {
-        handleSearch(e.detail as string);
-      }}
-    />
-  </div>
-
   <!-- Main content area with filter sidebar and log display -->
-  <div bind:this={mainContentEl} class="main-content-area flex flex-1 overflow-hidden">
+  <div class="flex flex-1 overflow-hidden">
     <!-- Filter sidebar - collapsible on mobile -->
     {#if showFilters}
       <aside class="w-full border-r border-surface bg-background-secondary md:w-64 lg:w-80">
@@ -191,96 +159,55 @@
       </aside>
     {/if}
 
-    <!-- Log display area - now with split layout support -->
+    <!-- Log display area -->
     <main class="flex flex-1 flex-col overflow-hidden">
-      <!-- Log table/cards area -->
-      <div
-        class="flex-1 overflow-auto transition-all duration-300"
-        style={showDetailPanel
-          ? `height: calc(100% - ${String(detailPanelHeight)}px)`
-          : "height: 100%"}
-      >
-        <!-- Desktop: Table view, Mobile: Card view -->
-        <div class="hidden md:block h-full">
-          <LogTable
-            logs={filteredLogs}
-            selectedId={selectedLogId}
-            on:select={(e) => {
-              handleLogSelect(e.detail as string);
-            }}
-          />
-        </div>
-
-        <div class="block md:hidden h-full">
-          <LogCards
-            logs={filteredLogs}
-            selectedId={selectedLogId}
-            on:select={(e) => {
-              handleLogSelect(e.detail as string);
-            }}
-          />
-        </div>
-
-        <!-- Empty state with animation -->
-        {#if filteredLogs.length === 0}
-          <div class="flex h-full items-center justify-center p-8 animate-fade-in">
-            <div class="text-center">
-              <div
-                class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-accent-cyan/20 to-accent-teal/20"
-              >
-                <svg
-                  class="h-8 w-8 text-accent-cyan"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <p class="text-lg font-medium text-text-secondary">No logs found</p>
-              <p class="mt-2 text-sm text-text-muted">Try adjusting your search or filters</p>
-            </div>
-          </div>
-        {/if}
+      <!-- Desktop: Table view, Mobile: Card view -->
+      <div class="hidden h-full md:block">
+        <LogTable
+          logs={filteredLogs}
+          selectedId={selectedLogId}
+          {selectedLog}
+          on:select={(e) => {
+            handleLogSelect(e.detail as string);
+          }}
+        />
       </div>
 
-      <!-- Resizable divider (desktop only) -->
-      {#if showDetailPanel}
-        <button
-          type="button"
-          class="hidden md:block group relative h-1 w-full cursor-ns-resize bg-surface-active transition-colors hover:bg-accent-cyan/30"
-          on:mousedown={handleMouseDown}
-          aria-label="Resize detail panel"
-        >
-          <!-- Visual indicator for dragging -->
-          <div
-            class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none"
-          >
-            <div
-              class="flex gap-1 rounded-full bg-surface px-3 py-1 shadow-md opacity-0 transition-opacity group-hover:opacity-100"
-            >
-              <div class="h-1 w-6 rounded-full bg-text-muted"></div>
-              <div class="h-1 w-6 rounded-full bg-text-muted"></div>
-            </div>
-          </div>
-        </button>
+      <div class="block h-full md:hidden">
+        <LogCards
+          logs={filteredLogs}
+          selectedId={selectedLogId}
+          {selectedLog}
+          on:select={(e) => {
+            handleLogSelect(e.detail as string);
+          }}
+        />
+      </div>
 
-        <!-- Detail panel (desktop: split pane, mobile: overlay) -->
-        <div
-          class="hidden md:block border-t-2 border-accent-cyan/20 bg-background transition-all duration-300"
-          style={`height: ${String(detailPanelHeight)}px; ${isResizing ? "user-select: none;" : ""}`}
-        >
-          <LogDetailPanel
-            log={selectedLog}
-            isOpen={showDetailPanel}
-            on:close={handleCloseDetail}
-            isSplitView={true}
-          />
+      <!-- Empty state with animation -->
+      {#if filteredLogs.length === 0}
+        <div class="flex h-full items-center justify-center p-8 animate-fade-in">
+          <div class="text-center">
+            <div
+              class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-accent-cyan/20 to-accent-teal/20"
+            >
+              <svg
+                class="h-8 w-8 text-accent-cyan"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <p class="text-lg font-medium text-text-secondary">No logs found</p>
+            <p class="mt-2 text-sm text-text-muted">Try adjusting your search or filters</p>
+          </div>
         </div>
       {/if}
     </main>
@@ -324,16 +251,6 @@
     </div>
     <span class="text-text-dim">Phase 1a · Live View</span>
   </footer>
-
-  <!-- Mobile overlay detail panel -->
-  <div class="md:hidden">
-    <LogDetailPanel
-      log={selectedLog}
-      isOpen={showDetailPanel}
-      on:close={handleCloseDetail}
-      isSplitView={false}
-    />
-  </div>
 </div>
 
 <style>

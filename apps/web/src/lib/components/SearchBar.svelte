@@ -40,18 +40,18 @@
       on:input={handleInput}
       on:focus={handleFocus}
       on:blur={handleBlur}
-      placeholder="Search logs by message, level, user..."
-      class="w-full rounded-xl border-2 border-surface-active bg-gradient-to-r from-surface to-surface/80 px-4 py-3 pl-11 pr-11 text-text placeholder-text-dim shadow-md transition-all duration-300
-             focus:border-accent-cyan/50 focus:outline-none focus:ring-4 focus:ring-accent-cyan/10 focus:shadow-xl focus:shadow-accent-cyan/20 focus:scale-[1.01]"
+      placeholder="Search logs..."
+      class="w-full rounded-lg border-2 border-surface-active bg-gradient-to-r from-surface to-surface/80 px-3 py-2 pl-9 pr-9 text-sm text-text placeholder-text-dim shadow-md transition-all duration-300
+             focus:border-accent-cyan/50 focus:outline-none focus:ring-2 focus:ring-accent-cyan/10 focus:shadow-lg focus:shadow-accent-cyan/20"
     />
 
     <!-- Search icon with pulse animation -->
     <div
-      class="absolute left-3.5 top-1/2 -translate-y-1/2 transition-all duration-300"
+      class="absolute left-2.5 top-1/2 -translate-y-1/2 transition-all duration-300"
       class:animate-pulse={isFocused && !searchValue}
     >
       <svg
-        class="h-5 w-5 text-text-muted transition-all duration-300"
+        class="h-4 w-4 text-text-muted transition-all duration-300"
         class:text-accent-cyan={isFocused}
         class:scale-110={isFocused}
         fill="none"
@@ -73,9 +73,9 @@
         type="button"
         on:click={clearSearch}
         aria-label="Clear search"
-        class="search-clear absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-surface-hover to-surface-active p-1.5 text-text-muted shadow-md transition-all duration-200 hover:bg-gradient-to-br hover:from-accent-cyan/20 hover:to-accent-teal/20 hover:text-accent-cyan hover:scale-110 hover:rotate-90 active:scale-95"
+        class="search-clear absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-surface-hover to-surface-active p-1 text-text-muted shadow-sm transition-all duration-200 hover:bg-gradient-to-br hover:from-accent-cyan/20 hover:to-accent-teal/20 hover:text-accent-cyan hover:scale-110 hover:rotate-90 active:scale-95"
       >
-        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -86,41 +86,9 @@
       </button>
     {/if}
   </div>
-
-  <!-- Search suggestions badge (shows when typing) -->
-  {#if searchValue && isFocused}
-    <div
-      class="absolute -bottom-8 left-0 flex items-center gap-1.5 rounded-full border border-accent-cyan/30 bg-gradient-to-r from-accent-cyan/10 to-accent-teal/10 px-3 py-1 text-xs font-medium text-accent-cyan shadow-lg animate-slide-up"
-    >
-      <svg class="h-3 w-3 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-        />
-      </svg>
-      Searching...
-    </div>
-  {/if}
 </div>
 
 <style>
-  @keyframes slide-up {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .animate-slide-up {
-    animation: slide-up 0.2s ease-out;
-  }
-
   .search-clear {
     box-shadow:
       0 2px 4px rgba(0, 0, 0, 0.1),
