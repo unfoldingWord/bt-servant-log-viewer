@@ -28,8 +28,10 @@ const KNOWN_INTENTS = [
   "converse-with-bt-servant",
 ] as const;
 
-// Reserved for future expansion
+// Reserved for future expansion - will be used in Phase 1b
+// @ts-expect-error - Intentionally unused, reserved for future filtering features
 const _LANGUAGES = ["en", "es", "fr", "pt", "sw", "ar", "zh", "hi", "ru"];
+// @ts-expect-error - Intentionally unused, reserved for future filtering features
 const _COUNTRIES = ["US", "MX", "FR", "BR", "KE", "EG", "CN", "IN", "RU"];
 
 const LOGGERS = [
@@ -41,7 +43,7 @@ const LOGGERS = [
   "bt_servant_engine.services.audio",
   "bt_servant_engine.middleware.auth",
   "bt_servant_engine.utils.metrics",
-];
+] as const;
 
 // Helper to generate realistic timestamps over the last 7 days
 const generateTimestamp = (daysAgo: number, hourOffset = 0): Date => {

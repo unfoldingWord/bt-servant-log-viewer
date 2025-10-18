@@ -1,17 +1,17 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher<{ search: string }>();
 
   let searchValue = "";
 
   function handleInput() {
-    dispatch('search', searchValue);
+    dispatch("search", searchValue);
   }
 
   function clearSearch() {
     searchValue = "";
-    dispatch('search', "");
+    dispatch("search", "");
   }
 </script>
 
@@ -44,6 +44,7 @@
   {#if searchValue}
     <button
       on:click={clearSearch}
+      aria-label="Clear search"
       class="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted transition hover:text-text"
     >
       <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

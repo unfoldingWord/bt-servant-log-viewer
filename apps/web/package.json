@@ -16,6 +16,7 @@
     "clean": "rm -rf .svelte-kit build node_modules"
   },
   "dependencies": {
+    "@bt-log-viewer/domain": "workspace:*",
     "@sveltejs/adapter-node": "^5.2.9",
     "svelte": "^5.2.7"
   },

@@ -11,9 +11,6 @@
   let selectedLogId: string | null = null;
   let showFilters = false;
 
-  // Responsive breakpoint detection
-  let isDesktop = true;
-
   // Simple filtering function (will be enhanced later)
   function handleSearch(query: string) {
     searchQuery = query;
@@ -23,10 +20,11 @@
     }
 
     const lowerQuery = query.toLowerCase();
-    filteredLogs = mockLogs.filter(log =>
-      log.message.toLowerCase().includes(lowerQuery) ||
-      log.level.toLowerCase().includes(lowerQuery) ||
-      log.userId?.toLowerCase().includes(lowerQuery)
+    filteredLogs = mockLogs.filter(
+      (log) =>
+        log.message.toLowerCase().includes(lowerQuery) ||
+        log.level.toLowerCase().includes(lowerQuery) ||
+        log.userId?.toLowerCase().includes(lowerQuery)
     );
   }
 
@@ -42,7 +40,9 @@
 <!-- Main container with responsive layout -->
 <div class="flex h-screen flex-col bg-background">
   <!-- Header -->
-  <header class="flex items-center justify-between border-b border-surface bg-background-secondary px-4 py-3 md:px-6">
+  <header
+    class="flex items-center justify-between border-b border-surface bg-background-secondary px-4 py-3 md:px-6"
+  >
     <div class="flex items-center gap-3">
       <h1 class="text-xl font-bold text-accent-cyan md:text-2xl">BT Servant Log Viewer</h1>
       <span class="rounded bg-surface px-2 py-1 text-xs text-text-muted">Phase 1a</span>
@@ -50,10 +50,10 @@
 
     <!-- Desktop: show filter toggle, Mobile: hamburger menu -->
     <button
-      on:click={() => showFilters = !showFilters}
+      on:click={() => (showFilters = !showFilters)}
       class="rounded bg-surface px-3 py-2 text-sm text-text-secondary transition hover:bg-surface-hover md:px-4"
     >
-      {showFilters ? 'Hide Filters' : 'Show Filters'}
+      {showFilters ? "Hide Filters" : "Show Filters"}
     </button>
   </header>
 
@@ -95,9 +95,7 @@
         <div class="flex h-full items-center justify-center p-8">
           <div class="text-center">
             <p class="text-lg text-text-secondary">No logs found</p>
-            <p class="mt-2 text-sm text-text-muted">
-              Try adjusting your search or filters
-            </p>
+            <p class="mt-2 text-sm text-text-muted">Try adjusting your search or filters</p>
           </div>
         </div>
       {/if}
@@ -105,7 +103,9 @@
   </div>
 
   <!-- Status bar -->
-  <footer class="border-t border-surface bg-background-secondary px-4 py-2 text-xs text-text-muted md:px-6">
+  <footer
+    class="border-t border-surface bg-background-secondary px-4 py-2 text-xs text-text-muted md:px-6"
+  >
     Showing {filteredLogs.length} of {mockLogs.length} logs
     {#if searchQuery}
       · Search: "{searchQuery}"

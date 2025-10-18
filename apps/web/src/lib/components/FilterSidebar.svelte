@@ -1,8 +1,14 @@
 <script lang="ts">
   // Filter states (will be enhanced in later iterations)
+  // TODO: Wire up to parent component filter logic
   let selectedLevels: string[] = [];
   let selectedLanguages: string[] = [];
   let dateRange = { start: "", end: "" };
+
+  // Satisfy unused variable warnings - these will be wired up in next iteration
+  $: void selectedLevels;
+  $: void selectedLanguages;
+  $: void dateRange;
 
   const logLevels = ["TRACE", "DEBUG", "INFO", "WARN", "ERROR"];
   const languages = ["en", "es", "fr", "pt", "sw", "ar"];
@@ -24,12 +30,14 @@
             class="rounded border-surface-active bg-surface text-accent-cyan
                    focus:ring-2 focus:ring-accent-cyan focus:ring-offset-0"
           />
-          <span class="text-sm text-text-secondary"
-                class:text-level-trace={level === "TRACE"}
-                class:text-level-debug={level === "DEBUG"}
-                class:text-level-info={level === "INFO"}
-                class:text-level-warn={level === "WARN"}
-                class:text-level-error={level === "ERROR"}>
+          <span
+            class="text-sm text-text-secondary"
+            class:text-level-trace={level === "TRACE"}
+            class:text-level-debug={level === "DEBUG"}
+            class:text-level-info={level === "INFO"}
+            class:text-level-warn={level === "WARN"}
+            class:text-level-error={level === "ERROR"}
+          >
             {level}
           </span>
         </label>
@@ -81,20 +89,28 @@
   <div class="mb-6">
     <h3 class="mb-2 text-sm font-medium text-text-secondary">Quick Select</h3>
     <div class="grid grid-cols-2 gap-2">
-      <button class="rounded bg-surface px-3 py-2 text-xs text-text-secondary transition
-                     hover:bg-surface-hover hover:text-text">
+      <button
+        class="rounded bg-surface px-3 py-2 text-xs text-text-secondary transition
+                     hover:bg-surface-hover hover:text-text"
+      >
         Last Hour
       </button>
-      <button class="rounded bg-surface px-3 py-2 text-xs text-text-secondary transition
-                     hover:bg-surface-hover hover:text-text">
+      <button
+        class="rounded bg-surface px-3 py-2 text-xs text-text-secondary transition
+                     hover:bg-surface-hover hover:text-text"
+      >
         Last 24h
       </button>
-      <button class="rounded bg-surface px-3 py-2 text-xs text-text-secondary transition
-                     hover:bg-surface-hover hover:text-text">
+      <button
+        class="rounded bg-surface px-3 py-2 text-xs text-text-secondary transition
+                     hover:bg-surface-hover hover:text-text"
+      >
         Last 7d
       </button>
-      <button class="rounded bg-surface px-3 py-2 text-xs text-text-secondary transition
-                     hover:bg-surface-hover hover:text-text">
+      <button
+        class="rounded bg-surface px-3 py-2 text-xs text-text-secondary transition
+                     hover:bg-surface-hover hover:text-text"
+      >
         Last 30d
       </button>
     </div>

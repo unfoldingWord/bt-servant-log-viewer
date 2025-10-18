@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  import type { LogEntry } from '@bt-log-viewer/domain';
+  import { createEventDispatcher } from "svelte";
+  import type { LogEntry } from "@bt-log-viewer/domain";
 
   export let logs: LogEntry[];
   export let selectedId: string | null = null;
@@ -8,32 +8,32 @@
   const dispatch = createEventDispatcher<{ select: string }>();
 
   function handleRowClick(logId: string) {
-    dispatch('select', logId);
+    dispatch("select", logId);
   }
 
   function formatTimestamp(date: Date): string {
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
     }).format(date);
   }
 
   function getLevelColorClass(level: string): string {
     const colors: Record<string, string> = {
-      TRACE: 'text-level-trace',
-      DEBUG: 'text-level-debug',
-      INFO: 'text-level-info',
-      WARN: 'text-level-warn',
-      ERROR: 'text-level-error'
+      TRACE: "text-level-trace",
+      DEBUG: "text-level-debug",
+      INFO: "text-level-info",
+      WARN: "text-level-warn",
+      ERROR: "text-level-error",
     };
-    return colors[level] || 'text-text-muted';
+    return colors[level] || "text-text-muted";
   }
 
   function truncate(text: string, maxLength: number): string {
-    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+    return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
   }
 </script>
 
@@ -64,18 +64,18 @@
             {log.level}
           </td>
           <td class="whitespace-nowrap px-4 py-3 text-text-secondary">
-            {log.userId || '-'}
+            {log.userId || "-"}
           </td>
           <td class="max-w-md px-4 py-3 text-text">
             {truncate(log.message, 100)}
           </td>
           <td class="whitespace-nowrap px-4 py-3 text-text-muted">
-            {log.language || '-'}
+            {log.language || "-"}
           </td>
           <td class="max-w-xs px-4 py-3 text-text-secondary">
             {#if log.intents && log.intents.length > 0}
               <span class="rounded bg-tag-blue px-2 py-0.5 text-xs">
-                {log.intents[0].name}
+                {log.intents[0]?.name}
               </span>
               {#if log.intents.length > 1}
                 <span class="ml-1 text-xs text-text-dim">

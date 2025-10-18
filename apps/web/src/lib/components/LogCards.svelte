@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  import type { LogEntry } from '@bt-log-viewer/domain';
+  import { createEventDispatcher } from "svelte";
+  import type { LogEntry } from "@bt-log-viewer/domain";
 
   export let logs: LogEntry[];
   export let selectedId: string | null = null;
@@ -8,46 +8,51 @@
   const dispatch = createEventDispatcher<{ select: string }>();
 
   function handleCardClick(logId: string) {
-    dispatch('select', logId);
+    dispatch("select", logId);
   }
 
   function formatTimestamp(date: Date): string {
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(date);
   }
 
   function getLevelColorClass(level: string): string {
     const colors: Record<string, string> = {
-      TRACE: 'bg-level-trace/10 text-level-trace border-level-trace',
-      DEBUG: 'bg-level-debug/10 text-level-debug border-level-debug',
-      INFO: 'bg-level-info/10 text-level-info border-level-info',
-      WARN: 'bg-level-warn/10 text-level-warn border-level-warn',
-      ERROR: 'bg-level-error/10 text-level-error border-level-error'
+      TRACE: "bg-level-trace/10 text-level-trace border-level-trace",
+      DEBUG: "bg-level-debug/10 text-level-debug border-level-debug",
+      INFO: "bg-level-info/10 text-level-info border-level-info",
+      WARN: "bg-level-warn/10 text-level-warn border-level-warn",
+      ERROR: "bg-level-error/10 text-level-error border-level-error",
     };
-    return colors[level] || 'bg-surface text-text-muted border-surface';
+    return colors[level] || "bg-surface text-text-muted border-surface";
   }
 
   function truncate(text: string, maxLength: number): string {
-    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+    return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
   }
 </script>
 
 <div class="space-y-2 p-4">
   {#each logs as log (log.id)}
     <div
+      role="button"
+      tabindex="0"
       on:click={() => handleCardClick(log.id)}
+      on:keydown={(e) => e.key === "Enter" && handleCardClick(log.id)}
       class="animate-fade-in rounded-lg border bg-surface p-4 transition
-             hover:bg-surface-hover active:scale-98"
+             hover:bg-surface-hover active:scale-98 cursor-pointer"
       class:ring-2={selectedId === log.id}
       class:ring-accent-cyan={selectedId === log.id}
     >
       <!-- Header: Level and Timestamp -->
       <div class="mb-2 flex items-center justify-between">
-        <span class="rounded border px-2 py-0.5 text-xs font-medium {getLevelColorClass(log.level)}">
+        <span
+          class="rounded border px-2 py-0.5 text-xs font-medium {getLevelColorClass(log.level)}"
+        >
           {log.level}
         </span>
         <span class="text-xs text-text-muted">
@@ -98,7 +103,7 @@
           <div class="flex items-center gap-2">
             <span class="text-text-muted">Location:</span>
             <span class="text-text-secondary">
-              {log.location.region || log.location.country || 'Unknown'}
+              {log.location.region || log.location.country || "Unknown"}
             </span>
           </div>
         {/if}

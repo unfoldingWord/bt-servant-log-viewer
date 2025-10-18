@@ -96,6 +96,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@bt-log-viewer/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
       '@sveltejs/adapter-node':
         specifier: ^5.2.9
         version: 5.4.0(@sveltejs/kit@2.47.1(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@5.1.1(svelte@5.40.2)(vite@6.4.0(@types/node@22.18.11)(jiti@1.21.7)(tsx@4.20.6)(yaml@2.8.1)))(svelte@5.40.2)(vite@6.4.0(@types/node@22.18.11)(jiti@1.21.7)(tsx@4.20.6)(yaml@2.8.1)))
