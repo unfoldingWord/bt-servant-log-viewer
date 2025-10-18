@@ -92,6 +92,46 @@ The pre-commit checks match exactly what CI runs:
 
 This ensures if your commit passes pre-commit hooks, it should pass CI.
 
+## Monorepo ESLint Configuration
+
+**CRITICAL**: In a monorepo, lint-staged runs from the root directory and uses the root `eslint.config.js`.
+
+### The Problem (Now Fixed)
+
+Previously, the root ESLint config only applied strict TypeScript rules to `.ts` and `.tsx` files:
+
+```javascript
+{
+  files: ["**/*.ts", "**/*.tsx"],
+  rules: { /* strict rules */ }
+}
+```
+
+This meant `.svelte` files were linted with basic rules only, missing critical checks like:
+
+- `@typescript-eslint/no-invalid-void-type`
+- `@typescript-eslint/prefer-nullish-coalescing`
+
+### The Solution
+
+The root `eslint.config.js` now includes:
+
+1. Svelte plugin dependencies (installed at root level)
+2. Svelte recommended configurations
+3. Svelte-specific parser configuration
+4. TypeScript support for `.svelte` files via `extraFileExtensions`
+
+This ensures lint-staged catches ALL ESLint errors in Svelte files during pre-commit.
+
+### Why This Matters
+
+Without this fix, errors that pass pre-commit would fail in CI because:
+
+- Pre-commit: Uses root ESLint config (was missing Svelte support)
+- CI: Runs `turbo run lint` which uses package-specific configs (has full Svelte support)
+
+Now both use equivalent configurations for Svelte files.
+
 ## Maintenance
 
 The configuration lives in:
