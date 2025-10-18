@@ -6,10 +6,10 @@
   export let isOpen = false;
 
   // eslint-disable-next-line @typescript-eslint/no-deprecated
-  const dispatch = createEventDispatcher<{ close: void }>();
+  const dispatch = createEventDispatcher<{ close: null }>();
 
   function handleClose(): void {
-    dispatch("close");
+    dispatch("close", null);
   }
 
   function formatTimestamp(date: Date): string {
@@ -190,7 +190,7 @@
       {/if}
 
       <!-- Session Info -->
-      {#if log.cid || log.traceId}
+      {#if log.cid ?? log.traceId}
         <div class="rounded-lg border border-surface-active bg-surface p-3">
           <h3 class="mb-2 text-xs font-medium uppercase tracking-wider text-text-muted">Session</h3>
           <div class="space-y-1 font-mono text-xs text-text-secondary">
