@@ -4,6 +4,7 @@
 
   export let log: LogEntry | null = null;
   export let isOpen = false;
+  export let isSplitView = false; // true for desktop split pane, false for mobile overlay
 
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   const dispatch = createEventDispatcher<{ close: null }>();
@@ -49,26 +50,31 @@
 </script>
 
 {#if isOpen && log}
-  <!-- Overlay for mobile with fade-in -->
-  <div
-    on:click={handleClose}
-    on:keydown={(e) => {
-      if (e.key === "Escape") handleClose();
-    }}
-    role="button"
-    tabindex="0"
-    class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-all duration-300 md:hidden animate-fade-in"
-  ></div>
-
-  <!-- Detail Panel with enhanced slide animation -->
-  <aside
-    class="fixed bottom-0 left-0 right-0 z-50 max-h-[85vh] overflow-y-auto rounded-t-3xl border-t-2 border-accent-cyan/40 bg-gradient-to-b from-background-secondary to-background shadow-2xl shadow-black/20 animate-slide-up
-           md:bottom-auto md:right-0 md:top-0 md:w-[26rem] md:max-h-full md:rounded-none md:rounded-l-2xl md:border-l-2 md:border-t-0 md:animate-slide-left lg:w-[30rem]"
-  >
-    <!-- Gradient accent line -->
+  {#if !isSplitView}
+    <!-- Overlay for mobile with fade-in -->
     <div
-      class="absolute left-0 right-0 top-0 h-1 bg-gradient-to-r from-accent-cyan via-accent-teal to-accent-cyan md:bottom-0 md:left-0 md:right-auto md:top-0 md:h-full md:w-1"
+      on:click={handleClose}
+      on:keydown={(e) => {
+        if (e.key === "Escape") handleClose();
+      }}
+      role="button"
+      tabindex="0"
+      class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-all duration-300 animate-fade-in"
     ></div>
+  {/if}
+
+  <!-- Detail Panel - adapts to split view or overlay mode -->
+  <aside
+    class={isSplitView
+      ? "h-full overflow-y-auto bg-background"
+      : "fixed bottom-0 left-0 right-0 z-50 max-h-[85vh] overflow-y-auto rounded-t-3xl border-t-2 border-accent-cyan/40 bg-gradient-to-b from-background-secondary to-background shadow-2xl shadow-black/20 animate-slide-up"}
+  >
+    <!-- Gradient accent line (only for overlay mode) -->
+    {#if !isSplitView}
+      <div
+        class="absolute left-0 right-0 top-0 h-1 bg-gradient-to-r from-accent-cyan via-accent-teal to-accent-cyan"
+      ></div>
+    {/if}
 
     <!-- Header with better styling -->
     <div

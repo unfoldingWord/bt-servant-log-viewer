@@ -12,6 +12,9 @@
   let selectedLogId: string | null = null;
   let showFilters = false;
   let showDetailPanel = false;
+  let detailPanelHeight = 400; // Default height in pixels
+  let isResizing = false;
+  let mainContentEl: HTMLElement | undefined;
 
   $: selectedLog = selectedLogId
     ? (filteredLogs.find((log) => log.id === selectedLogId) ?? null)
@@ -43,7 +46,30 @@
     showDetailPanel = false;
     // Keep selection but close panel
   }
+
+  function handleMouseDown(e: MouseEvent): void {
+    isResizing = true;
+    e.preventDefault();
+  }
+
+  function handleMouseMove(e: MouseEvent): void {
+    if (!isResizing || !mainContentEl) return;
+
+    const rect = mainContentEl.getBoundingClientRect();
+    const newHeight = rect.bottom - e.clientY;
+
+    // Constrain between 200px and 80% of available height
+    const minHeight = 200;
+    const maxHeight = rect.height * 0.8;
+    detailPanelHeight = Math.max(minHeight, Math.min(newHeight, maxHeight));
+  }
+
+  function handleMouseUp(): void {
+    isResizing = false;
+  }
 </script>
+
+<svelte:window on:mousemove={handleMouseMove} on:mouseup={handleMouseUp} />
 
 <svelte:head>
   <title>BT Servant Log Viewer</title>
@@ -99,7 +125,7 @@
           class="relative bg-gradient-to-r from-accent-cyan via-accent-teal to-accent-cyan bg-clip-text text-xl font-bold tracking-tight text-transparent md:text-2xl animate-shimmer"
           style="background-size: 200% 100%;"
         >
-          BT Servant Logs
+          BT Servant Log Viewer
         </h1>
         <span class="text-xs font-medium text-text-dim md:text-sm">Real-time telemetry viewer</span>
       </div>
@@ -157,7 +183,7 @@
   </div>
 
   <!-- Main content area with filter sidebar and log display -->
-  <div class="flex flex-1 overflow-hidden">
+  <div bind:this={mainContentEl} class="main-content-area flex flex-1 overflow-hidden">
     <!-- Filter sidebar - collapsible on mobile -->
     {#if showFilters}
       <aside class="w-full border-r border-surface bg-background-secondary md:w-64 lg:w-80">
@@ -165,53 +191,96 @@
       </aside>
     {/if}
 
-    <!-- Log display area -->
-    <main class="flex-1 overflow-auto">
-      <!-- Desktop: Table view, Mobile: Card view -->
-      <div class="hidden md:block">
-        <LogTable
-          logs={filteredLogs}
-          selectedId={selectedLogId}
-          on:select={(e) => {
-            handleLogSelect(e.detail as string);
-          }}
-        />
-      </div>
+    <!-- Log display area - now with split layout support -->
+    <main class="flex flex-1 flex-col overflow-hidden">
+      <!-- Log table/cards area -->
+      <div
+        class="flex-1 overflow-auto transition-all duration-300"
+        style={showDetailPanel
+          ? `height: calc(100% - ${String(detailPanelHeight)}px)`
+          : "height: 100%"}
+      >
+        <!-- Desktop: Table view, Mobile: Card view -->
+        <div class="hidden md:block h-full">
+          <LogTable
+            logs={filteredLogs}
+            selectedId={selectedLogId}
+            on:select={(e) => {
+              handleLogSelect(e.detail as string);
+            }}
+          />
+        </div>
 
-      <div class="block md:hidden">
-        <LogCards
-          logs={filteredLogs}
-          selectedId={selectedLogId}
-          on:select={(e) => {
-            handleLogSelect(e.detail as string);
-          }}
-        />
-      </div>
+        <div class="block md:hidden h-full">
+          <LogCards
+            logs={filteredLogs}
+            selectedId={selectedLogId}
+            on:select={(e) => {
+              handleLogSelect(e.detail as string);
+            }}
+          />
+        </div>
 
-      <!-- Empty state with animation -->
-      {#if filteredLogs.length === 0}
-        <div class="flex h-full items-center justify-center p-8 animate-fade-in">
-          <div class="text-center">
-            <div
-              class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-accent-cyan/20 to-accent-teal/20"
-            >
-              <svg
-                class="h-8 w-8 text-accent-cyan"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+        <!-- Empty state with animation -->
+        {#if filteredLogs.length === 0}
+          <div class="flex h-full items-center justify-center p-8 animate-fade-in">
+            <div class="text-center">
+              <div
+                class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-accent-cyan/20 to-accent-teal/20"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
+                <svg
+                  class="h-8 w-8 text-accent-cyan"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <p class="text-lg font-medium text-text-secondary">No logs found</p>
+              <p class="mt-2 text-sm text-text-muted">Try adjusting your search or filters</p>
             </div>
-            <p class="text-lg font-medium text-text-secondary">No logs found</p>
-            <p class="mt-2 text-sm text-text-muted">Try adjusting your search or filters</p>
           </div>
+        {/if}
+      </div>
+
+      <!-- Resizable divider (desktop only) -->
+      {#if showDetailPanel}
+        <button
+          type="button"
+          class="hidden md:block group relative h-1 w-full cursor-ns-resize bg-surface-active transition-colors hover:bg-accent-cyan/30"
+          on:mousedown={handleMouseDown}
+          aria-label="Resize detail panel"
+        >
+          <!-- Visual indicator for dragging -->
+          <div
+            class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none"
+          >
+            <div
+              class="flex gap-1 rounded-full bg-surface px-3 py-1 shadow-md opacity-0 transition-opacity group-hover:opacity-100"
+            >
+              <div class="h-1 w-6 rounded-full bg-text-muted"></div>
+              <div class="h-1 w-6 rounded-full bg-text-muted"></div>
+            </div>
+          </div>
+        </button>
+
+        <!-- Detail panel (desktop: split pane, mobile: overlay) -->
+        <div
+          class="hidden md:block border-t-2 border-accent-cyan/20 bg-background transition-all duration-300"
+          style={`height: ${String(detailPanelHeight)}px; ${isResizing ? "user-select: none;" : ""}`}
+        >
+          <LogDetailPanel
+            log={selectedLog}
+            isOpen={showDetailPanel}
+            on:close={handleCloseDetail}
+            isSplitView={true}
+          />
         </div>
       {/if}
     </main>
@@ -256,8 +325,15 @@
     <span class="text-text-dim">Phase 1a · Live View</span>
   </footer>
 
-  <!-- Log Detail Panel -->
-  <LogDetailPanel log={selectedLog} isOpen={showDetailPanel} on:close={handleCloseDetail} />
+  <!-- Mobile overlay detail panel -->
+  <div class="md:hidden">
+    <LogDetailPanel
+      log={selectedLog}
+      isOpen={showDetailPanel}
+      on:close={handleCloseDetail}
+      isSplitView={false}
+    />
+  </div>
 </div>
 
 <style>

@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("homepage loads successfully", async ({ page }): Promise<void> => {
   await page.goto("/");
 
-  await expect(page.locator("h1")).toContainText("BT Servant Logs");
+  await expect(page.locator("h1")).toContainText("BT Servant Log Viewer");
 });
 
 test("responsive design - mobile viewport", async ({ page }): Promise<void> => {
