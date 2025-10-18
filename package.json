@@ -50,7 +50,10 @@
     "typescript-eslint": "^8.18.2"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
+    "package.json": [
+      "prettier --write"
+    ],
+    "*.{ts,tsx,js,jsx,svelte}": [
       "eslint --max-warnings=0 --no-warn-ignored --fix",
       "prettier --write",
       "node tooling/scan-forbidden.js"
