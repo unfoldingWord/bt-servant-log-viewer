@@ -513,6 +513,11 @@ For BT-Servant application:
 
 - SvelteKit dark theme + shadcn-svelte with **mobile-first responsive design**.
 - **Mock data only** - No API calls, use static sample log data for development.
+  - **Approach:** Simple hardcoded TypeScript data matching domain types
+  - Create `apps/web/src/lib/data/mockLogs.ts` with 50-100 realistic `LogEntry` objects
+  - UI components import and use mock data directly (no service layer yet)
+  - Mock data includes representative samples of all field types: intents, languages, regions, traces, etc.
+  - **Rationale:** Fastest path to impressive UI for bot competition; service layer abstraction deferred to Phase 1b
 - **Responsive breakpoints**: 320px, 640px, 768px, 1024px, 1280px.
 - **Mobile layouts**: Single column, touch-optimized, swipe gestures.
 - **UI Components** (all with mock data):
@@ -533,6 +538,11 @@ For BT-Servant application:
 
 **Focus: Connect the chosen UI from Phase 1a to real systems**
 
+- **Refactor mock data to service layer:**
+  - Implement proper port interfaces (`QueryPort`, `ParsingPort`, etc.)
+  - Create service implementations that replace direct mock data imports
+  - Update UI components to use dependency injection
+  - Transition from `import { mockLogs }` to `const entries = await queryService.getEntries()`
 - **BT-Servant API client** for fetching log files.
 - **Auto-load last 21 days** of logs on app open.
 - **Web Worker integration** for non-blocking parsing.
