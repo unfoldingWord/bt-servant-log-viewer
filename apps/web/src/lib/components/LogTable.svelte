@@ -5,9 +5,10 @@
   export let logs: LogEntry[];
   export let selectedId: string | null = null;
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const dispatch = createEventDispatcher<{ select: string }>();
 
-  function handleRowClick(logId: string) {
+  function handleRowClick(logId: string): void {
     dispatch("select", logId);
   }
 
@@ -29,7 +30,7 @@
       WARN: "text-level-warn",
       ERROR: "text-level-error",
     };
-    return colors[level] || "text-text-muted";
+    return colors[level] ?? "text-text-muted";
   }
 
   function truncate(text: string, maxLength: number): string {
@@ -52,7 +53,9 @@
     <tbody class="text-sm">
       {#each logs as log (log.id)}
         <tr
-          on:click={() => handleRowClick(log.id)}
+          on:click={() => {
+            handleRowClick(log.id);
+          }}
           class="cursor-pointer border-b border-surface transition
                  hover:bg-surface-hover"
           class:bg-surface={selectedId === log.id}
@@ -64,13 +67,13 @@
             {log.level}
           </td>
           <td class="whitespace-nowrap px-4 py-3 text-text-secondary">
-            {log.userId || "-"}
+            {log.userId ?? "-"}
           </td>
           <td class="max-w-md px-4 py-3 text-text">
             {truncate(log.message, 100)}
           </td>
           <td class="whitespace-nowrap px-4 py-3 text-text-muted">
-            {log.language || "-"}
+            {log.language ?? "-"}
           </td>
           <td class="max-w-xs px-4 py-3 text-text-secondary">
             {#if log.intents && log.intents.length > 0}

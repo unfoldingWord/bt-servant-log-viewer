@@ -5,9 +5,10 @@
   export let logs: LogEntry[];
   export let selectedId: string | null = null;
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const dispatch = createEventDispatcher<{ select: string }>();
 
-  function handleCardClick(logId: string) {
+  function handleCardClick(logId: string): void {
     dispatch("select", logId);
   }
 
@@ -28,7 +29,7 @@
       WARN: "bg-level-warn/10 text-level-warn border-level-warn",
       ERROR: "bg-level-error/10 text-level-error border-level-error",
     };
-    return colors[level] || "bg-surface text-text-muted border-surface";
+    return colors[level] ?? "bg-surface text-text-muted border-surface";
   }
 
   function truncate(text: string, maxLength: number): string {
@@ -41,8 +42,12 @@
     <div
       role="button"
       tabindex="0"
-      on:click={() => handleCardClick(log.id)}
-      on:keydown={(e) => e.key === "Enter" && handleCardClick(log.id)}
+      on:click={() => {
+        handleCardClick(log.id);
+      }}
+      on:keydown={(e) => {
+        if (e.key === "Enter") handleCardClick(log.id);
+      }}
       class="animate-fade-in rounded-lg border bg-surface p-4 transition
              hover:bg-surface-hover active:scale-98 cursor-pointer"
       class:ring-2={selectedId === log.id}
@@ -103,7 +108,7 @@
           <div class="flex items-center gap-2">
             <span class="text-text-muted">Location:</span>
             <span class="text-text-secondary">
-              {log.location.region || log.location.country || "Unknown"}
+              {log.location.region ?? log.location.country ?? "Unknown"}
             </span>
           </div>
         {/if}

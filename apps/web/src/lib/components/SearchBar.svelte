@@ -1,15 +1,16 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const dispatch = createEventDispatcher<{ search: string }>();
 
   let searchValue = "";
 
-  function handleInput() {
+  function handleInput(): void {
     dispatch("search", searchValue);
   }
 
-  function clearSearch() {
+  function clearSearch(): void {
     searchValue = "";
     dispatch("search", "");
   }
@@ -43,6 +44,7 @@
   <!-- Clear button -->
   {#if searchValue}
     <button
+      type="button"
       on:click={clearSearch}
       aria-label="Clear search"
       class="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted transition hover:text-text"

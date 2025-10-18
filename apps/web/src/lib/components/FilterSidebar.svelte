@@ -90,24 +90,28 @@
     <h3 class="mb-2 text-sm font-medium text-text-secondary">Quick Select</h3>
     <div class="grid grid-cols-2 gap-2">
       <button
+        type="button"
         class="rounded bg-surface px-3 py-2 text-xs text-text-secondary transition
                      hover:bg-surface-hover hover:text-text"
       >
         Last Hour
       </button>
       <button
+        type="button"
         class="rounded bg-surface px-3 py-2 text-xs text-text-secondary transition
                      hover:bg-surface-hover hover:text-text"
       >
         Last 24h
       </button>
       <button
+        type="button"
         class="rounded bg-surface px-3 py-2 text-xs text-text-secondary transition
                      hover:bg-surface-hover hover:text-text"
       >
         Last 7d
       </button>
       <button
+        type="button"
         class="rounded bg-surface px-3 py-2 text-xs text-text-secondary transition
                      hover:bg-surface-hover hover:text-text"
       >
@@ -118,6 +122,7 @@
 
   <!-- Clear Filters -->
   <button
+    type="button"
     on:click={() => {
       selectedLevels = [];
       selectedLanguages = [];

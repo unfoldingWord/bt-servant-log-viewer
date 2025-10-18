@@ -59,6 +59,15 @@ function scanFile(filePath) {
         const match = line.match(forbidden.pattern);
 
         if (match) {
+          // Allow eslint-disable-next-line for @typescript-eslint/no-deprecated only
+          // This is for Svelte 5 migration where createEventDispatcher is deprecated
+          if (
+            forbidden.pattern.source.includes("eslint-disable") &&
+            line.includes("@typescript-eslint/no-deprecated")
+          ) {
+            continue;
+          }
+
           errors.push({
             file: filePath,
             line: i + 1,

@@ -12,7 +12,7 @@
   let showFilters = false;
 
   // Simple filtering function (will be enhanced later)
-  function handleSearch(query: string) {
+  function handleSearch(query: string): void {
     searchQuery = query;
     if (!query) {
       filteredLogs = mockLogs;
@@ -28,7 +28,7 @@
     );
   }
 
-  function handleLogSelect(logId: string) {
+  function handleLogSelect(logId: string): void {
     selectedLogId = logId;
   }
 </script>
@@ -50,6 +50,7 @@
 
     <!-- Desktop: show filter toggle, Mobile: hamburger menu -->
     <button
+      type="button"
       on:click={() => (showFilters = !showFilters)}
       class="rounded bg-surface px-3 py-2 text-sm text-text-secondary transition hover:bg-surface-hover md:px-4"
     >
@@ -59,7 +60,11 @@
 
   <!-- Search bar -->
   <div class="border-b border-surface bg-background-secondary px-4 py-3 md:px-6">
-    <SearchBar on:search={(e) => handleSearch(e.detail)} />
+    <SearchBar
+      on:search={(e) => {
+        handleSearch(e.detail as string);
+      }}
+    />
   </div>
 
   <!-- Main content area with filter sidebar and log display -->
@@ -78,7 +83,9 @@
         <LogTable
           logs={filteredLogs}
           selectedId={selectedLogId}
-          on:select={(e) => handleLogSelect(e.detail)}
+          on:select={(e) => {
+            handleLogSelect(e.detail as string);
+          }}
         />
       </div>
 
@@ -86,7 +93,9 @@
         <LogCards
           logs={filteredLogs}
           selectedId={selectedLogId}
-          on:select={(e) => handleLogSelect(e.detail)}
+          on:select={(e) => {
+            handleLogSelect(e.detail as string);
+          }}
         />
       </div>
 
