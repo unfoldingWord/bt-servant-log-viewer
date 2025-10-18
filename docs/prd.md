@@ -389,30 +389,54 @@ These endpoints are implemented as SvelteKit server routes (`+server.ts` files) 
 - `GET /api/metrics` → Prometheus-compatible metrics endpoint
 - `POST /api/logs/:sessionId/search` → Advanced search with query DSL
 
-### B. BT-Servant Log Source API (new endpoints)
+### B. BT-Servant Log Source API (Implemented)
 
-Add these endpoints to BT-Servant application (see `/docs/bt-servant-log-api-spec.md` for complete implementation guide):
+The BT-Servant application provides admin log endpoints for fetching log files (see `/docs/log_api_reference.md` for complete reference):
 
-- `GET /api/logs/files` → List available log files with metadata
+**Base Path:** `/admin/logs`
+
+**Authentication:**
+
+- Requires admin token when `ENABLE_ADMIN_AUTH` is `true` (default)
+- Provide token via `Authorization: Bearer <ADMIN_API_TOKEN>` or `X-Admin-Token: <ADMIN_API_TOKEN>` header
+- Returns `401 Unauthorized` if missing/invalid
+
+**Endpoints:**
+
+- `GET /admin/logs/files` → List all `.log` files (sorted newest first)
+
   ```json
   {
     "files": [
       {
-        "name": "bt_servant_2025-01-15.log",
-        "size_mb": 8.2,
-        "size_bytes": 8598456,
-        "modified": "2025-01-15T23:59:59Z",
-        "created": "2025-01-15T00:00:01Z",
-        "line_count": 45000,
-        "readable": true
+        "name": "bt_servant.log",
+        "size_bytes": 12345,
+        "modified_at": "2024-05-01T18:34:12Z",
+        "created_at": "2024-05-01T17:00:00Z"
       }
     ],
     "total_files": 1,
-    "total_size_mb": 8.2
+    "total_size_bytes": 12345
   }
   ```
-- `GET /api/logs/files/{filename}` → Download specific log file (streaming)
-- `GET /api/logs/recent?days=N` → Get list of files from last N days
+
+- `GET /admin/logs/files/{filename}` → Stream specific log file as UTF-8 text
+  - Filename must end with `.log`
+  - Sets `Content-Disposition: attachment` and `Content-Length`
+  - Returns `400` for invalid filenames, `404` if not found
+
+- `GET /admin/logs/recent?days=7&limit=100` → Filtered list of recent files
+  - `days`: default `7`, allowed range `1–90`
+  - `limit`: default `100`, allowed range `1–500`
+  - Response format matches `/admin/logs/files` but filtered
+  - Returns `400` if params out of range
+
+**Integration Notes:**
+
+- Call `/admin/logs/files` or `/admin/logs/recent` to populate file pickers
+- Defer `/admin/logs/files/{filename}` until user requests content to avoid large transfers
+- Cache listing results briefly if polling frequently (server rescans filesystem on each call)
+- Surface `404` or `500` errors to operators (indicates missing/permission-denied storage)
 
 ### Rate Limiting
 
