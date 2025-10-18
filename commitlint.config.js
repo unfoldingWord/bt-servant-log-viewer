@@ -1,5 +1,13 @@
 export default {
   extends: ["@commitlint/config-conventional"],
+  parserPreset: {
+    parserOpts: {
+      // Custom parser to handle "(Claude)" prefix
+      // Pattern: (Claude) type(scope): subject
+      headerPattern: /^\(Claude\) (\w+)(?:\(([^)]*)\))?: (.+)$/,
+      headerCorrespondence: ["type", "scope", "subject"],
+    },
+  },
   rules: {
     "type-enum": [
       2,

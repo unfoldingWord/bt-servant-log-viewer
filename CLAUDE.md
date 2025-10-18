@@ -101,6 +101,79 @@ pnpm test:e2e         # Playwright E2E tests
 pnpm scan:forbidden   # Check for forbidden patterns
 ```
 
+## Git Commit Guidelines
+
+**IMPORTANT:** All commits made by Claude must follow these conventions:
+
+### Commit Author
+
+- **Author:** `Claude Assistant <noreply@anthropic.com>`
+- **NO Co-Authored-By:** Do not include co-author lines
+
+### Commit Message Format
+
+All commit messages must:
+
+1. **Prefix title with `(Claude)`:**
+
+   ```
+   (Claude) feat: add user filtering support
+   (Claude) fix: resolve parser edge case with malformed JSON
+   (Claude) docs: update API specification
+   ```
+
+2. **NEVER leave the commit description empty:**
+   - Every commit MUST have a meaningful description body
+   - Explain WHAT changed and WHY
+   - Include relevant context, testing notes, or breaking changes
+
+   ✅ **Good:**
+
+   ```
+   (Claude) feat: add language filter to log viewer
+
+   Added language code filtering to the sidebar, allowing users to
+   filter entries by detected language (en, es, fr, etc.). The filter
+   uses the extracted language_code field from the parser.
+
+   Testing:
+   - Verified with golden files containing multiple languages
+   - E2E test added for language filter interaction
+   ```
+
+   ❌ **Bad:**
+
+   ```
+   (Claude) feat: add language filter
+
+   [No description body - THIS IS FORBIDDEN]
+   ```
+
+3. **Use conventional commit format:**
+   - `feat:` for new features
+   - `fix:` for bug fixes
+   - `docs:` for documentation changes
+   - `refactor:` for code refactoring
+   - `test:` for test additions/changes
+   - `chore:` for tooling/config changes
+
+### Example Commit
+
+```bash
+git commit -m "$(cat <<'EOF'
+(Claude) fix: handle missing correlation IDs in parser
+
+The parser now gracefully handles log entries without correlation IDs
+by setting cid to null instead of failing. This resolves parsing errors
+when processing older log files that don't include cid fields.
+
+Testing:
+- Added test case for log entries without cid
+- Verified with production logs from 2024-Q1
+EOF
+)"
+```
+
 ## Log Parsing Specifications
 
 ### Log Format
