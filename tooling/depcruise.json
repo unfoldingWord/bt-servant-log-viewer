@@ -1,0 +1,97 @@
+{
+  "$schema": "https://raw.githubusercontent.com/sverweij/dependency-cruiser/main/src/schema/configuration.schema.json",
+  "forbidden": [
+    {
+      "name": "no-circular",
+      "severity": "error",
+      "comment": "Circular dependencies make code harder to understand and maintain",
+      "from": {},
+      "to": {
+        "circular": true
+      }
+    },
+    {
+      "name": "domain-no-dependencies",
+      "severity": "error",
+      "comment": "Domain layer must have ZERO external dependencies (Clean Architecture)",
+      "from": {
+        "path": "^packages/domain/"
+      },
+      "to": {
+        "path": "^(apps|packages)/((?!domain).)+",
+        "pathNot": "node_modules"
+      }
+    },
+    {
+      "name": "app-depends-only-on-domain",
+      "severity": "error",
+      "comment": "App layer can only depend on Domain layer",
+      "from": {
+        "path": "^packages/app/"
+      },
+      "to": {
+        "path": "^(apps|packages)/((?!domain|app).)+",
+        "pathNot": "node_modules"
+      }
+    },
+    {
+      "name": "adapters-no-drivers",
+      "severity": "error",
+      "comment": "Adapters cannot depend on Apps (drivers)",
+      "from": {
+        "path": "^packages/adapters/"
+      },
+      "to": {
+        "path": "^apps/"
+      }
+    },
+    {
+      "name": "workers-depend-only-on-domain",
+      "severity": "error",
+      "comment": "Workers can only depend on Domain layer",
+      "from": {
+        "path": "^packages/workers/"
+      },
+      "to": {
+        "path": "^(apps|packages)/((?!domain|workers).)+",
+        "pathNot": "node_modules"
+      }
+    },
+    {
+      "name": "no-orphans",
+      "severity": "warn",
+      "comment": "Orphaned modules indicate dead code",
+      "from": {
+        "orphan": true,
+        "pathNot": [
+          "\\.d\\.ts$",
+          "\\.test\\.",
+          "\\.spec\\.",
+          "^apps/.+/src/routes/",
+          "^apps/.+/src/app\\.html$",
+          "^apps/.+/vite\\.config\\.",
+          "^apps/.+/playwright\\.config\\.",
+          "^apps/.+/vitest\\.config\\."
+        ]
+      },
+      "to": {}
+    }
+  ],
+  "options": {
+    "doNotFollow": {
+      "path": "node_modules"
+    },
+    "tsPreCompilationDeps": true,
+    "tsConfig": {
+      "fileName": "./tsconfig.base.json"
+    },
+    "reporterOptions": {
+      "dot": {
+        "collapsePattern": "node_modules/[^/]+"
+      },
+      "archi": {
+        "collapsePattern": "^(packages|apps)/[^/]+|node_modules/[^/]+"
+      }
+    }
+  }
+}

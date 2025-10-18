@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 15 17 21; /* #0f1115 */
+    --background-secondary: 26 29 36; /* #1a1d24 */
+    --surface: 43 47 54; /* #2b2f36 */
+    --text: 232 237 242; /* #e8edf2 */
+  }
+
+  * {
+    @apply border-surface;
+  }
+
+  body {
+    @apply bg-background text-text antialiased;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply rounded-lg px-4 py-2 font-medium transition-colors;
+    @apply hover:bg-surface focus:outline-none focus:ring-2 focus:ring-accent-cyan;
+  }
+
+  .btn-primary {
+    @apply btn bg-accent-cyan text-background hover:bg-accent-teal;
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-surface bg-background-secondary px-4 py-2;
+    @apply text-text placeholder:text-text-muted;
+    @apply focus:border-accent-cyan focus:outline-none focus:ring-2 focus:ring-accent-cyan/20;
+  }
+
+  .card {
+    @apply rounded-2xl bg-surface p-4 shadow-lg;
+  }
+}

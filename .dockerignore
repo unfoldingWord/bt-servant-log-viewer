@@ -1,0 +1,40 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+dist
+build
+.svelte-kit
+.turbo
+
+# Development files
+*.test.ts
+*.spec.ts
+tests
+playwright-report
+coverage
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# Documentation
+docs
+*.md
+!package.json

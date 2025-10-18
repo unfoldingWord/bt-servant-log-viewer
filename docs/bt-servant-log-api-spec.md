@@ -11,12 +11,14 @@
 The BT Servant Log Viewer requires access to BT-Servant's log files via HTTP API. This specification defines three new endpoints to be added to the BT-Servant application that will allow the log viewer to discover and download log files.
 
 ### Requirements
+
 - BT-Servant must expose endpoints to list and serve log files
 - Only `.log` files should be accessible (security)
 - Support for streaming large files
 - Proper error handling and security measures
 
 ### Integration Flow
+
 1. Log Viewer calls `/api/logs/files` to discover available logs
 2. Log Viewer calls `/api/logs/recent?days=21` to get last 21 days of logs
 3. Log Viewer downloads each file via `/api/logs/files/{filename}`
@@ -27,12 +29,14 @@ The BT Servant Log Viewer requires access to BT-Servant's log files via HTTP API
 ## 2. Endpoint Specifications
 
 ### 2.1 List Log Files
+
 **Endpoint:** `GET /api/logs/files`
 **Purpose:** List all available log files with metadata
 **Authentication:** None (v1) - prepare for future auth
 **Rate Limit:** 60 requests per minute
 
 #### Response
+
 ```json
 {
   "files": [
@@ -42,7 +46,7 @@ The BT Servant Log Viewer requires access to BT-Servant's log files via HTTP API
       "size_bytes": 8598456,
       "modified": "2025-01-15T23:59:59Z",
       "created": "2025-01-15T00:00:01Z",
-      "line_count": 45000,  // Optional, can be null if expensive to compute
+      "line_count": 45000, // Optional, can be null if expensive to compute
       "readable": true
     },
     {
@@ -57,17 +61,19 @@ The BT Servant Log Viewer requires access to BT-Servant's log files via HTTP API
   ],
   "total_files": 2,
   "total_size_mb": 18.3,
-  "log_directory": "/var/log/bt-servant"  // For debugging, optional
+  "log_directory": "/var/log/bt-servant" // For debugging, optional
 }
 ```
 
 #### Error Responses
+
 - `500 Internal Server Error` - Log directory not accessible
 - `503 Service Unavailable` - Temporarily cannot read logs
 
 ---
 
 ### 2.2 Download Log File
+
 **Endpoint:** `GET /api/logs/files/{filename}`
 **Purpose:** Download/stream a specific log file
 **Authentication:** None (v1) - prepare for future auth
@@ -75,10 +81,12 @@ The BT Servant Log Viewer requires access to BT-Servant's log files via HTTP API
 **Response Type:** `text/plain` or `application/octet-stream`
 
 #### Parameters
+
 - `filename` (path parameter): Name of the log file (e.g., `bt_servant_2025-01-15.log`)
 - `compress` (query parameter, optional): If `true`, return gzipped content
 
 #### Response Headers
+
 ```
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: attachment; filename="bt_servant_2025-01-15.log"
@@ -87,9 +95,11 @@ X-Line-Count: 45000  // Optional
 ```
 
 #### Streaming Response
+
 For files > 1MB, use streaming response to avoid memory issues.
 
 #### Error Responses
+
 - `404 Not Found` - File does not exist
 - `403 Forbidden` - File exists but is not a .log file (security)
 - `500 Internal Server Error` - Cannot read file
@@ -97,19 +107,23 @@ For files > 1MB, use streaming response to avoid memory issues.
 ---
 
 ### 2.3 Get Recent Log Files
+
 **Endpoint:** `GET /api/logs/recent`
 **Purpose:** Get list of log files from the last N days
 **Authentication:** None (v1) - prepare for future auth
 **Rate Limit:** 60 requests per minute
 
 #### Query Parameters
+
 - `days` (optional, default=7): Number of days to look back
 - `max_files` (optional, default=100): Maximum number of files to return
 
 #### Response
+
 Same format as `/api/logs/files`, but filtered to recent files.
 
 #### Example
+
 ```
 GET /api/logs/recent?days=21
 ```
@@ -121,6 +135,7 @@ Returns all log files modified within the last 21 days, sorted by date descendin
 ## 3. Implementation Guide (Python/FastAPI)
 
 ### 3.1 Configuration
+
 Add to your application configuration:
 
 ```python
@@ -333,6 +348,7 @@ async def get_recent_logs(
 ```
 
 ### 3.3 Register Routes
+
 Add to your main application file:
 
 ```python
@@ -352,17 +368,21 @@ app.include_router(log_api.router)
 ## 4. Security Considerations
 
 ### 4.1 Path Traversal Prevention
+
 - **CRITICAL**: Validate all filenames to prevent directory traversal attacks
 - Only serve files with `.log` extension
 - Reject any filename containing `..`, `/`, or `\`
 
 ### 4.2 File Access Control
+
 - Only serve files from the configured log directory
 - Check file readability before attempting to serve
 - Implement file size limits to prevent DoS
 
 ### 4.3 Rate Limiting
+
 Implement rate limiting to prevent abuse:
+
 ```python
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -376,7 +396,9 @@ async def list_log_files():
 ```
 
 ### 4.4 CORS Configuration
+
 Configure CORS to allow access from the log viewer application:
+
 ```python
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -390,7 +412,9 @@ app.add_middleware(
 ```
 
 ### 4.5 Future Authentication
+
 Design endpoints to easily add authentication later:
+
 ```python
 # Future: Add dependency injection for auth
 async def get_current_user(token: str = Depends(oauth2_scheme)):
@@ -407,6 +431,7 @@ async def list_log_files(current_user: User = Depends(get_current_user)):
 ## 5. Testing Guidelines
 
 ### 5.1 Unit Tests
+
 ```python
 # test_log_api.py
 import pytest
@@ -466,6 +491,7 @@ def test_recent_logs(client: TestClient, tmp_path: Path):
 ```
 
 ### 5.2 Integration Tests
+
 1. Test with actual log files in staging environment
 2. Test streaming large files (>10MB)
 3. Test concurrent requests
@@ -473,6 +499,7 @@ def test_recent_logs(client: TestClient, tmp_path: Path):
 5. Test CORS headers
 
 ### 5.3 Manual Testing Checklist
+
 - [ ] List all log files via `/api/logs/files`
 - [ ] Download a small log file (<1MB)
 - [ ] Download a large log file (>10MB)
@@ -489,6 +516,7 @@ def test_recent_logs(client: TestClient, tmp_path: Path):
 ## 6. Deployment Considerations
 
 ### 6.1 Environment Variables
+
 ```bash
 # .env or environment configuration
 BT_SERVANT_LOG_DIR=/var/log/bt-servant
@@ -498,13 +526,17 @@ LOG_API_CACHE_TTL=60
 ```
 
 ### 6.2 Log Rotation Integration
+
 Ensure the API works correctly with your log rotation strategy:
+
 - File naming pattern: `bt_servant_YYYY-MM-DD_N.log`
 - Handle compressed archived logs (`.log.gz`)
 - Consider excluding very old archived logs
 
 ### 6.3 Monitoring
+
 Add metrics for:
+
 - Request count per endpoint
 - File download sizes
 - Error rates
@@ -518,6 +550,7 @@ log_api_download_size = Histogram('log_api_download_bytes', 'Size of downloaded 
 ```
 
 ### 6.4 Performance Optimization
+
 - Cache file listings for 1 minute
 - Use async file operations where possible
 - Stream large files instead of loading into memory
@@ -528,17 +561,20 @@ log_api_download_size = Histogram('log_api_download_bytes', 'Size of downloaded 
 ## 7. Rollout Plan
 
 ### Phase 1: Development
+
 1. Implement endpoints in development branch
 2. Add unit tests
 3. Test with sample log files
 
 ### Phase 2: Staging
+
 1. Deploy to staging environment
 2. Test with real log files
 3. Performance testing with large files
 4. Security audit
 
 ### Phase 3: Production
+
 1. Deploy during low-traffic window
 2. Monitor error rates and performance
 3. Gradual rollout if using feature flags
@@ -548,24 +584,26 @@ log_api_download_size = Histogram('log_api_download_bytes', 'Size of downloaded 
 ## 8. Example Usage
 
 ### From Log Viewer Application (JavaScript/TypeScript)
+
 ```typescript
 // Fetch list of log files
-const response = await fetch('https://bt-servant.api/api/logs/files');
+const response = await fetch("https://bt-servant.api/api/logs/files");
 const { files } = await response.json();
 
 // Get last 21 days of logs
-const recentResponse = await fetch('https://bt-servant.api/api/logs/recent?days=21');
+const recentResponse = await fetch("https://bt-servant.api/api/logs/recent?days=21");
 const { files: recentFiles } = await recentResponse.json();
 
 // Download each file
 for (const file of recentFiles) {
-    const fileResponse = await fetch(`https://bt-servant.api/api/logs/files/${file.name}`);
-    const content = await fileResponse.text();
-    // Process log content...
+  const fileResponse = await fetch(`https://bt-servant.api/api/logs/files/${file.name}`);
+  const content = await fileResponse.text();
+  // Process log content...
 }
 ```
 
 ### cURL Examples
+
 ```bash
 # List all log files
 curl https://bt-servant.api/api/logs/files
@@ -587,19 +625,23 @@ curl https://bt-servant.api/api/logs/recent?days=21
 ### Common Issues
 
 **Issue:** 500 Error - "Log directory not found"
+
 - Check `BT_SERVANT_LOG_DIR` environment variable
 - Verify directory exists and has read permissions
 
 **Issue:** 404 Error when downloading file
+
 - Check exact filename (case-sensitive)
 - Verify file has .log extension
 - Ensure file exists in log directory
 
 **Issue:** CORS errors from log viewer
+
 - Check CORS middleware configuration
 - Verify allowed origins includes log viewer URL
 
 **Issue:** Slow performance with large files
+
 - Ensure streaming is working (not loading entire file into memory)
 - Check network bandwidth
 - Consider enabling compression

@@ -1,27 +1,32 @@
 # BT Servant Log Viewer — PRD v0.6
+
 **Owner:** Ian Lindsley
 **Date:** 2025-10-16
 **Status:** Draft → Scaffold-ready → Enhanced → Flow Visualization → Mobile-First → Phase 1 Split for Bot Competition
-**Guiding Style:** *Zero-warning policy*, clean/onion/hexagonal architecture, same UI stack & dark/techy theme as ChessCoachAI.
+**Guiding Style:** _Zero-warning policy_, clean/onion/hexagonal architecture, same UI stack & dark/techy theme as ChessCoachAI.
 
 ---
 
 ## 1) TL;DR
+
 Build **BT Servant Log Viewer** — a fast, dark-themed, web-based log viewer for BT-Servant telemetry. It automatically loads the last 21 days of logs on startup, parses structured fields (timestamp, level, logger, correlation id), recognizes multi-line JSON payloads (e.g., **PerfReport**), and surfaces filters, timelines, search, and cost/latency analytics. **Key extractions** are first-class UI citizens and have dedicated UI elements:
-1) **Language code detected**
-2) **IP → Region/Country** (GeoIP) - when IP field is present
-3) **Original message**
-4) **Preprocessed/normalized message**
-5) **Intents detected** (critical)
-6) **Final message returned to the user**
-Additionally, for **reference-oriented flows** we capture the **reference extracted** (e.g., "Gen 1:3-5"), and for **get-bible-translation-assistance** we list **which resources were searched**.
+
+1. **Language code detected**
+2. **IP → Region/Country** (GeoIP) - when IP field is present
+3. **Original message**
+4. **Preprocessed/normalized message**
+5. **Intents detected** (critical)
+6. **Final message returned to the user**
+   Additionally, for **reference-oriented flows** we capture the **reference extracted** (e.g., "Gen 1:3-5"), and for **get-bible-translation-assistance** we list **which resources were searched**.
 
 From day zero: **strict typing**, **linting**, **import boundaries**, **tests**, **pre-commit**, and **CI/CD** to Fly.io — **no warnings suppressed, ever**. A **companion scaffold** (monorepo layout, strict configs, CI, Fly stubs, parser skeleton, **golden-file tests**) is included as Phase 0 deliverable.
 
 ---
 
 ## 2) Goals & Non-Goals
+
 ### Goals
+
 - **Mobile-first responsive design**: Full functionality on ALL devices (phones, tablets, desktops) with touch-optimized UI.
 - **Multi-file support**: Auto-load last 21 days of logs on app open; allow date range adjustment.
 - Parse BT-Servant logs into a normalized model (entries, spans, traces, intents, language, geo, messages, references, searched resources).
@@ -34,6 +39,7 @@ From day zero: **strict typing**, **linting**, **import boundaries**, **tests**,
 - **Quality gates** from day one: types, lint, imports/boundaries, dead-code, tests, e2e, Docker build, Fly deploy.
 
 ### Non-Goals (v1)
+
 - Auth/SSO, multi-tenant access control (but architecture prepared for future).
 - Heavy distributed ingestion/streaming pipeline.
 - Editing logs; logs remain read-only artifacts.
@@ -42,12 +48,15 @@ From day zero: **strict typing**, **linting**, **import boundaries**, **tests**,
 ---
 
 ## 3) Sample Log Dialect (What we parse)
+
 ### Header Line Format
+
 ```
 [2025-10-15 20:28:48] [INFO] [bt_servant_engine.apps.api.routes.webhooks] [cid=466256e...]: text message from ... received.
 ```
 
 ### PerfReport JSON Block Example
+
 ```json
 [2025-10-15 20:29:09] [INFO] [...] [cid=466256eb842f434c9b11738498710c8a]: PerfReport {
    "user_id":"kwlv1sXnUvYT9dnn",
@@ -111,6 +120,7 @@ We will additionally derive or extract: **language**, **client IP** (when added)
 ---
 
 ## 4) User Stories
+
 - **Auto-load recent logs**: Open app and immediately see last 21 days of logs parsed and ready.
 - **Triage errors quickly** by filtering `level=ERROR|WARN`, sorting by time.
 - **Follow a trace** by `trace_id` and see spans, durations, and resulting messages.
@@ -126,6 +136,7 @@ We will additionally derive or extract: **language**, **client IP** (when added)
 ---
 
 ## 5) UX / UI (same theme as ChessCoachAI)
+
 - **Theme**: Dark, techy (VS Code / Zulip / PyCharm dark). Near-black backgrounds (`#0f1115–#1a1d24`), dark greys (`#222–#2b2f36`), high-contrast text (`#e8edf2`), low-saturation cyan/teal/indigo accents, soft shadows, rounded-2xl, grid-first, keyboard-friendly.
 - **Stack**: **SvelteKit + Tailwind + shadcn-svelte**; Playwright for E2E; Vitest + Testing Library for unit/UI.
 - **Areas**:
@@ -153,9 +164,11 @@ We will additionally derive or extract: **language**, **client IP** (when added)
 ## 5a) Mobile-First Responsive Design 🏁 CRITICAL REQUIREMENT
 
 ### Core Principle
+
 **This app MUST work flawlessly on mobile phones.** Engineers need to debug issues on-the-go, often from their phones during incidents. Desktop is an enhancement, not the primary target.
 
 ### Responsive Breakpoints
+
 - **320px+**: Minimum supported width (small phones)
 - **640px+**: Standard mobile
 - **768px+**: Tablets and large phones
@@ -163,6 +176,7 @@ We will additionally derive or extract: **language**, **client IP** (when added)
 - **1280px+**: Wide desktop
 
 ### Mobile Layout (320-767px)
+
 - **Single-column layout** with priority on content
 - **Collapsible filters**: Slide-out drawer or bottom sheet
 - **Card-based log entries**: Swipeable for actions
@@ -173,18 +187,21 @@ We will additionally derive or extract: **language**, **client IP** (when added)
 - **Bottom navigation**: Primary actions within thumb reach
 
 ### Tablet Layout (768-1023px)
+
 - **Two-column layout**: Filters + content
 - **Persistent sidebar**: Collapsible filter panel
 - **Split view**: List + detail view side-by-side
 - **Modal overlays**: For complex interactions
 
 ### Desktop Layout (1024px+)
+
 - **Three-column layout**: Filters + list + details
 - **Full feature set**: All panels visible
 - **Hover interactions**: Enhanced for mouse users
 - **Keyboard shortcuts**: Power user features
 
 ### Touch Optimizations
+
 - **Swipe gestures**:
   - Swipe right: Mark as read/dismiss
   - Swipe left: Show actions
@@ -195,6 +212,7 @@ We will additionally derive or extract: **language**, **client IP** (when added)
 - **No hover-only features**: Everything accessible via touch
 
 ### Performance on Mobile
+
 - **Initial bundle**: < 150KB JavaScript for mobile
 - **Critical CSS**: Inline above-the-fold styles
 - **Progressive enhancement**: Core features work on 3G
@@ -202,6 +220,7 @@ We will additionally derive or extract: **language**, **client IP** (when added)
 - **Virtual scrolling**: REQUIRED for mobile performance
 
 ### Mobile-Specific Features
+
 - **Responsive tables**: Transform to cards on mobile
 - **Progressive disclosure**: Show summary, expand for details
 - **Native-like navigation**: Smooth transitions, back gestures
@@ -209,6 +228,7 @@ We will additionally derive or extract: **language**, **client IP** (when added)
 - **Adaptive UI**: Reduce visual complexity on small screens
 
 ### Testing Requirements
+
 - **Real device testing**: iPhone SE, iPhone 14, Pixel 7, iPad
 - **Network conditions**: 3G, 4G, offline scenarios
 - **Orientation**: Both portrait and landscape
@@ -219,7 +239,9 @@ We will additionally derive or extract: **language**, **client IP** (when added)
 ---
 
 ## 6) Architecture (Clean/Onion/Hexagonal)
+
 ### Layers
+
 - **Domain** (pure TS): `LogEntry`, `PerfReport`, `Span`, `Trace`, `Intent`, `LangCode`, `Region`, parsers, aggregations, validation rules.
 - **Application** (use-cases): `ParseLog`, `IndexLog`, `QueryEntries`, `GetTrace`, `SummarizePerf`, `ExportSlice`, `TailLog`, `LoadDateRange`.
 - **Ports**: `ParsingPort`, `IndexPort`, `QueryPort`, `StoragePort`, `GeoIpPort`, `CompressionPort`, `SearchPort`, `LogSourcePort`.
@@ -227,6 +249,7 @@ We will additionally derive or extract: **language**, **client IP** (when added)
 - **Drivers/Infra**: HTTP API (Fastify or SvelteKit endpoints), DI wiring, metrics, config, Web Workers orchestration.
 
 ### Monorepo (pnpm + Turborepo)
+
 ```
 apps/
   web/             # SvelteKit UI
@@ -243,6 +266,7 @@ scripts/           # build, deploy, maintenance scripts
 ```
 
 ### Dependency Rules (fitness-checked)
+
 - `domain` → nothing
 - `app` → `domain`
 - `adapters/*` → `app|domain` (no UI import)
@@ -253,7 +277,9 @@ scripts/           # build, deploy, maintenance scripts
 ---
 
 ## 7) Parser Spec (Enhanced)
+
 ### Header line regex
+
 ```regex
 /^\[(?<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]\s
  \[(?<level>TRACE|DEBUG|INFO|WARN|ERROR)\]\s
@@ -263,12 +289,14 @@ scripts/           # build, deploy, maintenance scripts
 ```
 
 ### JSON block (e.g., "PerfReport { … }")
+
 - Start token: `PerfReport {`
 - Capture until **balanced braces** (nested arrays/objects OK).
 - Parse with tolerant JSON parser (handle trailing commas, comments); if invalid, attach raw block with line range.
 - Maximum nesting depth: 10 levels for safety.
 
 ### Error Recovery Strategies
+
 - **Corrupted headers**: Skip line, log as unparseable with line number
 - **Incomplete JSON blocks**: Store as raw text with `parse_error` flag
 - **Malformed timestamps**: Use file position as fallback ordering
@@ -277,6 +305,7 @@ scripts/           # build, deploy, maintenance scripts
 - **Missing fields**: All extracted fields are optional; handle gracefully
 
 ### Derived fields (matchers & transforms)
+
 - **Language code** (e.g., `lang=en|es|…`) — from message or JSON block.
 - **Client IP** (`ip=…`) → **Region/Country** via **GeoIP** adapter (offline DB like **GeoLite2** with quarterly updates). Store as `{country, region?, city?, lat?, lon?}`. Country-level resolution sufficient.
 - **Original message** vs **Preprocessed/normalized message** (from preprocessor logs).
@@ -299,6 +328,7 @@ scripts/           # build, deploy, maintenance scripts
 - **Resources searched** for **get-bible-translation-assistance** (array of resource names/IDs).
 
 ### Indexing & Storage Strategy
+
 - **In-memory index** for cumulative size < 100MB (maps for `trace_id`, `cid`, `intent`, `lang`, `region`, `logger`, `user_id`)
 - **SQLite persistence** for cumulative size > 100MB or > 100k entries
 - **Hybrid mode**: Keep hot data in memory, cold in SQLite
@@ -311,7 +341,9 @@ scripts/           # build, deploy, maintenance scripts
 ## 8) API Specifications
 
 ### A. Log Viewer API (Fastify backend)
+
 **Routes** (typed via `zod`):
+
 - `GET /api/logs/load-range` → Auto-loads last 21 days on startup → `{ files: [], totalEntries, dateRange }`
 - `POST /api/logs/ingest` → `{ files[], dateRange }` → `{ sessionId, counts, parseErrors[], estimatedTime }`
 - `GET /api/logs/:sessionId/entries` (filters: level, logger, cid, user, **intent**, **lang**, **region**, q, range, limit, offset)
@@ -356,6 +388,7 @@ scripts/           # build, deploy, maintenance scripts
 - `POST /api/logs/:sessionId/search` → Advanced search with query DSL
 
 ### B. BT-Servant Log Source API (new endpoints)
+
 Add these endpoints to BT-Servant application (see `/docs/bt-servant-log-api-spec.md` for complete implementation guide):
 
 - `GET /api/logs/files` → List available log files with metadata
@@ -380,12 +413,14 @@ Add these endpoints to BT-Servant application (see `/docs/bt-servant-log-api-spe
 - `GET /api/logs/recent?days=N` → Get list of files from last N days
 
 ### Rate Limiting
+
 - **Global**: 1000 req/min per IP
 - **Ingest**: 10 sessions/min, max 500MB total per session
 - **Export**: 100 exports/hour
 - **Search**: 500 searches/min
 
 ### Live Tail (Phase 3)
+
 - `WS /api/logs/:sessionId/tail` → WebSocket connection for specific file
 - Backpressure handling, automatic reconnection
 - Filter application in real-time
@@ -394,9 +429,10 @@ Add these endpoints to BT-Servant application (see `/docs/bt-servant-log-api-spe
 ---
 
 ## 9) Quality Gates (Zero-Warning Policy)
+
 - **TS strict**: `strict`, `noImplicitAny`, `noUnusedLocals`, `noUnusedParameters`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`.
 - **ESLint**: `--max-warnings=0`; forbid `eslint-disable`, `@ts-ignore`, `console.*` in app code.
-- **Import rules**: `eslint-plugin-import`, `import/no-cycle`, `no-restricted-imports`, path-alias checks; **boundary lints** via `eslint-plugin-boundaries` *and* `dependency-cruiser`.
+- **Import rules**: `eslint-plugin-import`, `import/no-cycle`, `no-restricted-imports`, path-alias checks; **boundary lints** via `eslint-plugin-boundaries` _and_ `dependency-cruiser`.
 - **Dead code**: `knip` in CI.
 - **Security**: `pnpm audit`, `secretlint` for repo; no secrets in logs; CSP headers; input sanitization.
 - **Performance**: Bundle size limits (< 200KB initial), Lighthouse CI (score > 90).
@@ -409,13 +445,16 @@ Add these endpoints to BT-Servant application (see `/docs/bt-servant-log-api-spe
 ---
 
 ## 10) Performance Targets & Monitoring
+
 ### Parser Performance
+
 - **10MB file**: < 2s (using Web Workers)
 - **100MB cumulative**: < 15s (with progress updates)
 - **1GB cumulative**: < 2min (SQLite mode)
 - **21 days typical load**: < 10s for ~200MB of logs
 
 ### UI Performance
+
 - **Initial load**: < 2s (FCP < 1s) on desktop, < 3s on 4G mobile
 - **Filter application**: < 200ms on all devices
 - **Search response**: < 200ms (P95)
@@ -427,6 +466,7 @@ Add these endpoints to BT-Servant application (see `/docs/bt-servant-log-api-spe
 - **Mobile bundle size**: < 150KB initial JavaScript
 
 ### Monitoring
+
 - **Structured logs** (JSON format) with correlation IDs
 - **OpenTelemetry** traces for request flows (optional)
 - **Prometheus metrics**: parse_duration, query_latency, memory_usage
@@ -436,7 +476,9 @@ Add these endpoints to BT-Servant application (see `/docs/bt-servant-log-api-spe
 ---
 
 ## 11) Log Rotation Recommendations
+
 For BT-Servant application:
+
 - **Size-based rotation**: 10MB per file
 - **Time-based rotation**: Also rotate daily regardless of size
 - **Retention**: Keep last 90 days or last 100 files
@@ -446,8 +488,11 @@ For BT-Servant application:
 ---
 
 ## 12) Phases & Deliverables (Updated)
+
 ### Phase 0 — **Companion Scaffold & Quality Gates** (Day 0–1)
+
 **Deliverables**
+
 - **Monorepo scaffold** (pnpm + turbo); workspace config & scripts.
 - **SvelteKit** app (`apps/web`) with Tailwind + **shadcn-svelte** baseline + dark theme tokens.
 - **API** app (`apps/api`) with **Fastify** + `zod` + typed routes; `/healthz` and `/metrics`.
@@ -461,7 +506,9 @@ For BT-Servant application:
 - **Docs**: `ARCHITECTURE.md`, `AGENTS.md`, `SECURITY.md`, `CONTRIBUTING.md`, `PERFORMANCE.md`.
 
 ### Phase 1a — Pure UI Shell with Mock Data (Week 1)
+
 **Focus: Visual design and interaction patterns only - Perfect for bot competition**
+
 - SvelteKit dark theme + shadcn-svelte with **mobile-first responsive design**.
 - **Mock data only** - No API calls, use static sample log data for development.
 - **Responsive breakpoints**: 320px, 640px, 768px, 1024px, 1280px.
@@ -481,7 +528,9 @@ For BT-Servant application:
 **Deliverables:** Complete UI shell that looks and feels production-ready but uses static mock data. All interactions work but with fake data.
 
 ### Phase 1b — Backend Integration (Week 2)
+
 **Focus: Connect the chosen UI from Phase 1a to real systems**
+
 - **BT-Servant API client** for fetching log files.
 - **Auto-load last 21 days** of logs on app open.
 - **Web Worker integration** for non-blocking parsing.
@@ -496,6 +545,7 @@ For BT-Servant application:
 **Deliverables:** Fully functional app with the chosen UI connected to real data sources.
 
 ### Phase 2 — Complete Parser & Extractors (Week 3)
+
 - Full parser implementation with error recovery.
 - All derived field extractors (intents, language, references, etc.).
 - Handle missing fields gracefully.
@@ -503,6 +553,7 @@ For BT-Servant application:
 - Golden file test suite with real log samples.
 
 ### Phase 3 — Live Tail & Advanced Features (Week 4)
+
 - WebSocket-based live tail implementation.
 - SQLite adapter for > 100MB cumulative data.
 - Advanced search DSL.
@@ -510,6 +561,7 @@ For BT-Servant application:
 - User-based filtering across all logs.
 
 ### Phase 4 — Trace View, Intent Flow & Insights (Week 5)
+
 - Timeline/waterfall visualization for traces.
 - **Intent Flow Visualization**:
   - Interactive directed graph using React Flow or Cytoscape.js
@@ -523,6 +575,7 @@ For BT-Servant application:
 - Intent-specific UI optimizations.
 
 ### Phase 5 — Production Hardening (Week 6)
+
 - Rate limiting implementation.
 - Security headers and CSP.
 - Monitoring integration.
@@ -533,6 +586,7 @@ For BT-Servant application:
 ---
 
 ## 13) Data Model (Enhanced)
+
 ```ts
 // Known intents enum
 enum KnownIntent {
@@ -548,7 +602,7 @@ enum KnownIntent {
   RETRIEVE_SYSTEM_INFORMATION = "retrieve-system-information",
   SET_RESPONSE_LANGUAGE = "set-response-language",
   SET_AGENTIC_STRENGTH = "set-agentic-strength",
-  CONVERSE_WITH_BT_SERVANT = "converse-with-bt-servant"
+  CONVERSE_WITH_BT_SERVANT = "converse-with-bt-servant",
 }
 
 type GeoLocation = {
@@ -563,40 +617,40 @@ type GeoLocation = {
 type LogEntry = {
   id: string;
   fileId: string;
-  fileName: string;              // Which file this entry came from
+  fileName: string; // Which file this entry came from
   ts: Date;
-  level: 'TRACE'|'DEBUG'|'INFO'|'WARN'|'ERROR';
+  level: "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR";
   logger: string;
-  cid?: string;                 // correlation id
-  message: string;              // header message
+  cid?: string; // correlation id
+  message: string; // header message
   hasJson: boolean;
   perfReport?: PerfReport;
   // All derived fields are optional - handle missing gracefully:
-  language?: string;            // e.g., 'en', 'es'
-  ip?: string;                  // raw ip if present
-  location?: GeoLocation;       // GeoIP data when available
-  message_original?: string;    // as received
-  message_preprocessed?: string;// normalized form
-  intents?: Intent[];           // detected intents with confidence
-  final_message?: string;       // returned to the user
-  reference_extracted?: BibleReference;  // e.g., "Gen 1:3-5"
-  resources_searched?: Resource[];// for translation assistance
+  language?: string; // e.g., 'en', 'es'
+  ip?: string; // raw ip if present
+  location?: GeoLocation; // GeoIP data when available
+  message_original?: string; // as received
+  message_preprocessed?: string; // normalized form
+  intents?: Intent[]; // detected intents with confidence
+  final_message?: string; // returned to the user
+  reference_extracted?: BibleReference; // e.g., "Gen 1:3-5"
+  resources_searched?: Resource[]; // for translation assistance
   traceId?: string;
-  userId?: string;              // User ID for filtering
-  node?: string;                // "Routing to node: …"
+  userId?: string; // User ID for filtering
+  node?: string; // "Routing to node: …"
   raw: { startLine: number; endLine: number };
-  parse_errors?: string[];      // Any parsing issues
+  parse_errors?: string[]; // Any parsing issues
 };
 
 type Intent = {
-  name: string;                 // Known or discovered intent
+  name: string; // Known or discovered intent
   confidence?: number;
   parameters?: Record<string, any>;
-  isKnown: boolean;            // true if in KnownIntent enum
+  isKnown: boolean; // true if in KnownIntent enum
 };
 
 type BibleReference = {
-  raw: string;           // "Gen 1:3-5"
+  raw: string; // "Gen 1:3-5"
   book: string;
   chapter: number;
   startVerse: number;
@@ -665,7 +719,7 @@ type Session = {
   files: LoadedFile[];
   dateRange: { start: Date; end: Date };
   totalEntries: number;
-  indexMode: 'memory' | 'sqlite';
+  indexMode: "memory" | "sqlite";
   createdAt: Date;
 };
 
@@ -680,41 +734,49 @@ type LoadedFile = {
 // Intent Flow Visualization Types
 type FlowNode = {
   id: string;
-  type: 'start' | 'language_detection' | 'preprocessing' | 'intent_detection' |
-        'intent_handler' | 'response' | 'translation' | 'end';
-  name: string;                // e.g., "brain:determine_intents_node"
+  type:
+    | "start"
+    | "language_detection"
+    | "preprocessing"
+    | "intent_detection"
+    | "intent_handler"
+    | "response"
+    | "translation"
+    | "end";
+  name: string; // e.g., "brain:determine_intents_node"
   duration_ms: number;
   tokens?: number;
   cost_usd?: number;
-  intent?: string;             // For intent_handler nodes
-  status: 'success' | 'error' | 'warning';
+  intent?: string; // For intent_handler nodes
+  status: "success" | "error" | "warning";
   metadata?: Record<string, any>;
 };
 
 type FlowEdge = {
-  from: string;                // Node ID
-  to: string;                  // Node ID
+  from: string; // Node ID
+  to: string; // Node ID
   duration_ms: number;
-  label?: string;              // e.g., "245ms"
-  type?: 'sequential' | 'parallel' | 'conditional';
+  label?: string; // e.g., "245ms"
+  type?: "sequential" | "parallel" | "conditional";
 };
 
 type IntentFlow = {
   trace_id: string;
   nodes: FlowNode[];
   edges: FlowEdge[];
-  intents: string[];          // All intents detected in this flow
+  intents: string[]; // All intents detected in this flow
   total_duration_ms: number;
   total_tokens: number;
   total_cost_usd: number;
-  parallel_branches?: number;  // Number of parallel intent paths
-  critical_path?: string[];    // Node IDs of the slowest path
+  parallel_branches?: number; // Number of parallel intent paths
+  critical_path?: string[]; // Node IDs of the slowest path
 };
 ```
 
 ---
 
 ## 14) Tooling & Scripts
+
 - `verify` → `turbo run typecheck lint test arch knip --continue --summarize`
 - `typecheck` → `tsc -p tsconfig.json --noEmit`
 - `lint` → `eslint . --max-warnings=0`
@@ -730,6 +792,7 @@ type IntentFlow = {
 ---
 
 ## 15) Security Considerations
+
 - **Input validation**: Sanitize all file inputs, size limits
 - **XSS prevention**: Escape all rendered log content
 - **CSP headers**: Strict Content Security Policy
@@ -744,6 +807,7 @@ type IntentFlow = {
 ---
 
 ## 16) CI/CD & Infrastructure
+
 - **GitHub Actions**:
   - Matrix testing: Node 20/22
   - Cache: pnpm store, turbo, playwright binaries
@@ -758,6 +822,7 @@ type IntentFlow = {
 ---
 
 ## 17) Open Questions (Resolved)
+
 - ✅ **Log Volume**: Medium scale (10MB files, ~200MB for 21 days)
 - ✅ **Multi-file**: Yes, with auto-load of last 21 days
 - ✅ **Storage threshold**: SQLite at 100MB cumulative
@@ -769,6 +834,7 @@ type IntentFlow = {
 - ✅ **References**: Extract reference only, not text content
 
 ### Remaining Decisions
+
 - Charts library: Recharts vs. Visx vs. Chart.js for visualizations
 - Minimum browser support: Modern evergreen only or include older versions?
 - GeoIP database update mechanism: Build-time vs runtime updates
@@ -776,6 +842,7 @@ type IntentFlow = {
 ---
 
 ## 18) Acceptance Criteria Snapshot (v1)
+
 - **Mobile-first**: ALL features work on phones (iPhone SE 375px minimum), tablets, and desktops
 - **Responsive**: Passes Google Mobile-Friendly Test, Lighthouse Mobile score > 90
 - **Touch-optimized**: All interactions work via touch, 44px minimum touch targets
