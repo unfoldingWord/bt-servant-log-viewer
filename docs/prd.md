@@ -246,14 +246,14 @@ We will additionally derive or extract: **language**, **client IP** (when added)
 - **Application** (use-cases): `ParseLog`, `IndexLog`, `QueryEntries`, `GetTrace`, `SummarizePerf`, `ExportSlice`, `TailLog`, `LoadDateRange`.
 - **Ports**: `ParsingPort`, `IndexPort`, `QueryPort`, `StoragePort`, `GeoIpPort`, `CompressionPort`, `SearchPort`, `LogSourcePort`.
 - **Adapters**: Node parsers (regex + JSON scanner), in-memory index or SQLite, file loader, GeoIP (e.g., **MaxMind GeoLite2** via `mmdb` adapter), SvelteKit adapter, MiniSearch adapter, gzip compression adapter, BT-Servant API client.
-- **Drivers/Infra**: HTTP API (Fastify or SvelteKit endpoints), DI wiring, metrics, config, Web Workers orchestration.
+- **Drivers/Infra**: SvelteKit server routes (for backend logic), DI wiring, metrics, config, Web Workers orchestration.
 
 ### Monorepo (pnpm + Turborepo)
 
 ```
 apps/
-  web/             # SvelteKit UI
-  api/             # Fastify (Node 22) parsing/index API
+  web/             # SvelteKit UI (includes server routes for backend logic)
+  api/             # Fastify reference implementation (development/testing only, not deployed)
 packages/
   domain/          # pure types & logic
   app/             # use-cases wired to ports
@@ -340,7 +340,9 @@ scripts/           # build, deploy, maintenance scripts
 
 ## 8) API Specifications
 
-### A. Log Viewer API (Fastify backend)
+### A. Log Viewer API (SvelteKit Server Routes)
+
+These endpoints are implemented as SvelteKit server routes (`+server.ts` files) within the `apps/web` application. All routes use `zod` for validation and maintain type safety throughout.
 
 **Routes** (typed via `zod`):
 
@@ -495,14 +497,14 @@ For BT-Servant application:
 
 - **Monorepo scaffold** (pnpm + turbo); workspace config & scripts.
 - **SvelteKit** app (`apps/web`) with Tailwind + **shadcn-svelte** baseline + dark theme tokens.
-- **API** app (`apps/api`) with **Fastify** + `zod` + typed routes; `/healthz` and `/metrics`.
+- **API** reference app (`apps/api`) with **Fastify** + `zod` + typed routes for development/testing (not deployed; actual backend logic uses SvelteKit server routes in `apps/web`).
 - **Packages**: `domain`, `app`, `adapters`, `workers` with initial ports and DI container.
 - **Tooling**: `eslint` (TS + import + boundaries), `prettier`, `dep-cruiser`, `knip`.
 - **Tests**: Vitest + Testing Library; Playwright skeleton; **golden-file tests** for parser.
 - **Git hooks**: husky + lint-staged + commitlint; forbidden-pattern scan.
 - **CI**: GH Actions (`ci.yml`, `e2e.yml`, `deploy.yml`, `security.yml`).
-- **Docker**: multi-stage for `api` and `web` (`node:22-alpine`) with healthchecks.
-- **Fly.io**: `fly.toml` stubs (staging/prod); secrets via `fly secrets`.
+- **Docker**: multi-stage for `web` (`node:22-alpine`) with healthchecks; `api` Dockerfile available for local testing.
+- **Fly.io**: `fly.toml` for web app deployment (staging/prod); secrets via `fly secrets`.
 - **Docs**: `ARCHITECTURE.md`, `AGENTS.md`, `SECURITY.md`, `CONTRIBUTING.md`, `PERFORMANCE.md`.
 
 ### Phase 1a — Pure UI Shell with Mock Data (Week 1)
