@@ -4,10 +4,11 @@ This document explains the pre-commit hook setup that ensures code quality befor
 
 ## What Gets Checked Pre-Commit
 
-The pre-commit hook runs two stages:
+The pre-commit hook runs three stages:
 
 1. **lint-staged** - processes only the files you're committing (fast and focused)
 2. **typecheck** - runs full TypeScript/Svelte type checking across the entire project
+3. **knip** - detects unused files, exports, and dependencies across the entire project
 
 ### File Type Processing (lint-staged)
 
@@ -33,7 +34,8 @@ The pre-commit hook runs two stages:
    - Runs lint-staged on all staged files
    - Fixes issues automatically where possible (ESLint --fix, Prettier --write)
    - Runs full typecheck (`pnpm typecheck`) across entire project
-   - Fails the commit if there are unfixable issues or type errors
+   - Runs knip (`pnpm knip`) to detect unused code
+   - Fails the commit if there are unfixable issues, type errors, or unused code
 4. **Commit-msg hook** validates commit message format
 
 ## What Gets Caught
@@ -48,6 +50,7 @@ The pre-commit hook runs two stages:
 
 - ESLint errors that can't be auto-fixed
 - TypeScript/Svelte type errors (via `pnpm typecheck`)
+- Unused files, exports, or dependencies (via `pnpm knip`)
 - Forbidden patterns (eslint-disable comments, console.log, debugger statements)
 - Invalid commit message format
 
@@ -93,11 +96,13 @@ This ensures if your commit passes pre-commit hooks, it should pass CI.
 
 The configuration lives in:
 
-- `.husky/pre-commit` - Runs lint-staged and typecheck
+- `.husky/pre-commit` - Runs lint-staged, typecheck, and knip
 - `.husky/commit-msg` - Validates commit messages
 - `package.json` → `lint-staged` section - Defines what runs on which files
+- `knip.json` - Configures unused code detection
 
 To modify what runs pre-commit:
 
 - Edit the `lint-staged` section in root `package.json` for file-based checks
-- Edit `.husky/pre-commit` to add/remove project-wide checks like typecheck
+- Edit `.husky/pre-commit` to add/remove project-wide checks like typecheck and knip
+- Edit `knip.json` to configure which files/exports are considered used
