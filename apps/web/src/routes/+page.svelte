@@ -4,12 +4,18 @@
   import FilterSidebar from "$lib/components/FilterSidebar.svelte";
   import LogTable from "$lib/components/LogTable.svelte";
   import LogCards from "$lib/components/LogCards.svelte";
+  import LogDetailPanel from "$lib/components/LogDetailPanel.svelte";
   import type { LogEntry } from "@bt-log-viewer/domain";
 
   let filteredLogs: LogEntry[] = mockLogs;
   let searchQuery = "";
   let selectedLogId: string | null = null;
   let showFilters = false;
+  let showDetailPanel = false;
+
+  $: selectedLog = selectedLogId
+    ? (filteredLogs.find((log) => log.id === selectedLogId) ?? null)
+    : null;
 
   // Simple filtering function (will be enhanced later)
   function handleSearch(query: string): void {
@@ -30,6 +36,12 @@
 
   function handleLogSelect(logId: string): void {
     selectedLogId = logId;
+    showDetailPanel = true;
+  }
+
+  function handleCloseDetail(): void {
+    showDetailPanel = false;
+    // Keep selection but close panel
   }
 </script>
 
@@ -39,22 +51,74 @@
 
 <!-- Main container with responsive layout -->
 <div class="flex h-screen flex-col bg-background">
-  <!-- Header -->
+  <!-- Header with gradient background -->
   <header
-    class="flex items-center justify-between border-b border-surface bg-background-secondary px-4 py-3 md:px-6"
+    class="relative flex items-center justify-between overflow-hidden border-b border-accent-cyan/20 bg-gradient-to-r from-background-secondary via-background-secondary to-background px-4 py-4 md:px-6"
   >
-    <div class="flex items-center gap-3">
-      <h1 class="text-xl font-bold text-accent-cyan md:text-2xl">BT Servant Log Viewer</h1>
-      <span class="rounded bg-surface px-2 py-1 text-xs text-text-muted">Phase 1a</span>
+    <!-- Subtle glow effect -->
+    <div
+      class="pointer-events-none absolute inset-0 bg-gradient-to-r from-accent-cyan/5 via-accent-teal/5 to-transparent"
+    ></div>
+
+    <div class="relative z-10 flex items-center gap-3 md:gap-4">
+      <!-- Logo/Icon -->
+      <div
+        class="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-accent-cyan to-accent-teal p-2 shadow-lg shadow-accent-cyan/20 md:h-12 md:w-12"
+      >
+        <svg
+          class="h-full w-full text-background"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          />
+        </svg>
+      </div>
+
+      <!-- Title with improved styling -->
+      <div class="flex flex-col">
+        <h1
+          class="bg-gradient-to-r from-accent-cyan via-accent-teal to-accent-cyan bg-clip-text text-xl font-bold tracking-tight text-transparent md:text-2xl"
+        >
+          BT Servant Logs
+        </h1>
+        <span class="text-xs text-text-dim md:text-sm">Real-time telemetry viewer</span>
+      </div>
+
+      <span
+        class="rounded-full border border-accent-teal/30 bg-accent-teal/10 px-2.5 py-0.5 text-xs font-medium text-accent-teal"
+      >
+        v1.0-alpha
+      </span>
     </div>
 
     <!-- Desktop: show filter toggle, Mobile: hamburger menu -->
     <button
       type="button"
       on:click={() => (showFilters = !showFilters)}
-      class="rounded bg-surface px-3 py-2 text-sm text-text-secondary transition hover:bg-surface-hover md:px-4"
+      class="group relative z-10 rounded-lg border border-surface-active bg-surface px-3 py-2 text-sm font-medium text-text-secondary transition-all hover:border-accent-cyan/50 hover:bg-surface-hover hover:text-accent-cyan md:px-4"
     >
-      {showFilters ? "Hide Filters" : "Show Filters"}
+      <span class="flex items-center gap-2">
+        <svg
+          class="h-4 w-4 transition-transform group-hover:scale-110"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+          />
+        </svg>
+        {showFilters ? "Hide" : "Filters"}
+      </span>
     </button>
   </header>
 
@@ -99,11 +163,28 @@
         />
       </div>
 
-      <!-- Empty state -->
+      <!-- Empty state with animation -->
       {#if filteredLogs.length === 0}
-        <div class="flex h-full items-center justify-center p-8">
+        <div class="flex h-full items-center justify-center p-8 animate-fade-in">
           <div class="text-center">
-            <p class="text-lg text-text-secondary">No logs found</p>
+            <div
+              class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-accent-cyan/20 to-accent-teal/20"
+            >
+              <svg
+                class="h-8 w-8 text-accent-cyan"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <p class="text-lg font-medium text-text-secondary">No logs found</p>
             <p class="mt-2 text-sm text-text-muted">Try adjusting your search or filters</p>
           </div>
         </div>
@@ -111,13 +192,45 @@
     </main>
   </div>
 
-  <!-- Status bar -->
+  <!-- Status bar with enhanced styling -->
   <footer
-    class="border-t border-surface bg-background-secondary px-4 py-2 text-xs text-text-muted md:px-6"
+    class="relative flex items-center justify-between border-t border-accent-cyan/10 bg-gradient-to-r from-background-secondary to-background px-4 py-2.5 text-xs md:px-6"
   >
-    Showing {filteredLogs.length} of {mockLogs.length} logs
-    {#if searchQuery}
-      · Search: "{searchQuery}"
-    {/if}
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-1.5">
+        <div class="h-1.5 w-1.5 rounded-full bg-accent-teal animate-pulse"></div>
+        <span class="font-medium text-text-secondary">
+          {filteredLogs.length}
+          <span class="text-text-muted">of</span>
+          {mockLogs.length}
+          <span class="text-text-muted">logs</span>
+        </span>
+      </div>
+      {#if searchQuery}
+        <span class="text-text-dim">·</span>
+        <div
+          class="flex items-center gap-1.5 rounded-full border border-accent-cyan/20 bg-accent-cyan/5 px-2 py-0.5"
+        >
+          <svg
+            class="h-3 w-3 text-accent-cyan"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+          <span class="text-accent-cyan">"{searchQuery}"</span>
+        </div>
+      {/if}
+    </div>
+    <span class="text-text-dim">Phase 1a · Live View</span>
   </footer>
+
+  <!-- Log Detail Panel -->
+  <LogDetailPanel log={selectedLog} isOpen={showDetailPanel} on:close={handleCloseDetail} />
 </div>

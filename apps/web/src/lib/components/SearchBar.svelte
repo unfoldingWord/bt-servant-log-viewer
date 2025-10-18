@@ -16,19 +16,19 @@
   }
 </script>
 
-<div class="relative">
+<div class="relative group">
   <input
     type="text"
     bind:value={searchValue}
     on:input={handleInput}
     placeholder="Search logs by message, level, user..."
-    class="w-full rounded-lg bg-surface px-4 py-2 pl-10 text-text placeholder-text-dim transition
-           focus:outline-none focus:ring-2 focus:ring-accent-cyan"
+    class="w-full rounded-lg border border-surface-active bg-surface px-4 py-2.5 pl-10 pr-10 text-text placeholder-text-dim shadow-sm transition-all
+           focus:border-accent-cyan/50 focus:outline-none focus:ring-2 focus:ring-accent-cyan/20 focus:shadow-md focus:shadow-accent-cyan/10"
   />
 
-  <!-- Search icon -->
+  <!-- Search icon with animation -->
   <svg
-    class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted"
+    class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted transition-colors group-focus-within:text-accent-cyan"
     fill="none"
     stroke="currentColor"
     viewBox="0 0 24 24"
@@ -41,15 +41,15 @@
     />
   </svg>
 
-  <!-- Clear button -->
+  <!-- Clear button with slide-in animation -->
   {#if searchValue}
     <button
       type="button"
       on:click={clearSearch}
       aria-label="Clear search"
-      class="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted transition hover:text-text"
+      class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-surface-hover p-1 text-text-muted transition-all hover:bg-accent-cyan/20 hover:text-accent-cyan animate-fade-in"
     >
-      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           stroke-linecap="round"
           stroke-linejoin="round"

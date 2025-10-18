@@ -56,9 +56,8 @@
           on:click={() => {
             handleRowClick(log.id);
           }}
-          class="cursor-pointer border-b border-surface transition
-                 hover:bg-surface-hover"
-          class:bg-surface={selectedId === log.id}
+          class="group cursor-pointer border-b border-surface transition-all duration-150 hover:bg-surface-hover hover:shadow-sm animate-fade-in"
+          class:selected-row={selectedId === log.id}
         >
           <td class="whitespace-nowrap px-4 py-3 text-text-muted">
             {formatTimestamp(log.ts)}
@@ -94,3 +93,10 @@
     </tbody>
   </table>
 </div>
+
+<style>
+  .selected-row {
+    background: linear-gradient(to right, rgb(34 211 238 / 0.05), transparent);
+    border-left: 2px solid rgb(34 211 238);
+  }
+</style>
