@@ -9,12 +9,15 @@
       levels: string[];
       languages: string[];
       userId: string | null;
+      timeRange: string;
     };
+    refresh: Record<string, never>;
   }>();
 
   let selectedLevels: string[] = [];
   let selectedLanguages: string[] = [];
   let selectedUserId: string | null = null;
+  let selectedTimeRange = "all";
   let showUserDropdown = false;
 
   const logLevels = ["TRACE", "DEBUG", "INFO", "WARN", "ERROR"];
@@ -62,11 +65,21 @@
     emitFilterChange();
   }
 
+  function selectTimeRange(range: string): void {
+    selectedTimeRange = range;
+    emitFilterChange();
+  }
+
+  function handleRefresh(): void {
+    dispatch("refresh", {});
+  }
+
   function emitFilterChange(): void {
     dispatch("filterChange", {
       levels: selectedLevels,
       languages: selectedLanguages,
       userId: selectedUserId,
+      timeRange: selectedTimeRange,
     });
   }
 
@@ -78,7 +91,7 @@
     selectedLevels.length > 0 || selectedLanguages.length > 0 || selectedUserId !== null;
 </script>
 
-<div class="border-b border-surface/50 bg-background-secondary/50 px-4 py-3 md:px-6">
+<div class="border-b border-surface/50 bg-background-secondary/50 px-6 py-4 md:px-8">
   <div class="flex flex-wrap items-center gap-3">
     <!-- Level filters -->
     <div class="flex items-center gap-2">
@@ -193,6 +206,47 @@
         {/if}
       </div>
     </div>
+
+    <div class="h-4 w-px bg-surface"></div>
+
+    <!-- Time range filter -->
+    <div class="flex items-center gap-2">
+      <span class="text-xs font-medium text-text-dim">Time:</span>
+      <div class="flex gap-1.5">
+        {#each ["1h", "6h", "24h", "7d", "all"] as range}
+          <button
+            type="button"
+            on:click={() => {
+              selectTimeRange(range);
+            }}
+            class="rounded border px-2 py-1 text-xs font-medium transition-all hover:scale-105
+              {selectedTimeRange === range
+              ? 'border-2 border-accent-cyan/50 bg-accent-cyan/10 text-accent-cyan'
+              : 'border-surface-active bg-surface/30 text-text-dim hover:bg-surface'}"
+          >
+            {range}
+          </button>
+        {/each}
+      </div>
+    </div>
+
+    <!-- Refresh button -->
+    <button
+      type="button"
+      on:click={handleRefresh}
+      class="flex items-center gap-1.5 rounded border border-surface-active bg-surface/30 px-2.5 py-1 text-xs font-medium text-text-secondary transition-all hover:border-accent-teal/50 hover:bg-accent-teal/5 hover:text-accent-teal hover:scale-105 active:scale-95"
+      title="Refresh logs"
+    >
+      <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+        />
+      </svg>
+      Refresh
+    </button>
 
     <!-- Clear button -->
     {#if hasActiveFilters}

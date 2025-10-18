@@ -4,8 +4,8 @@
   import FiltersBar from "$lib/components/FiltersBar.svelte";
   import LogTable from "$lib/components/LogTable.svelte";
   import LogCards from "$lib/components/LogCards.svelte";
-  import IntentGraph from "$lib/components/IntentGraph.svelte";
-  import type { LogEntry, PerfReport } from "@bt-log-viewer/domain";
+  import ConversationGroup from "$lib/components/ConversationGroup.svelte";
+  import type { LogEntry } from "@bt-log-viewer/domain";
 
   let filteredLogs: LogEntry[] = mockLogs;
   let searchQuery = "";
@@ -13,6 +13,7 @@
   let filterLevels: string[] = [];
   let filterLanguages: string[] = [];
   let filterUserId: string | null = null;
+  let groupByConversation = false;
 
   $: selectedLog = selectedLogId
     ? (filteredLogs.find((log) => log.id === selectedLogId) ?? null)
@@ -23,12 +24,33 @@
     new Set(mockLogs.map((log) => log.userId).filter(Boolean))
   ).sort() as string[];
 
-  // Get perfReports for filtered user
-  $: userPerfReports = filterUserId
-    ? filteredLogs
-        .map((log) => log.perfReport)
-        .filter((report): report is PerfReport => report !== undefined)
-    : [];
+  // Group logs by CID when in conversation mode
+  $: groupedLogs = filteredLogs.reduce<Record<string, LogEntry[]>>((acc, log) => {
+    if (log.cid) {
+      acc[log.cid] ??= [];
+      const logArray = acc[log.cid];
+      if (logArray) {
+        logArray.push(log);
+      }
+    }
+    return acc;
+  }, {});
+
+  // Get conversation groups sorted by timestamp
+  $: conversationGroups = Object.entries(groupedLogs)
+    .filter(([, logs]) => logs.length > 0)
+    .map(([cid, logs]) => {
+      const firstLog = logs[0];
+      if (!firstLog) return null;
+      return {
+        cid,
+        logs,
+        firstLog,
+        perfReport: logs.find((l) => l.perfReport)?.perfReport,
+      };
+    })
+    .filter((group): group is NonNullable<typeof group> => group !== null)
+    .sort((a, b) => b.firstLog.ts.getTime() - a.firstLog.ts.getTime());
 
   // Apply all filters
   $: {
@@ -73,6 +95,7 @@
       levels: string[];
       languages: string[];
       userId: string | null;
+      timeRange: string;
     }>
   ): void {
     const { levels, languages, userId } = event.detail;
@@ -170,37 +193,105 @@
   <!-- Filters bar -->
   <FiltersBar {availableUsers} on:filterChange={handleFilterChange} />
 
+  <!-- Grouping toggle (shown when user is selected) -->
+  {#if filterUserId}
+    <div class="border-b border-surface/50 bg-background-secondary/30 px-6 py-3 md:px-8">
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-medium text-text-dim">View:</span>
+        <div class="flex gap-1.5">
+          <button
+            type="button"
+            on:click={() => {
+              groupByConversation = false;
+            }}
+            class="rounded border px-3 py-1.5 text-xs font-medium transition-all hover:scale-105
+              {!groupByConversation
+              ? 'border-2 border-accent-cyan/50 bg-accent-cyan/10 text-accent-cyan'
+              : 'border-surface-active bg-surface/30 text-text-dim hover:bg-surface'}"
+          >
+            <div class="flex items-center gap-1.5">
+              <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+              All Logs
+            </div>
+          </button>
+          <button
+            type="button"
+            on:click={() => {
+              groupByConversation = true;
+            }}
+            class="rounded border px-3 py-1.5 text-xs font-medium transition-all hover:scale-105
+              {groupByConversation
+              ? 'border-2 border-accent-cyan/50 bg-accent-cyan/10 text-accent-cyan'
+              : 'border-surface-active bg-surface/30 text-text-dim hover:bg-surface'}"
+          >
+            <div class="flex items-center gap-1.5">
+              <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                />
+              </svg>
+              Group by Conversation
+            </div>
+          </button>
+        </div>
+        <span class="text-xs text-text-muted">
+          ({conversationGroups.length} conversation{conversationGroups.length !== 1 ? "s" : ""})
+        </span>
+      </div>
+    </div>
+  {/if}
+
   <!-- Main content area -->
   <div class="flex flex-1 flex-col overflow-hidden">
-    <!-- Intent graph visualization (shown when user is selected) -->
-    {#if filterUserId}
-      <IntentGraph perfReports={userPerfReports} />
-    {/if}
-
     <!-- Log display area -->
     <main class="flex flex-1 flex-col overflow-hidden">
-      <!-- Desktop: Table view, Mobile: Card view -->
-      <div class="hidden h-full md:block">
-        <LogTable
-          logs={filteredLogs}
-          selectedId={selectedLogId}
-          {selectedLog}
-          on:select={(e) => {
-            handleLogSelect(e.detail as string);
-          }}
-        />
-      </div>
+      {#if filterUserId && groupByConversation}
+        <!-- Grouped conversation view -->
+        <div
+          class="h-full overflow-auto bg-gradient-to-b from-background to-background-secondary/20"
+        >
+          {#each conversationGroups as group (group.cid)}
+            <ConversationGroup
+              logs={group.logs}
+              firstLog={group.firstLog}
+              perfReport={group.perfReport}
+            />
+          {/each}
+        </div>
+      {:else}
+        <!-- Flat log view (Desktop: Table view, Mobile: Card view) -->
+        <div class="hidden h-full md:block">
+          <LogTable
+            logs={filteredLogs}
+            selectedId={selectedLogId}
+            {selectedLog}
+            on:select={(e) => {
+              handleLogSelect(e.detail as string);
+            }}
+          />
+        </div>
 
-      <div class="block h-full md:hidden">
-        <LogCards
-          logs={filteredLogs}
-          selectedId={selectedLogId}
-          {selectedLog}
-          on:select={(e) => {
-            handleLogSelect(e.detail as string);
-          }}
-        />
-      </div>
+        <div class="block h-full md:hidden">
+          <LogCards
+            logs={filteredLogs}
+            selectedId={selectedLogId}
+            {selectedLog}
+            on:select={(e) => {
+              handleLogSelect(e.detail as string);
+            }}
+          />
+        </div>
+      {/if}
 
       <!-- Empty state with animation -->
       {#if filteredLogs.length === 0}

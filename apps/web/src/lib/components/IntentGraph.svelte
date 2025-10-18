@@ -65,89 +65,87 @@
     </div>
 
     <!-- Graph visualization -->
-    <div class="flex flex-wrap items-center justify-center gap-4">
+    <div class="relative flex items-center justify-center gap-16 overflow-x-auto px-8 py-4">
       {#each nodes as node, i}
-        <button
-          type="button"
-          on:click={() => {
-            selectNode(node);
-          }}
-          class="group relative flex flex-col items-center transition-all duration-300 hover:scale-110"
-          style="animation-delay: {i * 100}ms"
-        >
-          <!-- Node circle with gradient -->
-          <div
-            class="relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br shadow-lg transition-all duration-300 animate-fade-in-scale
+        <div class="relative flex flex-col items-center">
+          <button
+            type="button"
+            on:click={() => {
+              selectNode(node);
+            }}
+            class="group relative flex flex-col items-center transition-all duration-300 hover:scale-110"
+            style="animation-delay: {i * 100}ms"
+          >
+            <!-- Node circle with gradient -->
+            <div
+              class="relative flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br shadow-lg transition-all duration-300 animate-fade-in-scale
               {getNodeColor(i)}
               {selectedNode?.name === node.name
-              ? 'ring-4 ring-accent-cyan/50 scale-110 shadow-accent-cyan/50'
-              : 'hover:shadow-accent-cyan/30'}"
-          >
-            <!-- Pulsing background effect for selected node -->
-            {#if selectedNode?.name === node.name}
-              <div
-                class="absolute inset-0 rounded-full bg-gradient-to-br from-accent-cyan to-accent-teal opacity-30 blur-lg animate-pulse"
-              ></div>
-            {/if}
-
-            <!-- Node icon -->
-            <div class="relative z-10 text-center">
-              <svg
-                class="mx-auto h-8 w-8 text-background transition-transform group-hover:scale-110"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                />
-              </svg>
-              {#if node.count && node.count > 1}
-                <span
-                  class="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-background text-xs font-bold text-accent-cyan ring-2 ring-accent-cyan/50"
-                >
-                  {node.count}
-                </span>
-              {/if}
-            </div>
-          </div>
-
-          <!-- Node label -->
-          <span
-            class="mt-2 max-w-[100px] truncate text-xs font-medium transition-colors
-              {selectedNode?.name === node.name
-              ? 'text-accent-cyan'
-              : 'text-text-secondary group-hover:text-accent-cyan'}"
-            title={node.name}
-          >
-            {node.name.replace(/_/g, " ")}
-          </span>
-
-          <!-- Connecting arrow (except for last node) -->
-          {#if i < nodes.length - 1}
-            <div
-              class="absolute left-full top-1/2 -translate-y-1/2"
-              style="width: 2rem; margin-left: -1rem;"
+                ? 'ring-4 ring-accent-cyan/50 scale-110 shadow-accent-cyan/50'
+                : 'hover:shadow-accent-cyan/30'}"
             >
+              <!-- Pulsing background effect for selected node -->
+              {#if selectedNode?.name === node.name}
+                <div
+                  class="absolute inset-0 rounded-full bg-gradient-to-br from-accent-cyan to-accent-teal opacity-30 blur-lg animate-pulse"
+                ></div>
+              {/if}
+
+              <!-- Node icon -->
+              <div class="relative z-10 text-center">
+                <svg
+                  class="mx-auto h-8 w-8 text-background transition-transform group-hover:scale-110"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
+                </svg>
+                {#if node.count && node.count > 1}
+                  <span
+                    class="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-background text-xs font-bold text-accent-cyan ring-2 ring-accent-cyan/50"
+                  >
+                    {node.count}
+                  </span>
+                {/if}
+              </div>
+            </div>
+
+            <!-- Node label -->
+            <span
+              class="mt-2 max-w-[120px] truncate text-[10px] font-medium transition-colors
+                {selectedNode?.name === node.name
+                ? 'text-accent-cyan'
+                : 'text-text-secondary group-hover:text-accent-cyan'}"
+              title={node.name}
+            >
+              {node.name.split(":")[1]?.replace(/_/g, " ") ?? node.name.replace(/_/g, " ")}
+            </span>
+          </button>
+
+          <!-- Connecting line and arrow (except for last node) -->
+          {#if i < nodes.length - 1}
+            <div class="absolute left-full top-7 flex items-center" style="width: 4rem;">
+              <!-- Line -->
+              <div class="h-0.5 flex-1 bg-accent-cyan/30"></div>
+              <!-- Arrow head -->
               <svg
-                class="h-6 w-8 text-accent-cyan/30 transition-colors group-hover:text-accent-cyan"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+                class="h-4 w-4 text-accent-cyan/30 transition-colors"
+                fill="currentColor"
+                viewBox="0 0 20 20"
               >
                 <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5l7 7-7 7"
+                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
                 />
               </svg>
             </div>
           {/if}
-        </button>
+        </div>
       {/each}
     </div>
 
