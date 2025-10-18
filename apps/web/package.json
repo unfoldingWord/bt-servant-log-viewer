@@ -12,8 +12,7 @@
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "echo 'E2E tests skipped in Phase 0 (no tests yet)'",
-    "test:e2e:run": "playwright test",
+    "test:e2e": "playwright test",
     "clean": "rm -rf .svelte-kit build node_modules"
   },
   "dependencies": {
