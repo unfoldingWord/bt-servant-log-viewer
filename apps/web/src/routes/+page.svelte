@@ -51,22 +51,35 @@
 
 <!-- Main container with responsive layout -->
 <div class="flex h-screen flex-col bg-background">
-  <!-- Header with gradient background -->
+  <!-- Header with gradient background and animations -->
   <header
-    class="relative flex items-center justify-between overflow-hidden border-b border-accent-cyan/20 bg-gradient-to-r from-background-secondary via-background-secondary to-background px-4 py-4 md:px-6"
+    class="relative flex items-center justify-between overflow-hidden border-b-2 border-accent-cyan/20 bg-gradient-to-r from-background-secondary via-background-secondary to-background px-4 py-5 shadow-lg shadow-black/5 md:px-6"
   >
-    <!-- Subtle glow effect -->
+    <!-- Animated gradient glow effect -->
     <div
-      class="pointer-events-none absolute inset-0 bg-gradient-to-r from-accent-cyan/5 via-accent-teal/5 to-transparent"
+      class="pointer-events-none absolute inset-0 animate-gradient bg-gradient-to-r from-accent-cyan/5 via-accent-teal/5 to-accent-cyan/5"
     ></div>
 
-    <div class="relative z-10 flex items-center gap-3 md:gap-4">
-      <!-- Logo/Icon -->
+    <!-- Floating particles effect -->
+    <div class="pointer-events-none absolute inset-0 overflow-hidden">
       <div
-        class="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-accent-cyan to-accent-teal p-2 shadow-lg shadow-accent-cyan/20 md:h-12 md:w-12"
+        class="absolute -left-4 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-accent-cyan/10 blur-2xl animate-float"
+      ></div>
+      <div
+        class="absolute right-1/4 top-1/4 h-32 w-32 rounded-full bg-accent-teal/10 blur-3xl animate-float-delayed"
+      ></div>
+    </div>
+
+    <div class="relative z-10 flex items-center gap-3 md:gap-4">
+      <!-- Logo/Icon with pulse animation -->
+      <div
+        class="group relative flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-accent-cyan via-accent-teal to-accent-cyan p-2.5 shadow-xl shadow-accent-cyan/30 transition-all duration-300 hover:scale-110 hover:shadow-accent-cyan/50 md:h-12 md:w-12 animate-logo-glow"
       >
+        <div
+          class="absolute inset-0 rounded-xl bg-gradient-to-br from-accent-cyan to-accent-teal opacity-0 blur-md transition-opacity group-hover:opacity-50"
+        ></div>
         <svg
-          class="h-full w-full text-background"
+          class="relative h-full w-full text-background transition-transform group-hover:scale-110"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -80,32 +93,37 @@
         </svg>
       </div>
 
-      <!-- Title with improved styling -->
-      <div class="flex flex-col">
+      <!-- Title with shimmer animation -->
+      <div class="flex flex-col gap-0.5">
         <h1
-          class="bg-gradient-to-r from-accent-cyan via-accent-teal to-accent-cyan bg-clip-text text-xl font-bold tracking-tight text-transparent md:text-2xl"
+          class="relative bg-gradient-to-r from-accent-cyan via-accent-teal to-accent-cyan bg-clip-text text-xl font-bold tracking-tight text-transparent md:text-2xl animate-shimmer"
+          style="background-size: 200% 100%;"
         >
           BT Servant Logs
         </h1>
-        <span class="text-xs text-text-dim md:text-sm">Real-time telemetry viewer</span>
+        <span class="text-xs font-medium text-text-dim md:text-sm">Real-time telemetry viewer</span>
       </div>
 
       <span
-        class="rounded-full border border-accent-teal/30 bg-accent-teal/10 px-2.5 py-0.5 text-xs font-medium text-accent-teal"
+        class="relative overflow-hidden rounded-full border border-accent-teal/40 bg-gradient-to-r from-accent-teal/10 to-accent-cyan/10 px-3 py-1 text-xs font-semibold text-accent-teal shadow-md shadow-accent-teal/10 transition-all hover:scale-105 hover:shadow-accent-teal/20"
       >
-        v1.0-alpha
+        <span class="relative z-10">v1.0-alpha</span>
+        <div
+          class="absolute inset-0 -translate-x-full animate-shimmer-badge bg-gradient-to-r from-transparent via-white/10 to-transparent"
+        ></div>
       </span>
     </div>
 
-    <!-- Desktop: show filter toggle, Mobile: hamburger menu -->
+    <!-- Enhanced filter toggle button -->
     <button
       type="button"
       on:click={() => (showFilters = !showFilters)}
-      class="group relative z-10 rounded-lg border border-surface-active bg-surface px-3 py-2 text-sm font-medium text-text-secondary transition-all hover:border-accent-cyan/50 hover:bg-surface-hover hover:text-accent-cyan md:px-4"
+      class="group relative z-10 overflow-hidden rounded-xl border-2 border-surface-active bg-gradient-to-br from-surface to-surface/80 px-4 py-2.5 text-sm font-semibold text-text-secondary shadow-md transition-all duration-300 hover:border-accent-cyan/50 hover:bg-gradient-to-br hover:from-surface-hover hover:to-surface hover:text-accent-cyan hover:shadow-lg hover:shadow-accent-cyan/10 active:scale-95 md:px-5"
     >
-      <span class="flex items-center gap-2">
+      <span class="relative z-10 flex items-center gap-2">
         <svg
-          class="h-4 w-4 transition-transform group-hover:scale-110"
+          class="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-12"
+          class:rotate-180={showFilters}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -117,13 +135,20 @@
             d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
           />
         </svg>
-        {showFilters ? "Hide" : "Filters"}
+        <span class="hidden sm:inline">{showFilters ? "Hide" : "Show"} Filters</span>
+        <span class="sm:hidden">{showFilters ? "Hide" : "Filters"}</span>
       </span>
+      <!-- Hover glow effect -->
+      <div
+        class="absolute inset-0 translate-y-full bg-gradient-to-t from-accent-cyan/10 to-transparent transition-transform group-hover:translate-y-0"
+      ></div>
     </button>
   </header>
 
-  <!-- Search bar -->
-  <div class="border-b border-surface bg-background-secondary px-4 py-3 md:px-6">
+  <!-- Search bar with enhanced container -->
+  <div
+    class="relative border-b-2 border-surface/50 bg-gradient-to-b from-background-secondary to-background px-4 py-4 shadow-inner md:px-6"
+  >
     <SearchBar
       on:search={(e) => {
         handleSearch(e.detail as string);
@@ -234,3 +259,85 @@
   <!-- Log Detail Panel -->
   <LogDetailPanel log={selectedLog} isOpen={showDetailPanel} on:close={handleCloseDetail} />
 </div>
+
+<style>
+  /* Header animations */
+  @keyframes gradient {
+    0%,
+    100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+  .animate-gradient {
+    animation: gradient 8s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translate(0, -50%) scale(1);
+      opacity: 0.3;
+    }
+    50% {
+      transform: translate(20px, calc(-50% - 10px)) scale(1.1);
+      opacity: 0.5;
+    }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-float-delayed {
+    animation: float 8s ease-in-out infinite;
+    animation-delay: 2s;
+  }
+
+  @keyframes logo-glow {
+    0%,
+    100% {
+      box-shadow:
+        0 0 20px rgba(34, 211, 238, 0.3),
+        0 0 40px rgba(34, 211, 238, 0.1);
+    }
+    50% {
+      box-shadow:
+        0 0 30px rgba(34, 211, 238, 0.5),
+        0 0 60px rgba(34, 211, 238, 0.2);
+    }
+  }
+
+  .animate-logo-glow {
+    animation: logo-glow 3s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 8s linear infinite;
+  }
+
+  @keyframes shimmer-badge {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(300%);
+    }
+  }
+
+  .animate-shimmer-badge {
+    animation: shimmer-badge 3s ease-in-out infinite;
+  }
+</style>
