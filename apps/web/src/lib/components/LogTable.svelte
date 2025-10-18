@@ -157,30 +157,10 @@
             Language
           </div>
         </th>
-        <th class="px-4 py-3.5 text-left">
-          <div
-            class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-muted"
-          >
-            <svg
-              class="h-3.5 w-3.5 text-accent-teal"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-              />
-            </svg>
-            Intent
-          </div>
-        </th>
       </tr>
       <tr>
         <th
-          colspan="6"
+          colspan="5"
           class="h-px bg-gradient-to-r from-transparent via-accent-cyan/30 to-transparent"
         ></th>
       </tr>
@@ -192,19 +172,9 @@
             handleRowClick(log.id);
           }}
           style="animation-delay: {i * 20}ms"
-          class="log-row group relative cursor-pointer border-b border-surface/50 transition-all duration-200"
+          class="log-row group relative cursor-pointer border-b border-surface/50 transition-all duration-200 hover:bg-gradient-to-r hover:from-accent-cyan/5 hover:via-accent-teal/5 hover:to-transparent"
           class:selected-row={selectedId === log.id}
         >
-          <!-- Hover glow effect -->
-          <td
-            colspan="6"
-            class="absolute inset-0 -z-10 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-          >
-            <div
-              class="h-full w-full bg-gradient-to-r from-accent-cyan/5 via-accent-teal/5 to-transparent"
-            ></div>
-          </td>
-
           <td class="relative px-4 py-3.5">
             <div class="flex items-center gap-2">
               <div
@@ -266,41 +236,12 @@
               <span class="text-text-dim">—</span>
             {/if}
           </td>
-
-          <td class="relative max-w-xs px-4 py-3.5">
-            {#if log.intents && log.intents.length > 0}
-              <div class="flex flex-wrap items-center gap-1.5">
-                <span
-                  class="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-br from-accent-cyan/10 to-accent-teal/10 px-2.5 py-1 text-xs font-medium text-accent-cyan ring-1 ring-accent-cyan/20 group-hover:ring-2 group-hover:shadow-sm transition-all"
-                >
-                  <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M13 10V3L4 14h7v7l9-11h-7z"
-                    />
-                  </svg>
-                  {log.intents[0]?.name}
-                </span>
-                {#if log.intents.length > 1}
-                  <span
-                    class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-accent-teal/20 text-xs font-medium text-accent-teal"
-                  >
-                    +{log.intents.length - 1}
-                  </span>
-                {/if}
-              </div>
-            {:else}
-              <span class="text-text-dim">—</span>
-            {/if}
-          </td>
         </tr>
 
         <!-- Inline detail row (expands below the clicked row) -->
         {#if selectedId === log.id && selectedLog}
           <tr class="detail-row">
-            <td colspan="6" class="p-0">
+            <td colspan="5" class="p-0">
               <LogDetailInline log={selectedLog} />
             </td>
           </tr>

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { mockLogs } from "$lib/data/mockLogs";
   import SearchBar from "$lib/components/SearchBar.svelte";
-  import FilterSidebar from "$lib/components/FilterSidebar.svelte";
+  import FiltersBar from "$lib/components/FiltersBar.svelte";
   import LogTable from "$lib/components/LogTable.svelte";
   import LogCards from "$lib/components/LogCards.svelte";
   import type { LogEntry } from "@bt-log-viewer/domain";
@@ -9,7 +9,6 @@
   let filteredLogs: LogEntry[] = mockLogs;
   let searchQuery = "";
   let selectedLogId: string | null = null;
-  let showFilters = false;
 
   $: selectedLog = selectedLogId
     ? (filteredLogs.find((log) => log.id === selectedLogId) ?? null)
@@ -108,57 +107,21 @@
       </span>
     </div>
 
-    <!-- Right side: Search bar and filter button -->
-    <div class="relative z-10 flex flex-1 items-center gap-3 md:max-w-xl">
-      <!-- Search bar (smaller) -->
-      <div class="flex-1">
-        <SearchBar
-          on:search={(e) => {
-            handleSearch(e.detail as string);
-          }}
-        />
-      </div>
-
-      <!-- Enhanced filter toggle button -->
-      <button
-        type="button"
-        on:click={() => (showFilters = !showFilters)}
-        class="group relative overflow-hidden rounded-xl border-2 border-surface-active bg-gradient-to-br from-surface to-surface/80 px-3 py-2 text-sm font-semibold text-text-secondary shadow-md transition-all duration-300 hover:border-accent-cyan/50 hover:bg-gradient-to-br hover:from-surface-hover hover:to-surface hover:text-accent-cyan hover:shadow-lg hover:shadow-accent-cyan/10 active:scale-95 md:px-4"
-      >
-        <span class="relative z-10 flex items-center gap-2">
-          <svg
-            class="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-12"
-            class:rotate-180={showFilters}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
-            />
-          </svg>
-          <span class="hidden lg:inline">{showFilters ? "Hide" : "Show"} Filters</span>
-        </span>
-        <!-- Hover glow effect -->
-        <div
-          class="absolute inset-0 translate-y-full bg-gradient-to-t from-accent-cyan/10 to-transparent transition-transform group-hover:translate-y-0"
-        ></div>
-      </button>
+    <!-- Right side: Search bar -->
+    <div class="relative z-10 flex flex-1 items-center md:max-w-xl">
+      <SearchBar
+        on:search={(e) => {
+          handleSearch(e.detail as string);
+        }}
+      />
     </div>
   </header>
 
-  <!-- Main content area with filter sidebar and log display -->
-  <div class="flex flex-1 overflow-hidden">
-    <!-- Filter sidebar - collapsible on mobile -->
-    {#if showFilters}
-      <aside class="w-full border-r border-surface bg-background-secondary md:w-64 lg:w-80">
-        <FilterSidebar />
-      </aside>
-    {/if}
+  <!-- Filters bar -->
+  <FiltersBar />
 
+  <!-- Main content area -->
+  <div class="flex flex-1 flex-col overflow-hidden">
     <!-- Log display area -->
     <main class="flex flex-1 flex-col overflow-hidden">
       <!-- Desktop: Table view, Mobile: Card view -->
