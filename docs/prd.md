@@ -246,14 +246,14 @@ We will additionally derive or extract: **language**, **client IP** (when added)
 - **Application** (use-cases): `ParseLog`, `IndexLog`, `QueryEntries`, `GetTrace`, `SummarizePerf`, `ExportSlice`, `TailLog`, `LoadDateRange`.
 - **Ports**: `ParsingPort`, `IndexPort`, `QueryPort`, `StoragePort`, `GeoIpPort`, `CompressionPort`, `SearchPort`, `LogSourcePort`.
 - **Adapters**: Node parsers (regex + JSON scanner), in-memory index or SQLite, file loader, GeoIP (e.g., **MaxMind GeoLite2** via `mmdb` adapter), SvelteKit adapter, MiniSearch adapter, gzip compression adapter, BT-Servant API client.
-- **Drivers/Infra**: HTTP API (Fastify or SvelteKit endpoints), DI wiring, metrics, config, Web Workers orchestration.
+- **Drivers/Infra**: SvelteKit server routes (for backend logic), DI wiring, metrics, config, Web Workers orchestration.
 
 ### Monorepo (pnpm + Turborepo)
 
 ```
 apps/
-  web/             # SvelteKit UI
-  api/             # Fastify (Node 22) parsing/index API
+  web/             # SvelteKit UI (includes server routes for backend logic)
+  api/             # Fastify reference implementation (development/testing only, not deployed)
 packages/
   domain/          # pure types & logic
   app/             # use-cases wired to ports
@@ -340,7 +340,9 @@ scripts/           # build, deploy, maintenance scripts
 
 ## 8) API Specifications
 
-### A. Log Viewer API (Fastify backend)
+### A. Log Viewer API (SvelteKit Server Routes)
+
+These endpoints are implemented as SvelteKit server routes (`+server.ts` files) within the `apps/web` application. All routes use `zod` for validation and maintain type safety throughout.
 
 **Routes** (typed via `zod`):
 
@@ -387,30 +389,54 @@ scripts/           # build, deploy, maintenance scripts
 - `GET /api/metrics` → Prometheus-compatible metrics endpoint
 - `POST /api/logs/:sessionId/search` → Advanced search with query DSL
 
-### B. BT-Servant Log Source API (new endpoints)
+### B. BT-Servant Log Source API (Implemented)
 
-Add these endpoints to BT-Servant application (see `/docs/bt-servant-log-api-spec.md` for complete implementation guide):
+The BT-Servant application provides admin log endpoints for fetching log files (see `/docs/log_api_reference.md` for complete reference):
 
-- `GET /api/logs/files` → List available log files with metadata
+**Base Path:** `/admin/logs`
+
+**Authentication:**
+
+- Requires admin token when `ENABLE_ADMIN_AUTH` is `true` (default)
+- Provide token via `Authorization: Bearer <ADMIN_API_TOKEN>` or `X-Admin-Token: <ADMIN_API_TOKEN>` header
+- Returns `401 Unauthorized` if missing/invalid
+
+**Endpoints:**
+
+- `GET /admin/logs/files` → List all `.log` files (sorted newest first)
+
   ```json
   {
     "files": [
       {
-        "name": "bt_servant_2025-01-15.log",
-        "size_mb": 8.2,
-        "size_bytes": 8598456,
-        "modified": "2025-01-15T23:59:59Z",
-        "created": "2025-01-15T00:00:01Z",
-        "line_count": 45000,
-        "readable": true
+        "name": "bt_servant.log",
+        "size_bytes": 12345,
+        "modified_at": "2024-05-01T18:34:12Z",
+        "created_at": "2024-05-01T17:00:00Z"
       }
     ],
     "total_files": 1,
-    "total_size_mb": 8.2
+    "total_size_bytes": 12345
   }
   ```
-- `GET /api/logs/files/{filename}` → Download specific log file (streaming)
-- `GET /api/logs/recent?days=N` → Get list of files from last N days
+
+- `GET /admin/logs/files/{filename}` → Stream specific log file as UTF-8 text
+  - Filename must end with `.log`
+  - Sets `Content-Disposition: attachment` and `Content-Length`
+  - Returns `400` for invalid filenames, `404` if not found
+
+- `GET /admin/logs/recent?days=7&limit=100` → Filtered list of recent files
+  - `days`: default `7`, allowed range `1–90`
+  - `limit`: default `100`, allowed range `1–500`
+  - Response format matches `/admin/logs/files` but filtered
+  - Returns `400` if params out of range
+
+**Integration Notes:**
+
+- Call `/admin/logs/files` or `/admin/logs/recent` to populate file pickers
+- Defer `/admin/logs/files/{filename}` until user requests content to avoid large transfers
+- Cache listing results briefly if polling frequently (server rescans filesystem on each call)
+- Surface `404` or `500` errors to operators (indicates missing/permission-denied storage)
 
 ### Rate Limiting
 
@@ -495,14 +521,14 @@ For BT-Servant application:
 
 - **Monorepo scaffold** (pnpm + turbo); workspace config & scripts.
 - **SvelteKit** app (`apps/web`) with Tailwind + **shadcn-svelte** baseline + dark theme tokens.
-- **API** app (`apps/api`) with **Fastify** + `zod` + typed routes; `/healthz` and `/metrics`.
+- **API** reference app (`apps/api`) with **Fastify** + `zod` + typed routes for development/testing (not deployed; actual backend logic uses SvelteKit server routes in `apps/web`).
 - **Packages**: `domain`, `app`, `adapters`, `workers` with initial ports and DI container.
 - **Tooling**: `eslint` (TS + import + boundaries), `prettier`, `dep-cruiser`, `knip`.
 - **Tests**: Vitest + Testing Library; Playwright skeleton; **golden-file tests** for parser.
 - **Git hooks**: husky + lint-staged + commitlint; forbidden-pattern scan.
 - **CI**: GH Actions (`ci.yml`, `e2e.yml`, `deploy.yml`, `security.yml`).
-- **Docker**: multi-stage for `api` and `web` (`node:22-alpine`) with healthchecks.
-- **Fly.io**: `fly.toml` stubs (staging/prod); secrets via `fly secrets`.
+- **Docker**: multi-stage for `web` (`node:22-alpine`) with healthchecks; `api` Dockerfile available for local testing.
+- **Fly.io**: `fly.toml` for web app deployment (staging/prod); secrets via `fly secrets`.
 - **Docs**: `ARCHITECTURE.md`, `AGENTS.md`, `SECURITY.md`, `CONTRIBUTING.md`, `PERFORMANCE.md`.
 
 ### Phase 1a — Pure UI Shell with Mock Data (Week 1)
@@ -511,6 +537,11 @@ For BT-Servant application:
 
 - SvelteKit dark theme + shadcn-svelte with **mobile-first responsive design**.
 - **Mock data only** - No API calls, use static sample log data for development.
+  - **Approach:** Simple hardcoded TypeScript data matching domain types
+  - Create `apps/web/src/lib/data/mockLogs.ts` with 50-100 realistic `LogEntry` objects
+  - UI components import and use mock data directly (no service layer yet)
+  - Mock data includes representative samples of all field types: intents, languages, regions, traces, etc.
+  - **Rationale:** Fastest path to impressive UI for bot competition; service layer abstraction deferred to Phase 1b
 - **Responsive breakpoints**: 320px, 640px, 768px, 1024px, 1280px.
 - **Mobile layouts**: Single column, touch-optimized, swipe gestures.
 - **UI Components** (all with mock data):
@@ -531,6 +562,11 @@ For BT-Servant application:
 
 **Focus: Connect the chosen UI from Phase 1a to real systems**
 
+- **Refactor mock data to service layer:**
+  - Implement proper port interfaces (`QueryPort`, `ParsingPort`, etc.)
+  - Create service implementations that replace direct mock data imports
+  - Update UI components to use dependency injection
+  - Transition from `import { mockLogs }` to `const entries = await queryService.getEntries()`
 - **BT-Servant API client** for fetching log files.
 - **Auto-load last 21 days** of logs on app open.
 - **Web Worker integration** for non-blocking parsing.

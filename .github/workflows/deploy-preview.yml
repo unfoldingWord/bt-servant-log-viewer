@@ -1,0 +1,88 @@
+name: Deploy Preview
+
+on:
+  push:
+    branches:
+      - "phase-*"
+      - "bot-*"
+  workflow_dispatch:
+
+concurrency:
+  group: preview-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy Preview to Fly.io
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Fly CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Extract branch name and sanitize for Fly.io app name
+        id: branch
+        run: |
+          # Get branch name and sanitize it for Fly.io app naming
+          # Fly.io app names must be lowercase alphanumeric with hyphens
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          SANITIZED=$(echo "$BRANCH_NAME" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//')
+          APP_NAME="bt-log-viewer-${SANITIZED}"
+
+          # Fly.io app names have a 30 character limit
+          if [ ${#APP_NAME} -gt 30 ]; then
+            APP_NAME="${APP_NAME:0:30}"
+            # Remove trailing hyphen if truncation created one
+            APP_NAME=$(echo "$APP_NAME" | sed 's/-$//')
+          fi
+
+          echo "app_name=${APP_NAME}" >> $GITHUB_OUTPUT
+          echo "branch_name=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+          echo "Preview app name: ${APP_NAME}"
+
+      - name: Deploy to Fly.io
+        run: |
+          # Create or update the preview app
+          # Use --ha=false for preview apps to save resources (single instance)
+          flyctl deploy \
+            --config infra/fly.staging.toml \
+            --app ${{ steps.branch.outputs.app_name }} \
+            --ha=false \
+            --auto-confirm \
+            || flyctl apps create ${{ steps.branch.outputs.app_name }} \
+            && flyctl deploy \
+              --config infra/fly.staging.toml \
+              --app ${{ steps.branch.outputs.app_name }} \
+              --ha=false \
+              --auto-confirm
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Comment preview URL on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const appName = '${{ steps.branch.outputs.app_name }}';
+            const previewUrl = `https://${appName}.fly.dev`;
+            const branch = '${{ steps.branch.outputs.branch_name }}';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🚀 Preview Deployment\n\nBranch: \`${branch}\`\nPreview URL: ${previewUrl}\n\n_This preview app will remain active until the branch is deleted._`
+            });
+
+      - name: Display preview URL
+        run: |
+          echo "=================================================="
+          echo "Preview deployment complete!"
+          echo "Branch: ${{ steps.branch.outputs.branch_name }}"
+          echo "App: ${{ steps.branch.outputs.app_name }}"
+          echo "URL: https://${{ steps.branch.outputs.app_name }}.fly.dev"
+          echo "=================================================="
