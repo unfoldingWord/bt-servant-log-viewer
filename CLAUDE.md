@@ -307,6 +307,44 @@ GET /api/logs/recent?days=21 # Get files from last N days
 - File upload → parse → filter → export
 - Performance benchmarks
 
+## Deployment
+
+The project uses Fly.io for automatic deployments via GitHub Actions. See [docs/fly-io-setup.md](./docs/fly-io-setup.md) for complete setup instructions.
+
+### Deployment Environments
+
+- **Production** (`main` branch) → `bt-log-viewer.fly.dev`
+- **Staging** (`develop` branch) → `bt-log-viewer-staging.fly.dev`
+- **Preview** (`phase-*`, `bot-*` branches) → `bt-log-viewer-{branch-name}.fly.dev`
+
+### Quick Start
+
+1. Set up `FLY_API_TOKEN` secret in GitHub repository settings (see fly-io-setup.md)
+2. Push to any branch:
+   - `main` → Production deployment
+   - `develop` → Staging deployment
+   - `phase-*` or `bot-*` → Preview deployment
+
+### Bot Competition Workflow
+
+For comparing different bot implementations:
+
+```bash
+# Bot 1 works on phase-1a branch
+git checkout phase-1a
+git push origin phase-1a
+# Auto-deploys to: https://bt-log-viewer-phase-1a.fly.dev
+
+# Bot 2 works on bot-2-attempt branch
+git checkout bot-2-attempt
+git push origin bot-2-attempt
+# Auto-deploys to: https://bt-log-viewer-bot-2-attempt.fly.dev
+
+# Compare both URLs in browser
+```
+
+Preview apps use single-instance deployments to minimize costs and remain active until manually deleted.
+
 ## Common Tasks
 
 ### Adding a New Parser Field
