@@ -17,6 +17,36 @@
   body {
     @apply bg-background text-text antialiased;
   }
+
+  /* Custom scrollbar styling - inspired by Zulip and PyCharm dark */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--surface)) rgb(var(--background));
+  }
+
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: rgb(var(--background));
+    border-radius: 10px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: rgb(var(--surface));
+    border-radius: 10px;
+    border: 2px solid rgb(var(--background));
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: rgb(43 47 54 / 0.8);
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: rgb(var(--background));
+  }
 }
 
 @layer components {

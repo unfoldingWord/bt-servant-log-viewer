@@ -4,31 +4,81 @@
   import FiltersBar from "$lib/components/FiltersBar.svelte";
   import LogTable from "$lib/components/LogTable.svelte";
   import LogCards from "$lib/components/LogCards.svelte";
-  import type { LogEntry } from "@bt-log-viewer/domain";
+  import IntentGraph from "$lib/components/IntentGraph.svelte";
+  import type { LogEntry, PerfReport } from "@bt-log-viewer/domain";
 
   let filteredLogs: LogEntry[] = mockLogs;
   let searchQuery = "";
   let selectedLogId: string | null = null;
+  let filterLevels: string[] = [];
+  let filterLanguages: string[] = [];
+  let filterUserId: string | null = null;
 
   $: selectedLog = selectedLogId
     ? (filteredLogs.find((log) => log.id === selectedLogId) ?? null)
     : null;
 
+  // Extract available users from logs
+  $: availableUsers = Array.from(
+    new Set(mockLogs.map((log) => log.userId).filter(Boolean))
+  ).sort() as string[];
+
+  // Get perfReports for filtered user
+  $: userPerfReports = filterUserId
+    ? filteredLogs
+        .map((log) => log.perfReport)
+        .filter((report): report is PerfReport => report !== undefined)
+    : [];
+
+  // Apply all filters
+  $: {
+    let logs = mockLogs;
+
+    // Search filter
+    if (searchQuery) {
+      const lowerQuery = searchQuery.toLowerCase();
+      logs = logs.filter(
+        (log) =>
+          log.message.toLowerCase().includes(lowerQuery) ||
+          log.level.toLowerCase().includes(lowerQuery) ||
+          log.userId?.toLowerCase().includes(lowerQuery)
+      );
+    }
+
+    // Level filter
+    if (filterLevels.length > 0) {
+      logs = logs.filter((log) => filterLevels.includes(log.level));
+    }
+
+    // Language filter
+    if (filterLanguages.length > 0) {
+      logs = logs.filter((log) => log.language && filterLanguages.includes(log.language));
+    }
+
+    // User filter
+    if (filterUserId) {
+      logs = logs.filter((log) => log.userId === filterUserId);
+    }
+
+    filteredLogs = logs;
+  }
+
   // Simple filtering function (will be enhanced later)
   function handleSearch(query: string): void {
     searchQuery = query;
-    if (!query) {
-      filteredLogs = mockLogs;
-      return;
-    }
+  }
 
-    const lowerQuery = query.toLowerCase();
-    filteredLogs = mockLogs.filter(
-      (log) =>
-        log.message.toLowerCase().includes(lowerQuery) ||
-        log.level.toLowerCase().includes(lowerQuery) ||
-        log.userId?.toLowerCase().includes(lowerQuery)
-    );
+  function handleFilterChange(
+    event: CustomEvent<{
+      levels: string[];
+      languages: string[];
+      userId: string | null;
+    }>
+  ): void {
+    const { levels, languages, userId } = event.detail;
+    filterLevels = levels;
+    filterLanguages = languages;
+    filterUserId = userId;
   }
 
   function handleLogSelect(logId: string): void {
@@ -108,7 +158,7 @@
     </div>
 
     <!-- Right side: Search bar -->
-    <div class="relative z-10 flex flex-1 items-center md:max-w-xl">
+    <div class="relative z-10 ml-auto flex items-center w-full md:w-96 lg:w-[500px]">
       <SearchBar
         on:search={(e) => {
           handleSearch(e.detail as string);
@@ -118,10 +168,15 @@
   </header>
 
   <!-- Filters bar -->
-  <FiltersBar />
+  <FiltersBar {availableUsers} on:filterChange={handleFilterChange} />
 
   <!-- Main content area -->
   <div class="flex flex-1 flex-col overflow-hidden">
+    <!-- Intent graph visualization (shown when user is selected) -->
+    {#if filterUserId}
+      <IntentGraph perfReports={userPerfReports} />
+    {/if}
+
     <!-- Log display area -->
     <main class="flex flex-1 flex-col overflow-hidden">
       <!-- Desktop: Table view, Mobile: Card view -->

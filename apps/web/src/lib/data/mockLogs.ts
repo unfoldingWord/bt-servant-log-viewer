@@ -60,8 +60,137 @@ const createIntent = (name: string, confidence?: number): Intent => ({
   isKnown: (KNOWN_INTENTS as readonly string[]).includes(name),
 });
 
-// NOTE: PerfReport data omitted from Phase 1a mock data for type safety.
-// Will be added in Phase 1b when integrating with real API data.
+// Sample PerfReport for demonstration
+const samplePerfReport1 = {
+  trace_id: "trace_abc123",
+  user_id: "user_john_doe",
+  total_ms: 2847,
+  total_s: 2.847,
+  total_input_tokens: 1250,
+  total_output_tokens: 487,
+  total_tokens: 1737,
+  total_cost_usd: 0.0342,
+  spans: [
+    {
+      name: "receive_message",
+      duration_ms: 12,
+      input_tokens_expended: 0,
+      output_tokens_expended: 0,
+      total_tokens_expended: 0,
+    },
+    {
+      name: "determine_language",
+      duration_ms: 234,
+      input_tokens_expended: 45,
+      output_tokens_expended: 12,
+      total_tokens_expended: 57,
+    },
+    {
+      name: "preprocess_message",
+      duration_ms: 156,
+      input_tokens_expended: 78,
+      output_tokens_expended: 34,
+      total_tokens_expended: 112,
+    },
+    {
+      name: "extract_intent",
+      duration_ms: 567,
+      input_tokens_expended: 234,
+      output_tokens_expended: 89,
+      total_tokens_expended: 323,
+    },
+    {
+      name: "extract_bible_reference",
+      duration_ms: 189,
+      input_tokens_expended: 123,
+      output_tokens_expended: 45,
+      total_tokens_expended: 168,
+    },
+    {
+      name: "search_resources",
+      duration_ms: 723,
+      input_tokens_expended: 345,
+      output_tokens_expended: 156,
+      total_tokens_expended: 501,
+    },
+    {
+      name: "generate_response",
+      duration_ms: 892,
+      input_tokens_expended: 412,
+      output_tokens_expended: 145,
+      total_tokens_expended: 557,
+    },
+    {
+      name: "format_output",
+      duration_ms: 74,
+      input_tokens_expended: 13,
+      output_tokens_expended: 6,
+      total_tokens_expended: 19,
+    },
+  ],
+};
+
+const samplePerfReport2 = {
+  trace_id: "trace_def456",
+  user_id: "user_john_doe",
+  total_ms: 1923,
+  total_s: 1.923,
+  total_input_tokens: 892,
+  total_output_tokens: 334,
+  total_tokens: 1226,
+  total_cost_usd: 0.0241,
+  spans: [
+    {
+      name: "receive_message",
+      duration_ms: 8,
+      input_tokens_expended: 0,
+      output_tokens_expended: 0,
+      total_tokens_expended: 0,
+    },
+    {
+      name: "determine_language",
+      duration_ms: 198,
+      input_tokens_expended: 42,
+      output_tokens_expended: 11,
+      total_tokens_expended: 53,
+    },
+    {
+      name: "preprocess_message",
+      duration_ms: 134,
+      input_tokens_expended: 67,
+      output_tokens_expended: 29,
+      total_tokens_expended: 96,
+    },
+    {
+      name: "extract_intent",
+      duration_ms: 489,
+      input_tokens_expended: 201,
+      output_tokens_expended: 76,
+      total_tokens_expended: 277,
+    },
+    {
+      name: "search_resources",
+      duration_ms: 612,
+      input_tokens_expended: 298,
+      output_tokens_expended: 123,
+      total_tokens_expended: 421,
+    },
+    {
+      name: "generate_response",
+      duration_ms: 423,
+      input_tokens_expended: 267,
+      output_tokens_expended: 89,
+      total_tokens_expended: 356,
+    },
+    {
+      name: "format_output",
+      duration_ms: 59,
+      input_tokens_expended: 17,
+      output_tokens_expended: 6,
+      total_tokens_expended: 23,
+    },
+  ],
+};
 
 export const mockLogs = [
   // Recent activity - Day 0 (today)
@@ -89,6 +218,7 @@ export const mockLogs = [
       startVerse: 1,
     },
     traceId: "trace_abc123",
+    perfReport: samplePerfReport1,
     raw: { startLine: 1, endLine: 15 },
   },
   {
@@ -147,6 +277,7 @@ export const mockLogs = [
       startVerse: 16,
     },
     traceId: "trace_def456",
+    perfReport: samplePerfReport2,
     raw: { startLine: 19, endLine: 32 },
   },
 
