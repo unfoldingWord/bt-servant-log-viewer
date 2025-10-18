@@ -234,7 +234,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
 ## Roadmap
 
-- **Phase 0**: Scaffold and tooling ✅
+- **Phase 0**: Scaffold and tooling ✅ (Complete)
 - **Phase 1a**: UI shell with mock data (bot competition)
 - **Phase 1b**: Backend integration
 - **Phase 2**: Parser implementation
