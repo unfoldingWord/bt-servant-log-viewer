@@ -145,10 +145,11 @@
           selector: "edge",
           style: {
             width: 4,
-            "line-color": "#4b5563", // gray-600
-            "target-arrow-color": "#4b5563",
+            "line-color": "#22d3ee", // accent-cyan
+            "target-arrow-color": "#22d3ee",
             "target-arrow-shape": "triangle",
             "curve-style": "bezier",
+            opacity: 0.6,
           },
         },
       ],
