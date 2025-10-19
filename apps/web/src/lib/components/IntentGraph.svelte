@@ -117,7 +117,7 @@
 
           <!-- Connecting line (except for last node) - thick timeline style -->
           {#if i < nodes.length - 1}
-            <div class="absolute left-5 top-5 h-1 bg-gray-600" style="width: 4rem;"></div>
+            <div class="absolute left-full top-5 h-1 bg-gray-600" style="width: 4rem;"></div>
           {/if}
         </div>
       {/each}
