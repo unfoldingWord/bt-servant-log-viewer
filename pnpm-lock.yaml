@@ -123,6 +123,9 @@ importers:
       svelte:
         specifier: ^5.2.7
         version: 5.40.2
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.76
     devDependencies:
       '@eslint/js':
         specifier: ^9.17.0

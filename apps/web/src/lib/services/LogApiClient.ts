@@ -46,12 +46,8 @@ export class LogApiClient {
   private parser: LogParser;
 
   constructor(baseUrl?: string) {
-    // Default to localhost in development, or use PUBLIC_API_URL from environment
-    this.baseUrl =
-      baseUrl ??
-      (typeof window !== "undefined" && window.location.origin.includes("localhost")
-        ? "http://localhost:3001"
-        : "");
+    // Use relative URLs - API routes are served by the same SvelteKit app
+    this.baseUrl = baseUrl ?? "";
     this.parser = new LogParser();
   }
 
