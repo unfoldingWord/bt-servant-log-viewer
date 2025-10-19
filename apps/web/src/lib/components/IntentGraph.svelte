@@ -122,9 +122,7 @@
 
               <!-- Connecting line (except for last node) - positioned relative to circle -->
               {#if i < nodes.length - 1}
-                <div
-                  class="absolute left-full top-1/2 h-1 w-[9.5rem] -translate-y-1/2 bg-gray-600"
-                ></div>
+                <div class="absolute left-full top-1/2 h-1 w-80 -translate-y-1/2 bg-gray-600"></div>
               {/if}
             </div>
 
