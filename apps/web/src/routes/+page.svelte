@@ -218,7 +218,7 @@
       <div class="relative flex items-center">
         <div class="absolute left-3 pointer-events-none">
           <svg
-            class="h-3.5 w-3.5 text-accent-cyan/70"
+            class="h-3.5 w-3.5 text-accent-blue"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -236,14 +236,14 @@
           on:change={() => {
             handleServerChange(selectedServer);
           }}
-          class="cursor-pointer appearance-none rounded-full border border-accent-cyan/30 bg-gradient-to-r from-accent-cyan/10 to-accent-teal/10 pl-9 pr-8 py-2 text-xs font-semibold text-accent-cyan shadow-lg shadow-accent-cyan/10 backdrop-blur-sm transition-all hover:scale-105 hover:border-accent-cyan/50 hover:shadow-accent-cyan/20 focus:border-accent-cyan focus:outline-none focus:ring-2 focus:ring-accent-cyan/30"
+          class="cursor-pointer appearance-none rounded-full border border-accent-blue/40 bg-gradient-to-r from-accent-blue/10 to-accent-cyan/10 pl-9 pr-8 py-2 text-xs font-semibold text-accent-blue shadow-md shadow-accent-blue/10 transition-all hover:scale-105 hover:shadow-accent-blue/20 focus:border-accent-blue focus:outline-none focus:ring-2 focus:ring-accent-blue/30"
         >
-          <option value="qa">QA</option>
-          <option value="prod">Production</option>
+          <option class="rounded-lg" value="qa">QA</option>
+          <option class="rounded-lg" value="prod">Production</option>
         </select>
         <div class="absolute right-3 pointer-events-none">
           <svg
-            class="h-3 w-3 text-accent-cyan/70"
+            class="h-3 w-3 text-accent-blue"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
