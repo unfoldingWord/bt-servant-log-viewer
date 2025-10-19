@@ -20,13 +20,13 @@
 
   /* Custom scrollbar styling - inspired by Zulip and PyCharm dark */
   * {
-    scrollbar-width: thin;
+    scrollbar-width: auto;
     scrollbar-color: rgb(var(--surface)) rgb(var(--background));
   }
 
   *::-webkit-scrollbar {
-    width: 18px;
-    height: 18px;
+    width: 32px;
+    height: 32px;
   }
 
   *::-webkit-scrollbar-track {
