@@ -165,7 +165,7 @@
     <div class="animate-expand">
       <!-- Intent Flow Visualization -->
       {#if perfReport}
-        <IntentGraph perfReports={[perfReport]} />
+        <IntentGraph perfReports={[perfReport]} {logs} />
       {/if}
 
       <!-- Log entries table -->

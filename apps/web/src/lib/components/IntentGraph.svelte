@@ -5,6 +5,7 @@
   import type { Core, EventObject } from "cytoscape";
 
   export let perfReports: PerfReport[] = [];
+  export let logs: import("@bt-log-viewer/domain").LogEntry[] = [];
 
   let selectedNode: Span | null = null;
   let cy: Core | null = null;
@@ -34,13 +35,9 @@
       return acc;
     }, []);
 
-  // Extract unique intents from all perf reports
+  // Extract unique intents from logs
   $: intents = Array.from(
-    new Set(
-      perfReports.flatMap((report) =>
-        report.grouped_totals_by_intent ? Object.keys(report.grouped_totals_by_intent) : []
-      )
-    )
+    new Set(logs.flatMap((log) => (log.intents ?? []).map((intent) => intent.name)))
   ).sort();
 
   function formatDuration(ms: number): string {
