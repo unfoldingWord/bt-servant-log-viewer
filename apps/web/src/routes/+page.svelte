@@ -221,7 +221,7 @@
             e.stopPropagation();
             showServerDropdown = !showServerDropdown;
           }}
-          class="flex items-center gap-1.5 rounded border px-3 py-2 text-xs font-medium transition-all hover:scale-105 border-surface-active bg-surface/30 text-text-dim hover:bg-surface"
+          class="flex items-center gap-1.5 rounded border-2 border-accent-cyan/50 bg-accent-cyan/10 px-2.5 py-1 text-xs font-medium text-accent-cyan transition-all hover:scale-105"
         >
           <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
