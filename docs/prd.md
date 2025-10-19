@@ -611,8 +611,55 @@ For BT-Servant application:
 - Cache management for performance.
 
 **Deliverables:** Fully functional app with the chosen UI connected to real data
-sources. All core parsing and extraction working. App usable for daily log
-analysis.
+sources. All core parsing and extraction working. Basic filters and search
+operational. App usable for daily log analysis with essential features.
+
+### Phase 1c — Extracted Fields UI & Intent-Specific Sections (Week 2.5)
+
+**Focus: Complete the UI by adding all extracted fields with intent-aware
+contextual display**
+
+- **Universal Extracted Fields (all entries):**
+  - Add client_ip → GeoIP country resolution display
+  - Add message_original and message_preprocessed comparison view
+    (side-by-side or toggle)
+  - Add final_message display (response sent to user)
+  - CID-based correlation service to gather multi-entry patterns
+
+- **Intent-Specific Contextual Sections:**
+  - **Dynamic section rendering** based on detected intents
+  - Design pattern: LogDetailPanel shows contextual sections that adapt to the
+    entry's intent type
+  - **Biblical Reference Section** (for scripture-related intents):
+    - Intents: `retrieve-scripture`, `get-passage-summary`,
+      `get-passage-keywords`, `get-translation-helps`, `translate-scripture`
+    - Display: Formatted reference (e.g., "John 4:1-3" with book icon)
+    - Extracted from: `[selection-helper] canonical_book` + `ranges` patterns
+    - Visual: Highlighted badge with book/chapter/verse breakdown
+  - **Translation Resources Section** (for translation assistance intents):
+    - Intents: `get-translation-helps`, `get-bible-translation-assistance`,
+      `consult-fia-resources`
+    - Display: List of resources searched with icons
+    - Extracted from: `[translation-helps] selected {n} help entries` pattern
+    - Visual: Resource count badge + expandable list with resource types
+
+- **UI/UX Design:**
+  - Intent-specific sections appear **below** basic info, **above** PerfReport
+  - Sections use distinct styling (border color, icon) per intent category
+  - Smooth animations when sections appear/disappear
+  - Empty states: "No biblical reference detected" vs section not shown
+  - Sections are collapsible with default expanded state
+
+- **CID Correlation Architecture:**
+  - Implement service to find related entries by CID
+  - Cache correlation results for performance
+  - Show "Correlated from N other entries" hint when fields come from
+    different log lines
+
+**Deliverables:** Complete extracted field display. LogDetailPanel shows all
+contextual information with intent-aware sections. Users can see
+original/preprocessed/final messages, biblical references, and resources
+searched when applicable.
 
 ### Phase 2 — Performance, Polish & Testing (Week 3)
 
@@ -623,6 +670,7 @@ analysis.
   - Optimize memory usage for large datasets (100k+ entries)
   - Benchmark filtering and search performance
   - Lazy loading and virtualization improvements
+  - Optimize CID correlation queries
 - **Error Recovery Polish:**
   - Handle all edge cases in message pattern extraction
   - Graceful degradation for malformed PerfReports
@@ -633,14 +681,16 @@ analysis.
   - Property-based testing for parser
   - Performance regression tests
   - Edge case test coverage (missing fields, malformed JSON, etc.)
-- **UI Enhancements (from PRD gaps):**
-  - Add message_original, message_preprocessed, final_message to
-    LogDetailPanel
-  - Add structured PerfReport display (not just raw JSON)
-  - Add resources_searched display
+  - Test intent-specific section rendering
+- **PerfReport Visualization:**
+  - Replace raw JSON dump with structured display
+  - Waterfall timeline for spans
+  - Cost breakdown by intent
+  - Token usage charts
 - **Documentation:**
   - Parser performance benchmarks
   - Extraction pattern documentation
+  - Intent-specific UI section guide
   - Troubleshooting guide
 
 ### Phase 3 — Live Tail & Advanced Features (Week 4)
