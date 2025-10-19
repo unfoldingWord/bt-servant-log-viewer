@@ -8,24 +8,26 @@
   // Aggregate all spans from all perfReports for this user
   $: allSpans = perfReports.flatMap((report) => report.spans ?? []);
 
-  // Create unique list of spans (by name) with aggregated metrics
-  $: nodes = allSpans.reduce<(Span & { count?: number })[]>((acc, span) => {
-    const existing = acc.find((s) => s.name === span.name);
-    if (existing) {
-      existing.duration_ms += span.duration_ms;
-      existing.input_tokens_expended =
-        (existing.input_tokens_expended ?? 0) + (span.input_tokens_expended ?? 0);
-      existing.output_tokens_expended =
-        (existing.output_tokens_expended ?? 0) + (span.output_tokens_expended ?? 0);
-      existing.count = (existing.count ?? 1) + 1;
-    } else {
-      acc.push({
-        ...span,
-        count: 1,
-      });
-    }
-    return acc;
-  }, []);
+  // Create unique list of spans (by name) with aggregated metrics, filtering only nodes ending in "_node"
+  $: nodes = allSpans
+    .filter((span) => span.name.endsWith("_node"))
+    .reduce<(Span & { count?: number })[]>((acc, span) => {
+      const existing = acc.find((s) => s.name === span.name);
+      if (existing) {
+        existing.duration_ms += span.duration_ms;
+        existing.input_tokens_expended =
+          (existing.input_tokens_expended ?? 0) + (span.input_tokens_expended ?? 0);
+        existing.output_tokens_expended =
+          (existing.output_tokens_expended ?? 0) + (span.output_tokens_expended ?? 0);
+        existing.count = (existing.count ?? 1) + 1;
+      } else {
+        acc.push({
+          ...span,
+          count: 1,
+        });
+      }
+      return acc;
+    }, []);
 
   function selectNode(span: Span): void {
     selectedNode = selectedNode?.name === span.name ? null : span;
@@ -43,12 +45,12 @@
 
   function getNodeColor(index: number): string {
     const colors = [
-      "from-accent-cyan to-accent-teal",
-      "from-accent-teal to-accent-cyan",
-      "from-accent-cyan/80 to-accent-teal/80",
-      "from-accent-teal/80 to-accent-cyan/80",
+      "from-gray-500 to-gray-600",
+      "from-gray-600 to-gray-700",
+      "from-gray-400 to-gray-500",
+      "from-gray-500 to-gray-700",
     ];
-    return colors[index % colors.length] ?? "from-accent-cyan to-accent-teal";
+    return colors[index % colors.length] ?? "from-gray-500 to-gray-600";
   }
 </script>
 
@@ -57,8 +59,8 @@
     class="animate-slide-in border-t-2 border-accent-cyan/20 bg-gradient-to-b from-background-secondary/30 to-background/30 p-6"
   >
     <div class="mb-4 flex items-center gap-3">
-      <div class="h-1 w-1 rounded-full bg-accent-teal animate-pulse"></div>
-      <h3 class="text-sm font-semibold text-accent-cyan">Intent Flow Visualization</h3>
+      <div class="h-1 w-1 rounded-full bg-gray-500 animate-pulse"></div>
+      <h3 class="text-sm font-semibold text-gray-300">Intent Flow Visualization</h3>
       <span class="text-xs text-text-dim">
         ({nodes.length} nodes · {perfReports.length} traces)
       </span>
@@ -78,72 +80,44 @@
           >
             <!-- Node circle with gradient -->
             <div
-              class="relative flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br shadow-lg transition-all duration-300 animate-fade-in-scale
+              class="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br shadow-lg transition-all duration-300 animate-fade-in-scale
               {getNodeColor(i)}
               {selectedNode?.name === node.name
-                ? 'ring-4 ring-accent-cyan/50 scale-110 shadow-accent-cyan/50'
-                : 'hover:shadow-accent-cyan/30'}"
+                ? 'ring-4 ring-gray-400/50 scale-110 shadow-gray-500/50'
+                : 'hover:shadow-gray-500/30'}"
             >
               <!-- Pulsing background effect for selected node -->
               {#if selectedNode?.name === node.name}
                 <div
-                  class="absolute inset-0 rounded-full bg-gradient-to-br from-accent-cyan to-accent-teal opacity-30 blur-lg animate-pulse"
+                  class="absolute inset-0 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 opacity-30 blur-lg animate-pulse"
                 ></div>
               {/if}
 
-              <!-- Node icon -->
-              <div class="relative z-10 text-center">
-                <svg
-                  class="mx-auto h-8 w-8 text-background transition-transform group-hover:scale-110"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              <!-- Count badge -->
+              {#if node.count && node.count > 1}
+                <span
+                  class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-background text-[10px] font-bold text-gray-400 ring-2 ring-gray-500/50"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
-                {#if node.count && node.count > 1}
-                  <span
-                    class="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-background text-xs font-bold text-accent-cyan ring-2 ring-accent-cyan/50"
-                  >
-                    {node.count}
-                  </span>
-                {/if}
-              </div>
+                  {node.count}
+                </span>
+              {/if}
             </div>
 
             <!-- Node label -->
             <span
               class="mt-2 max-w-[120px] truncate text-[10px] font-medium transition-colors
                 {selectedNode?.name === node.name
-                ? 'text-accent-cyan'
-                : 'text-text-secondary group-hover:text-accent-cyan'}"
+                ? 'text-gray-300'
+                : 'text-text-secondary group-hover:text-gray-300'}"
               title={node.name}
             >
               {node.name.split(":")[1]?.replace(/_/g, " ") ?? node.name.replace(/_/g, " ")}
             </span>
           </button>
 
-          <!-- Connecting line and arrow (except for last node) -->
+          <!-- Connecting line (except for last node) - thick timeline style -->
           {#if i < nodes.length - 1}
-            <div class="absolute left-full top-7 flex items-center" style="width: 4rem;">
-              <!-- Line -->
-              <div class="h-0.5 flex-1 bg-accent-cyan/30"></div>
-              <!-- Arrow head -->
-              <svg
-                class="h-4 w-4 text-accent-cyan/30 transition-colors"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                />
-              </svg>
-            </div>
+            <div class="absolute left-5 top-5 h-1 bg-gray-600" style="width: 4rem;"></div>
           {/if}
         </div>
       {/each}
@@ -152,15 +126,10 @@
     <!-- Metrics panel for selected node -->
     {#if selectedNode}
       <div
-        class="mt-6 animate-expand rounded-lg border border-accent-cyan/30 bg-background/50 p-4 backdrop-blur-sm"
+        class="mt-6 animate-expand rounded-lg border border-gray-600/30 bg-background/50 p-4 backdrop-blur-sm"
       >
         <div class="mb-3 flex items-center gap-2">
-          <svg
-            class="h-5 w-5 text-accent-cyan"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -168,44 +137,44 @@
               d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
             />
           </svg>
-          <h4 class="text-sm font-semibold text-accent-cyan">
+          <h4 class="text-sm font-semibold text-gray-300">
             {selectedNode.name.replace(/_/g, " ")}
           </h4>
         </div>
 
         <div class="grid grid-cols-2 gap-4 text-xs md:grid-cols-4">
           <div
-            class="rounded-lg border border-surface-active bg-background-secondary/50 p-3 transition-all hover:border-accent-cyan/50"
+            class="rounded-lg border border-surface-active bg-background-secondary/50 p-3 transition-all hover:border-gray-500/50"
           >
             <div class="text-text-dim">Duration</div>
-            <div class="mt-1 font-mono text-lg font-bold text-accent-teal">
+            <div class="mt-1 font-mono text-lg font-bold text-gray-400">
               {formatDuration(selectedNode.duration_ms)}
             </div>
           </div>
 
           <div
-            class="rounded-lg border border-surface-active bg-background-secondary/50 p-3 transition-all hover:border-accent-cyan/50"
+            class="rounded-lg border border-surface-active bg-background-secondary/50 p-3 transition-all hover:border-gray-500/50"
           >
             <div class="text-text-dim">Input Tokens</div>
-            <div class="mt-1 font-mono text-lg font-bold text-accent-cyan">
+            <div class="mt-1 font-mono text-lg font-bold text-gray-400">
               {formatTokens(selectedNode.input_tokens_expended)}
             </div>
           </div>
 
           <div
-            class="rounded-lg border border-surface-active bg-background-secondary/50 p-3 transition-all hover:border-accent-cyan/50"
+            class="rounded-lg border border-surface-active bg-background-secondary/50 p-3 transition-all hover:border-gray-500/50"
           >
             <div class="text-text-dim">Output Tokens</div>
-            <div class="mt-1 font-mono text-lg font-bold text-accent-cyan">
+            <div class="mt-1 font-mono text-lg font-bold text-gray-400">
               {formatTokens(selectedNode.output_tokens_expended)}
             </div>
           </div>
 
           <div
-            class="rounded-lg border border-surface-active bg-background-secondary/50 p-3 transition-all hover:border-accent-cyan/50"
+            class="rounded-lg border border-surface-active bg-background-secondary/50 p-3 transition-all hover:border-gray-500/50"
           >
             <div class="text-text-dim">Total Tokens</div>
-            <div class="mt-1 font-mono text-lg font-bold text-accent-teal">
+            <div class="mt-1 font-mono text-lg font-bold text-gray-400">
               {formatTokens(selectedNode.total_tokens_expended)}
             </div>
           </div>

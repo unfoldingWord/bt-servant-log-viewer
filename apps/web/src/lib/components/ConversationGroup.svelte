@@ -1,12 +1,21 @@
 <script lang="ts">
   import type { LogEntry, PerfReport } from "@bt-log-viewer/domain";
   import IntentGraph from "./IntentGraph.svelte";
+  import LogDetailInline from "./LogDetailInline.svelte";
 
   export let logs: LogEntry[];
   export let firstLog: LogEntry;
   export let perfReport: PerfReport | undefined;
 
   let expanded = false;
+  let selectedLogId: string | null = null;
+
+  $: selectedLog = selectedLogId ? (logs.find((log) => log.id === selectedLogId) ?? null) : null;
+
+  function handleLogClick(logId: string): void {
+    // Toggle selection: if clicking same log, deselect it
+    selectedLogId = selectedLogId === logId ? null : logId;
+  }
 
   function formatTimestamp(date: Date): string {
     return new Intl.DateTimeFormat("en-US", {
@@ -188,7 +197,13 @@
           </thead>
           <tbody class="text-sm">
             {#each logs as log}
-              <tr class="border-b border-surface/30 hover:bg-surface/20 transition-colors">
+              <tr
+                on:click={() => {
+                  handleLogClick(log.id);
+                }}
+                class="cursor-pointer border-b border-surface/30 hover:bg-surface/20 transition-colors"
+                class:selected-row={selectedLogId === log.id}
+              >
                 <td class="px-4 py-2.5">
                   <span class="font-mono text-xs text-text-muted">
                     {formatTimestamp(log.ts)}
@@ -220,6 +235,15 @@
                   {/if}
                 </td>
               </tr>
+
+              <!-- Inline detail row (expands below the clicked row) -->
+              {#if selectedLogId === log.id && selectedLog}
+                <tr class="detail-row">
+                  <td colspan="4" class="p-0">
+                    <LogDetailInline log={selectedLog} />
+                  </td>
+                </tr>
+              {/if}
             {/each}
           </tbody>
         </table>
@@ -242,5 +266,15 @@
 
   .animate-expand {
     animation: expand 0.3s ease-out forwards;
+  }
+
+  .selected-row {
+    background: linear-gradient(to right, rgb(34 211 238 / 0.08), transparent);
+    border-left: 3px solid rgb(34 211 238);
+    box-shadow: inset 0 0 20px rgba(34, 211, 238, 0.1);
+  }
+
+  .selected-row td:first-child {
+    padding-left: calc(1rem - 3px);
   }
 </style>
