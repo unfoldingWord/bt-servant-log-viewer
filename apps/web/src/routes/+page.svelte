@@ -143,15 +143,13 @@
 <div class="flex h-screen flex-col bg-background">
   <!-- Header with gradient background and animations -->
   <header
-    class="relative z-50 flex items-center justify-between gap-3 overflow-hidden border-b-2 border-accent-cyan/20 bg-gradient-to-r from-background-secondary via-background-secondary to-background px-4 py-4 shadow-lg shadow-black/5 md:px-6"
+    class="relative z-50 flex items-center justify-between gap-3 border-b-2 border-accent-cyan/20 bg-gradient-to-r from-background-secondary via-background-secondary to-background px-4 py-4 shadow-lg shadow-black/5 md:px-6"
   >
-    <!-- Animated gradient glow effect -->
-    <div
-      class="pointer-events-none absolute inset-0 animate-gradient bg-gradient-to-r from-accent-cyan/5 via-accent-teal/5 to-accent-cyan/5"
-    ></div>
-
-    <!-- Floating particles effect -->
+    <!-- Background effects container keeps visuals clipped without hiding overlays -->
     <div class="pointer-events-none absolute inset-0 overflow-hidden">
+      <div
+        class="absolute inset-0 animate-gradient bg-gradient-to-r from-accent-cyan/5 via-accent-teal/5 to-accent-cyan/5"
+      ></div>
       <div
         class="absolute -left-4 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-accent-cyan/10 blur-2xl animate-float"
       ></div>
