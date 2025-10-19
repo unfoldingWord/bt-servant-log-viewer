@@ -627,21 +627,24 @@ contextual display**
   - CID-based correlation service to gather multi-entry patterns
 
 - **Intent-Specific Contextual Sections:**
-  - **Dynamic section rendering** based on detected intents
-  - Design pattern: LogDetailPanel shows contextual sections that adapt to the
-    entry's intent type
+  - **Two locations for intent context:**
+    1. **LogDetailPanel** (individual entry) - when clicking a log row
+    2. **IntentGraph** (conversation-level) - below graph visualization
   - **Biblical Reference Section** (for scripture-related intents):
     - Intents: `retrieve-scripture`, `get-passage-summary`,
       `get-passage-keywords`, `get-translation-helps`, `translate-scripture`
     - Display: Formatted reference (e.g., "John 4:1-3" with book icon)
     - Extracted from: `[selection-helper] canonical_book` + `ranges` patterns
-    - Visual: Highlighted badge with book/chapter/verse breakdown
+    - Visual: Purple border, book icon, book/chapter/verse breakdown
   - **Translation Resources Section** (for translation assistance intents):
     - Intents: `get-translation-helps`, `get-bible-translation-assistance`,
       `consult-fia-resources`
-    - Display: List of resources searched with icons
+    - Display: List of resources searched with checkmarks
     - Extracted from: `[translation-helps] selected {n} help entries` pattern
-    - Visual: Resource count badge + expandable list with resource types
+    - Visual: Teal border, search icon, resource count + list
+  - **Message Flow Section** (universal):
+    - Shows: Original → Preprocessed → Response comparison
+    - Visual: Cyan border, three-column layout (accordion on mobile)
 
 - **UI/UX Design:**
   - Intent-specific sections appear **below** basic info, **above** PerfReport

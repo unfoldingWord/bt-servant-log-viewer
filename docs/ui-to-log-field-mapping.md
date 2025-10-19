@@ -408,95 +408,63 @@ Maps to: `apps/web/src/lib/components/IntentGraph.svelte`
 | **Edge Labels**      | Time between intent detections              | Calculate from timestamp diffs                                |
 | **Highlighted Path** | Selected conversation CID                   | Highlight all nodes/edges for that CID                        |
 
-### Intent Node Click Interaction (Phase 1c)
+### Intent-Specific Context Sections (Phase 1c)
 
-**Concept:** Clicking an intent node opens a detail panel showing **aggregated
-intent-specific data** for all log entries with that intent.
+**Concept:** IntentGraph component shows **intent-specific contextual sections**
+below the graph visualization, providing conversation-level context without
+requiring clicks.
+
+**Location:** Within `IntentGraph.svelte` component, appears between the graph
+and the "Selected Node Metrics" panel.
 
 **UX Flow:**
 
-1. User clicks intent node (e.g., "get-translation-helps")
-2. Side panel slides in from right
-3. Panel shows:
-   - **Header:** Intent name + count (e.g., "get-translation-helps (12
-     occurrences)")
-   - **Intent-specific contextual sections** (same as LogDetailPanel, but
-     aggregated)
-   - **Log entries list** (all entries with this intent, expandable)
+1. User expands a ConversationGroup
+2. IntentGraph renders with graph visualization
+3. Below graph, intent-specific sections automatically appear based on detected
+   intents
+4. When user clicks a graph PATH node, metrics panel appears below these
+   sections
 
-**Intent Node Detail Panel Layout:**
+**Layout in IntentGraph Component:**
 
 ```
 ┌────────────────────────────────────────────────────────┐
-│ ✕  get-translation-helps (12 occurrences)             │
+│ Graph Path (5 nodes · 1 trace)                        │
+│ Intents: get-translation-helps                        │
 ├────────────────────────────────────────────────────────┤
-│                                                         │
-│ 📖 Biblical References Accessed (Aggregated)          │
-│ ┌─────────────────────────────────────────────────────┐│
-│ │ • John 4:1-3         (3 times)                      ││
-│ │ • Genesis 1:1-5      (2 times)                      ││
-│ │ • Matthew 5:1-10     (1 time)                       ││
-│ │ • Romans 8:28-39     (6 times)                      ││
-│ └─────────────────────────────────────────────────────┘│
-│                                                         │
-│ 🔍 Translation Resources Used (Aggregated)            │
-│ ┌─────────────────────────────────────────────────────┐│
-│ │ ✓ Translation Notes       (12 times)                ││
-│ │ ✓ Translation Words       (8 times)                 ││
-│ │ ✓ Translation Questions   (3 times)                 ││
-│ └─────────────────────────────────────────────────────┘│
-│                                                         │
-│ 📊 Performance Summary                                 │
-│ ┌─────────────────────────────────────────────────────┐│
-│ │ Avg Duration:    4.2s                               ││
-│ │ Total Tokens:    45,231                             ││
-│ │ Total Cost:      $0.23                              ││
-│ └─────────────────────────────────────────────────────┘│
-│                                                         │
-│ 📋 All Log Entries (12)                ▼ Expand All   │
-│ ┌─────────────────────────────────────────────────────┐│
-│ │ [2025-10-18 23:10:07] user: kwlv1sX...  ▼         ││
-│ │ [2025-10-18 23:15:22] user: anotherUser ▶         ││
-│ │ [2025-10-18 23:18:45] user: kwlv1sX...  ▶         ││
-│ │ ... (9 more)                                        ││
-│ └─────────────────────────────────────────────────────┘│
-│                                                         │
+│ [Cytoscape Graph Visualization]                       │
+├────────────────────────────────────────────────────────┤
+│ 📖 Biblical Reference                                 │
+│    John 4:1-3 (Book: John, Chapter: 4, Verses: 1-3)   │
+├────────────────────────────────────────────────────────┤
+│ 🔍 Translation Resources (2 searched)                 │
+│    ✓ Translation Notes  ✓ Translation Words           │
+├────────────────────────────────────────────────────────┤
+│ 💬 Message Flow                                       │
+│    Original → Preprocessed → Response                 │
+│    [Side-by-side comparison view]                     │
+├────────────────────────────────────────────────────────┤
+│ [Selected Node Metrics Panel] ← Appears on node click │
+│ Duration: 2.3s | Tokens: 1,234 | Cost: $0.05         │
 └────────────────────────────────────────────────────────┘
 ```
 
-**Aggregation Logic by Intent Type:**
+**Rendering Logic:**
 
-| Intent Type           | Aggregated Data Shown                                                                                             |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| **Scripture-Related** | • List of all biblical references with occurrence counts<br>• Top 5 most queried passages<br>• Distribution chart |
-| **Translation Help**  | • Resources used (with frequency)<br>• Avg time per query<br>• Success rate (if determinable)                     |
-| **Conversational**    | • Common topics/keywords<br>• Avg response length<br>• User satisfaction indicators                               |
-| **All Intents**       | • Performance metrics (avg duration, tokens, cost)<br>• User distribution<br>• Time distribution chart            |
+Sections appear automatically based on detected intents for this conversation:
 
-**Click Behavior:**
+- **Scripture intents** → Show Biblical Reference section
+- **Translation intents** → Show Translation Resources section
+- **Any conversation with preprocessing** → Show Message Flow section
+- Sections use same styling as LogDetailPanel (purple/teal/cyan borders)
 
-- **Single click:** Open intent detail panel
-- **Double click:** Filter main log view to show only this intent
-- **Ctrl/Cmd + click:** Open in new tab (if multi-tab supported)
-- **Right click:** Context menu with options:
-  - "Filter to this intent"
-  - "Copy intent name"
-  - "Export intent data"
-  - "Show related intents"
+**No Separate Panel:**
 
-**Implementation Notes:**
-
-- Intent detail panel is a NEW component: `IntentDetailPanel.svelte`
-- Reuses intent-specific section components from `LogDetailPanel`
-- Aggregation happens at query time (or cached)
-- Performance: Lazy-load entry list, show first 10 with "Load more" button
-- Mobile: Slides up from bottom instead of right
-
-**Phase Priority:**
-
-- Phase 1b: Basic node click shows filtered log list
-- Phase 1c: Full intent detail panel with aggregated contextual sections
-- Phase 2: Advanced aggregations (charts, distributions, correlations)
+- Everything happens within existing IntentGraph component
+- No slide-ins, drawers, or popups
+- Sections are always visible (not clickable/expandable)
+- Clean, minimal design
 
 **Implementation Notes:**
 
