@@ -153,7 +153,7 @@
           class="flex items-center gap-1.5 rounded border px-2.5 py-1 text-xs font-medium transition-all hover:scale-105
             {selectedUserId
             ? 'border-2 border-accent-cyan/50 bg-accent-cyan/10 text-accent-cyan'
-            : 'border-accent-teal/30 bg-surface/30 text-text-dim hover:bg-surface hover:border-accent-teal/40'}"
+            : 'border-accent-teal/60 bg-surface/30 text-text-dim hover:bg-surface hover:border-accent-teal/80'}"
         >
           {selectedUserId ? formatUserId(selectedUserId) : "All Users"}
           <svg

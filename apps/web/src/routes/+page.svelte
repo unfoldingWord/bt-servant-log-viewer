@@ -19,6 +19,7 @@
   let filterUserId: string | null = null;
   let groupByConversation = false;
   let selectedServer: Server = "qa";
+  let showServerDropdown = false;
 
   // Load saved server preference from localStorage
   onMount(() => {
@@ -215,16 +216,14 @@
       </div>
 
       <!-- Server selector with All Users dropdown styling -->
-      <div class="relative flex items-center">
+      <div class="relative">
         <button
           type="button"
           on:click={(e) => {
-            const select = e.currentTarget.nextElementSibling;
-            if (select instanceof HTMLSelectElement) {
-              select.click();
-            }
+            e.stopPropagation();
+            showServerDropdown = !showServerDropdown;
           }}
-          class="flex items-center gap-1.5 rounded border px-2.5 py-1 text-xs font-medium transition-all hover:scale-105 border-surface-active bg-surface/30 text-text-dim hover:bg-surface"
+          class="flex items-center gap-1.5 rounded border px-3 py-2 text-xs font-medium transition-all hover:scale-105 border-surface-active bg-surface/30 text-text-dim hover:bg-surface"
         >
           <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -235,7 +234,13 @@
             />
           </svg>
           {selectedServer === "qa" ? "QA" : "Production"}
-          <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            class="h-3 w-3 transition-transform"
+            class:rotate-180={showServerDropdown}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -244,16 +249,39 @@
             />
           </svg>
         </button>
-        <select
-          bind:value={selectedServer}
-          on:change={() => {
-            handleServerChange(selectedServer);
-          }}
-          class="absolute inset-0 opacity-0 cursor-pointer"
-        >
-          <option value="qa">QA</option>
-          <option value="prod">Production</option>
-        </select>
+
+        {#if showServerDropdown}
+          <div
+            class="absolute right-0 top-full z-50 mt-1 max-h-64 w-48 overflow-y-auto rounded-lg border border-surface-active bg-background-secondary shadow-xl"
+          >
+            <button
+              type="button"
+              on:click={() => {
+                handleServerChange("qa");
+                showServerDropdown = false;
+              }}
+              class="w-full px-3 py-2 text-left text-xs font-medium transition-colors hover:bg-surface
+                {selectedServer === 'qa'
+                ? 'bg-accent-cyan/10 text-accent-cyan'
+                : 'text-text-secondary'}"
+            >
+              QA
+            </button>
+            <button
+              type="button"
+              on:click={() => {
+                handleServerChange("prod");
+                showServerDropdown = false;
+              }}
+              class="w-full px-3 py-2 text-left text-xs font-medium transition-colors hover:bg-surface
+                {selectedServer === 'prod'
+                ? 'bg-accent-cyan/10 text-accent-cyan'
+                : 'text-text-secondary'}"
+            >
+              Production
+            </button>
+          </div>
+        {/if}
       </div>
     </div>
   </header>
