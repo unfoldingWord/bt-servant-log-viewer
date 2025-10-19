@@ -22,6 +22,10 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
+COPY --from=deps /app/packages/domain/node_modules ./packages/domain/node_modules
+COPY --from=deps /app/packages/app/node_modules ./packages/app/node_modules
+COPY --from=deps /app/packages/adapters/node_modules ./packages/adapters/node_modules
+COPY --from=deps /app/packages/workers/node_modules ./packages/workers/node_modules
 COPY . .
 RUN pnpm --filter @bt-log-viewer/web build
 
