@@ -26,16 +26,17 @@ const fileParamsSchema = z.object({
 });
 
 /**
- * Check if a server is available by attempting to connect
+ * Check if a server is available by calling /alive endpoint
+ * Note: /alive uses a different bearer token than /admin/logs endpoints
  */
 async function checkServerHealth(server: ServerEnvironment, signal: AbortSignal): Promise<boolean> {
   try {
     const config = getServerConfig(server);
-    const url = `${config.url}/admin/logs/files`;
+    const url = `${config.url}/alive`;
 
     const response = await fetch(url, {
       headers: {
-        Authorization: `Bearer ${config.token}`,
+        Authorization: `Bearer ${config.aliveToken}`,
         Accept: "application/json",
       },
       signal,

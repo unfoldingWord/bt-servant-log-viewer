@@ -5,6 +5,7 @@ export type ServerEnvironment = "dev" | "qa" | "prod";
 interface BtServantConfig {
   url: string;
   token: string;
+  aliveToken: string;
 }
 
 interface BtServantConfigs {
@@ -16,19 +17,24 @@ interface BtServantConfigs {
 /**
  * BT-Servant API configuration loaded from environment variables
  * Tokens are kept on the backend and never exposed to the browser
+ *
+ * Note: aliveToken is for /alive health check endpoint (different from admin logs token)
  */
 const btServantConfig: BtServantConfigs = {
   dev: {
     url: process.env["BT_SERVANT_DEV_URL"] ?? "http://localhost:8080",
     token: process.env["BT_SERVANT_DEV_TOKEN"] ?? "",
+    aliveToken: process.env["BT_SERVANT_DEV_ALIVE_TOKEN"] ?? "",
   },
   qa: {
     url: process.env["BT_SERVANT_QA_URL"] ?? "https://qa.servant.bible",
     token: process.env["BT_SERVANT_QA_TOKEN"] ?? "",
+    aliveToken: process.env["BT_SERVANT_QA_ALIVE_TOKEN"] ?? "",
   },
   prod: {
     url: process.env["BT_SERVANT_PROD_URL"] ?? "https://app.servant.bible",
     token: process.env["BT_SERVANT_PROD_TOKEN"] ?? "",
+    aliveToken: process.env["BT_SERVANT_PROD_ALIVE_TOKEN"] ?? "",
   },
 } as const;
 
@@ -51,6 +57,10 @@ export function validateBtServantConfig(): void {
 
     if (!config.token) {
       errors.push(`Missing BT_SERVANT_${env.toUpperCase()}_TOKEN environment variable`);
+    }
+
+    if (!config.aliveToken) {
+      errors.push(`Missing BT_SERVANT_${env.toUpperCase()}_ALIVE_TOKEN environment variable`);
     }
   }
 
@@ -86,11 +96,11 @@ export function getAllServerEnvironments(): ServerEnvironment[] {
 }
 
 /**
- * Check if a server has both URL and token configured
+ * Check if a server has URL, token, and aliveToken configured
  */
 function isServerConfigured(server: ServerEnvironment): boolean {
   const config = btServantConfig[server];
-  return Boolean(config.url && config.token);
+  return Boolean(config.url && config.token && config.aliveToken);
 }
 
 /**

@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
-  import { mockLogs } from "$lib/data/mockLogs";
   import { logApiClient, type ServerEnvironment } from "$lib/services/LogApiClient";
   import SearchBar from "$lib/components/SearchBar.svelte";
   import FiltersBar from "$lib/components/FiltersBar.svelte";
@@ -12,8 +11,8 @@
 
   type Server = ServerEnvironment;
 
-  let allLogs: LogEntry[] = mockLogs;
-  let filteredLogs: LogEntry[] = mockLogs;
+  let allLogs: LogEntry[] = [];
+  let filteredLogs: LogEntry[] = [];
   let searchQuery = "";
   let selectedLogId: string | null = null;
   let filterLevels: string[] = [];
@@ -25,7 +24,7 @@
   let isLoading = false;
   let loadingProgress = { current: 0, total: 0, filename: "" };
   let errorMessage: string | null = null;
-  let availableServers: Server[] = ["dev", "qa", "prod"];
+  let availableServers: Server[] = [];
   let serverHealth = { dev: false, qa: false, prod: false };
   let healthCheckInterval: number | null = null;
 
@@ -70,8 +69,8 @@
         }
       }
     } catch {
-      // If request fails, show all servers as fallback
-      availableServers = ["dev", "qa", "prod"];
+      // Leave availableServers empty - will show "No Servers Configured" state
+      availableServers = [];
     }
   }
 
@@ -100,8 +99,8 @@
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
       errorMessage = `Failed to load logs: ${message}`;
-      // Fall back to mock data on error
-      allLogs = mockLogs;
+      // Leave allLogs empty on error
+      allLogs = [];
     } finally {
       isLoading = false;
     }

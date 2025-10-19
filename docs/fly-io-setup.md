@@ -71,40 +71,53 @@ For preview apps, the workflow creates them automatically using the branch name.
 
 **IMPORTANT:** You must configure BT-Servant API tokens for the app to work. These should be set as Fly.io secrets (never committed to git).
 
+Each environment requires **3 variables**:
+
+- `BT_SERVANT_<ENV>_URL` - Base URL (optional, has defaults)
+- `BT_SERVANT_<ENV>_TOKEN` - Bearer token for `/admin/logs/*` endpoints
+- `BT_SERVANT_<ENV>_ALIVE_TOKEN` - Bearer token for `/alive` health check endpoint
+
 For each environment you want to deploy, set the following secrets:
 
 ```bash
 # For staging/preview apps
 flyctl secrets set \
   BT_SERVANT_DEV_URL=http://localhost:8080 \
-  BT_SERVANT_DEV_TOKEN=your-dev-token-here \
+  BT_SERVANT_DEV_TOKEN=your-dev-admin-logs-token \
+  BT_SERVANT_DEV_ALIVE_TOKEN=your-dev-alive-token \
   BT_SERVANT_QA_URL=https://qa.servant.bible \
-  BT_SERVANT_QA_TOKEN=your-qa-token-here \
+  BT_SERVANT_QA_TOKEN=your-qa-admin-logs-token \
+  BT_SERVANT_QA_ALIVE_TOKEN=your-qa-alive-token \
   BT_SERVANT_PROD_URL=https://app.servant.bible \
-  BT_SERVANT_PROD_TOKEN=your-prod-token-here \
+  BT_SERVANT_PROD_TOKEN=your-prod-admin-logs-token \
+  BT_SERVANT_PROD_ALIVE_TOKEN=your-prod-alive-token \
   --app bt-log-viewer-staging
 
 # For production app (use same command but change --app)
 flyctl secrets set \
   BT_SERVANT_DEV_URL=http://localhost:8080 \
-  BT_SERVANT_DEV_TOKEN=your-dev-token-here \
+  BT_SERVANT_DEV_TOKEN=your-dev-admin-logs-token \
+  BT_SERVANT_DEV_ALIVE_TOKEN=your-dev-alive-token \
   BT_SERVANT_QA_URL=https://qa.servant.bible \
-  BT_SERVANT_QA_TOKEN=your-qa-token-here \
+  BT_SERVANT_QA_TOKEN=your-qa-admin-logs-token \
+  BT_SERVANT_QA_ALIVE_TOKEN=your-qa-alive-token \
   BT_SERVANT_PROD_URL=https://app.servant.bible \
-  BT_SERVANT_PROD_TOKEN=your-prod-token-here \
+  BT_SERVANT_PROD_TOKEN=your-prod-admin-logs-token \
+  BT_SERVANT_PROD_ALIVE_TOKEN=your-prod-alive-token \
   --app bt-log-viewer-prod
 ```
 
-**Note:** Only set tokens for environments you actually want to use. If you only have QA credentials, just set those:
+**Note:** Only set tokens for environments you actually want to use. If you only have DEV credentials, just set those:
 
 ```bash
 flyctl secrets set \
-  BT_SERVANT_QA_URL=https://qa.servant.bible \
-  BT_SERVANT_QA_TOKEN=your-qa-token-here \
+  BT_SERVANT_DEV_URL=http://localhost:8080 \
+  BT_SERVANT_DEV_TOKEN=your-dev-admin-logs-token \
+  BT_SERVANT_DEV_ALIVE_TOKEN=your-dev-alive-token \
   --app bt-log-viewer-staging
 ```
 
-The app will only show servers in the dropdown that have both URL and token configured.
+The app will only show servers in the dropdown that have all required credentials configured (URL + TOKEN + ALIVE_TOKEN).
 
 ## How Deployments Work
 
@@ -187,8 +200,9 @@ Or use the Fly.io dashboard: https://fly.io/dashboard
 
    ```bash
    flyctl secrets set \
-     BT_SERVANT_QA_URL=https://qa.servant.bible \
-     BT_SERVANT_QA_TOKEN=your-actual-token \
+     BT_SERVANT_DEV_URL=http://localhost:8080 \
+     BT_SERVANT_DEV_TOKEN=your-actual-admin-logs-token \
+     BT_SERVANT_DEV_ALIVE_TOKEN=your-actual-alive-token \
      --app bt-log-viewer-staging
    ```
 
@@ -209,8 +223,8 @@ Or use the Fly.io dashboard: https://fly.io/dashboard
 
 5. **Check connection status**:
    - Look at bottom-right footer
-   - Should show "QA: Connected" (green) if working
-   - Should show "QA: Disconnected" (red) if token is invalid
+   - Should show "Dev: Connected" (green) if working
+   - Should show "Dev: Disconnected" (red) if token is invalid
 
 6. **View logs** (if issues):
    ```bash
@@ -222,9 +236,11 @@ Or use the Fly.io dashboard: https://fly.io/dashboard
 You can test the health check endpoint directly:
 
 ```bash
-# Should return {"dev":false,"qa":true,"prod":false}
+# Should return {"dev":true,"qa":false,"prod":false} if only dev secrets are set
 curl https://bt-log-viewer-phase-1b.fly.dev/api/logs/health
 ```
+
+Note: The health check calls `<BT_SERVANT_URL>/alive` with the `ALIVE_TOKEN` (not the admin logs token).
 
 ## Troubleshooting
 
