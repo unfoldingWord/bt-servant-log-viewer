@@ -190,7 +190,7 @@
 
           <td class="relative px-4 py-3.5">
             <span
-              class="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold transition-all group-hover:scale-105 group-hover:shadow-md {getLevelBadgeClass(
+              class="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold transition-colors transition-shadow group-hover:shadow-md {getLevelBadgeClass(
                 log.level
               )}"
             >

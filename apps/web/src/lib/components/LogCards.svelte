@@ -62,7 +62,7 @@
         if (e.key === "Enter") handleCardClick(log.id);
       }}
       style="animation-delay: {i * 30}ms"
-      class="log-card group relative overflow-hidden rounded-xl border border-surface-active bg-gradient-to-br from-surface to-surface/50 p-4 shadow-lg transition-all duration-300 active:scale-[0.98] cursor-pointer"
+      class="log-card group relative overflow-hidden rounded-xl border border-surface-active bg-gradient-to-br from-surface to-surface/50 p-4 shadow-lg transition-shadow duration-300 cursor-pointer"
       class:selected-card={selectedId === log.id}
     >
       <!-- Gradient accent line at top -->
@@ -80,7 +80,7 @@
       <!-- Header: Level Badge and Timestamp -->
       <div class="mb-3 flex items-start justify-between gap-3">
         <span
-          class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all group-active:scale-95 {getLevelBadgeClass(
+          class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors transition-shadow {getLevelBadgeClass(
             log.level
           )}"
         >

@@ -247,7 +247,7 @@
             <div class="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                class="group rounded-lg border border-surface-active bg-background/50 px-3 py-2 text-xs font-medium text-text-secondary transition-all hover:border-accent-cyan/50 hover:bg-accent-cyan/5 hover:text-accent-cyan active:scale-95"
+                class="group rounded-lg border border-surface-active bg-background/50 px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:border-accent-cyan/50 hover:bg-accent-cyan/5 hover:text-accent-cyan"
               >
                 <div class="flex items-center justify-center gap-1.5">
                   <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -263,19 +263,19 @@
               </button>
               <button
                 type="button"
-                class="group rounded-lg border border-surface-active bg-background/50 px-3 py-2 text-xs font-medium text-text-secondary transition-all hover:border-accent-cyan/50 hover:bg-accent-cyan/5 hover:text-accent-cyan active:scale-95"
+                class="group rounded-lg border border-surface-active bg-background/50 px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:border-accent-cyan/50 hover:bg-accent-cyan/5 hover:text-accent-cyan"
               >
                 Last 24h
               </button>
               <button
                 type="button"
-                class="group rounded-lg border border-surface-active bg-background/50 px-3 py-2 text-xs font-medium text-text-secondary transition-all hover:border-accent-teal/50 hover:bg-accent-teal/5 hover:text-accent-teal active:scale-95"
+                class="group rounded-lg border border-surface-active bg-background/50 px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:border-accent-teal/50 hover:bg-accent-teal/5 hover:text-accent-teal"
               >
                 Last 7d
               </button>
               <button
                 type="button"
-                class="group rounded-lg border border-surface-active bg-background/50 px-3 py-2 text-xs font-medium text-text-secondary transition-all hover:border-accent-teal/50 hover:bg-accent-teal/5 hover:text-accent-teal active:scale-95"
+                class="group rounded-lg border border-surface-active bg-background/50 px-3 py-2 text-xs font-medium text-text-secondary transition-colors hover:border-accent-teal/50 hover:bg-accent-teal/5 hover:text-accent-teal"
               >
                 Last 30d
               </button>
@@ -291,7 +291,7 @@
     <button
       type="button"
       on:click={clearAllFilters}
-      class="group relative w-full overflow-hidden rounded-xl border border-surface-active bg-gradient-to-br from-surface to-surface/50 px-4 py-3 font-semibold text-text-secondary shadow-lg transition-all hover:border-accent-cyan/50 hover:shadow-accent-cyan/10 active:scale-98"
+      class="group relative w-full overflow-hidden rounded-xl border border-surface-active bg-gradient-to-br from-surface to-surface/50 px-4 py-3 font-semibold text-text-secondary shadow-lg transition-shadow hover:border-accent-cyan/50 hover:shadow-accent-cyan/10"
     >
       <div class="relative flex items-center justify-center gap-2">
         <svg

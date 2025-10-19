@@ -103,7 +103,7 @@
             on:click={() => {
               toggleLevel(level);
             }}
-            class="rounded border px-2 py-1 text-xs font-medium transition-all hover:scale-105 {selectedLevels.includes(
+            class="rounded border px-2 py-1 text-xs font-medium transition-colors {selectedLevels.includes(
               level
             )
               ? getLevelColorClass(level) + ' border-2'
@@ -127,7 +127,7 @@
             on:click={() => {
               toggleLanguage(lang);
             }}
-            class="rounded border px-2 py-1 text-xs font-medium uppercase transition-all hover:scale-105 {selectedLanguages.includes(
+            class="rounded border px-2 py-1 text-xs font-medium uppercase transition-colors {selectedLanguages.includes(
               lang
             )
               ? 'border-2 border-accent-teal/50 bg-accent-teal/10 text-accent-teal'
@@ -150,7 +150,7 @@
           on:click={() => {
             showUserDropdown = !showUserDropdown;
           }}
-          class="flex items-center gap-1.5 rounded border-2 border-accent-cyan/50 bg-accent-cyan/10 px-2.5 py-1 text-xs font-medium text-accent-cyan transition-all hover:scale-105"
+          class="flex items-center gap-1.5 rounded border-2 border-accent-cyan/50 bg-accent-cyan/10 px-2.5 py-1 text-xs font-medium text-accent-cyan transition-colors"
         >
           {selectedUserId ? formatUserId(selectedUserId) : "All Users"}
           <svg
@@ -216,7 +216,7 @@
             on:click={() => {
               selectTimeRange(range);
             }}
-            class="rounded border px-2 py-1 text-xs font-medium transition-all hover:scale-105
+            class="rounded border px-2 py-1 text-xs font-medium transition-colors
               {selectedTimeRange === range
               ? 'border-2 border-accent-cyan/50 bg-accent-cyan/10 text-accent-cyan'
               : 'border-surface-active bg-surface/30 text-text-dim hover:bg-surface'}"
@@ -231,7 +231,7 @@
     <button
       type="button"
       on:click={handleRefresh}
-      class="flex items-center gap-1.5 rounded border border-surface-active bg-surface/30 px-2.5 py-1 text-xs font-medium text-text-secondary transition-all hover:border-accent-teal/50 hover:bg-accent-teal/5 hover:text-accent-teal hover:scale-105 active:scale-95"
+      class="flex items-center gap-1.5 rounded border border-surface-active bg-surface/30 px-2.5 py-1 text-xs font-medium text-text-secondary transition-colors hover:border-accent-teal/50 hover:bg-accent-teal/5 hover:text-accent-teal"
       title="Refresh logs"
     >
       <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -250,7 +250,7 @@
       <button
         type="button"
         on:click={clearAll}
-        class="ml-auto flex items-center gap-1.5 rounded border border-surface-active bg-surface/30 px-2.5 py-1 text-xs font-medium text-text-secondary transition-all hover:border-accent-cyan/50 hover:bg-accent-cyan/5 hover:text-accent-cyan"
+        class="ml-auto flex items-center gap-1.5 rounded border border-surface-active bg-surface/30 px-2.5 py-1 text-xs font-medium text-text-secondary transition-colors hover:border-accent-cyan/50 hover:bg-accent-cyan/5 hover:text-accent-cyan"
       >
         <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path

@@ -162,13 +162,13 @@
     <div class="relative z-10 flex items-center gap-3">
       <!-- Logo/Icon with pulse animation -->
       <div
-        class="group relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-accent-cyan via-accent-teal to-accent-cyan p-2 shadow-xl shadow-accent-cyan/30 transition-all duration-300 hover:scale-110 hover:shadow-accent-cyan/50 animate-logo-glow"
+        class="group relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-accent-cyan via-accent-teal to-accent-cyan p-2 shadow-xl shadow-accent-cyan/30 transition-shadow duration-300 hover:shadow-accent-cyan/50 animate-logo-glow"
       >
         <div
           class="absolute inset-0 rounded-xl bg-gradient-to-br from-accent-cyan to-accent-teal opacity-0 blur-md transition-opacity group-hover:opacity-50"
         ></div>
         <svg
-          class="relative h-full w-full text-background transition-transform group-hover:scale-110"
+          class="relative h-full w-full text-background"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -194,7 +194,7 @@
       </div>
 
       <span
-        class="relative overflow-hidden rounded-full border border-accent-teal/40 bg-gradient-to-r from-accent-teal/10 to-accent-cyan/10 px-2.5 py-1 text-xs font-semibold text-accent-teal shadow-md shadow-accent-teal/10 transition-all hover:scale-105 hover:shadow-accent-teal/20"
+        class="relative overflow-hidden rounded-full border border-accent-teal/40 bg-gradient-to-r from-accent-teal/10 to-accent-cyan/10 px-2.5 py-1 text-xs font-semibold text-accent-teal shadow-md shadow-accent-teal/10 transition-shadow hover:shadow-accent-teal/20"
       >
         <span class="relative z-10">v1.0-alpha</span>
         <div
@@ -221,7 +221,7 @@
             e.stopPropagation();
             showServerDropdown = !showServerDropdown;
           }}
-          class="flex items-center gap-1.5 rounded border-2 border-accent-cyan/50 bg-accent-cyan/10 px-2.5 py-1 text-xs font-medium text-accent-cyan transition-all hover:scale-105"
+          class="flex items-center gap-1.5 rounded border-2 border-accent-cyan/50 bg-accent-cyan/10 px-2.5 py-1 text-xs font-medium text-accent-cyan transition-colors"
         >
           <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -298,7 +298,7 @@
             on:click={() => {
               groupByConversation = false;
             }}
-            class="rounded border px-3 py-1.5 text-xs font-medium transition-all hover:scale-105
+            class="rounded border px-3 py-1.5 text-xs font-medium transition-colors
               {!groupByConversation
               ? 'border-2 border-accent-cyan/50 bg-accent-cyan/10 text-accent-cyan'
               : 'border-surface-active bg-surface/30 text-text-dim hover:bg-surface'}"
@@ -320,7 +320,7 @@
             on:click={() => {
               groupByConversation = true;
             }}
-            class="rounded border px-3 py-1.5 text-xs font-medium transition-all hover:scale-105
+            class="rounded border px-3 py-1.5 text-xs font-medium transition-colors
               {groupByConversation
               ? 'border-2 border-accent-cyan/50 bg-accent-cyan/10 text-accent-cyan'
               : 'border-surface-active bg-surface/30 text-text-dim hover:bg-surface'}"

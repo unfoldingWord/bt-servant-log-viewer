@@ -63,7 +63,7 @@
         type="button"
         on:click={clearSearch}
         aria-label="Clear search"
-        class="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full bg-surface-active p-1 text-text-muted transition-all duration-200 hover:bg-accent-cyan/20 hover:text-accent-cyan hover:scale-110 active:scale-95"
+        class="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full bg-surface-active p-1 text-text-muted transition-colors duration-200 hover:bg-accent-cyan/20 hover:text-accent-cyan"
       >
         <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path

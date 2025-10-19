@@ -103,7 +103,7 @@
       <button
         type="button"
         on:click={handleClose}
-        class="group rounded-xl border border-surface-active bg-surface p-2 text-text-muted shadow-sm transition-all duration-200 hover:border-accent-cyan/50 hover:bg-accent-cyan/10 hover:text-accent-cyan hover:shadow-md hover:shadow-accent-cyan/20 active:scale-95"
+        class="group rounded-xl border border-surface-active bg-surface p-2 text-text-muted shadow-sm transition-colors transition-shadow duration-200 hover:border-accent-cyan/50 hover:bg-accent-cyan/10 hover:text-accent-cyan hover:shadow-md hover:shadow-accent-cyan/20"
         aria-label="Close panel"
       >
         <svg
@@ -127,7 +127,7 @@
       <!-- Level Badge with enhanced styling -->
       <div class="flex flex-wrap items-center gap-3 animate-fade-in" style="animation-delay: 50ms">
         <span
-          class="inline-flex items-center gap-2 rounded-xl border-2 px-4 py-2 text-sm font-bold shadow-md transition-all hover:scale-105 {getLevelColorClass(
+          class="inline-flex items-center gap-2 rounded-xl border-2 px-4 py-2 text-sm font-bold shadow-md transition-colors transition-shadow {getLevelColorClass(
             log.level
           )}"
         >
