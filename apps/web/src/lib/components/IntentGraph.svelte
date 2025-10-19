@@ -34,6 +34,15 @@
       return acc;
     }, []);
 
+  // Extract unique intents from all perf reports
+  $: intents = Array.from(
+    new Set(
+      perfReports.flatMap((report) =>
+        report.grouped_totals_by_intent ? Object.keys(report.grouped_totals_by_intent) : []
+      )
+    )
+  ).sort();
+
   function formatDuration(ms: number): string {
     if (ms < 1000) return `${ms.toFixed(0)}ms`;
     return `${(ms / 1000).toFixed(2)}s`;
@@ -106,7 +115,7 @@
           style: {
             "background-color": "#6b7280", // gray-500
             "background-fill": "linear-gradient",
-            "background-gradient-stop-colors": ["#9ca3af", "#4b5563"], // gray-400 to gray-600 (more pronounced)
+            "background-gradient-stop-colors": ["#d1d5db", "#374151"], // gray-300 to gray-700 (enhanced depth)
             "background-gradient-direction": "to-bottom-right",
             width: 40,
             height: 40,
@@ -223,12 +232,25 @@
   <div
     class="animate-slide-in border-t-2 border-accent-cyan/20 bg-gradient-to-b from-background-secondary/30 to-background/30 p-6"
   >
-    <div class="mb-4 flex items-center gap-3">
-      <div class="h-1 w-1 rounded-full bg-gray-500 animate-pulse"></div>
-      <h3 class="text-sm font-semibold text-gray-300">Intent Flow</h3>
-      <span class="text-xs text-text-dim">
-        ({nodes.length} nodes · {perfReports.length} traces)
-      </span>
+    <div class="mb-4">
+      <div class="flex items-center gap-3">
+        <div class="h-1 w-1 rounded-full bg-gray-500 animate-pulse"></div>
+        <h3 class="text-sm font-semibold text-gray-300">Graph Path</h3>
+        <span class="text-xs text-text-dim">
+          ({nodes.length} nodes · {perfReports.length} traces)
+        </span>
+      </div>
+      {#if intents.length > 0}
+        <div class="ml-4 mt-1.5 text-xs">
+          <span class="text-text-muted">Intents:</span>
+          {#each intents as intent, i}
+            <span class="text-accent-teal">{intent}</span>{#if i < intents.length - 1}<span
+                class="text-text-dim"
+                >,
+              </span>{/if}
+          {/each}
+        </div>
+      {/if}
     </div>
 
     <!-- Cytoscape graph container -->
@@ -240,7 +262,12 @@
         class="mt-6 animate-expand rounded-lg border border-gray-600/30 bg-background/50 p-4 backdrop-blur-sm"
       >
         <div class="mb-3 flex items-center gap-2">
-          <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            class="h-5 w-5 text-accent-cyan"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
