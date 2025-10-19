@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+  import { browser } from "$app/environment";
   import { mockLogs } from "$lib/data/mockLogs";
   import SearchBar from "$lib/components/SearchBar.svelte";
   import FiltersBar from "$lib/components/FiltersBar.svelte";
@@ -7,6 +9,8 @@
   import ConversationGroup from "$lib/components/ConversationGroup.svelte";
   import type { LogEntry } from "@bt-log-viewer/domain";
 
+  type Server = "qa" | "prod";
+
   let filteredLogs: LogEntry[] = mockLogs;
   let searchQuery = "";
   let selectedLogId: string | null = null;
@@ -14,6 +18,26 @@
   let filterLanguages: string[] = [];
   let filterUserId: string | null = null;
   let groupByConversation = false;
+  let selectedServer: Server = "qa";
+
+  // Load saved server preference from localStorage
+  onMount(() => {
+    if (browser && typeof window !== "undefined") {
+      const saved = window.localStorage.getItem("bt-servant-server");
+      if (saved === "qa" || saved === "prod") {
+        selectedServer = saved;
+      }
+    }
+  });
+
+  // Save server preference to localStorage
+  function handleServerChange(server: Server): void {
+    selectedServer = server;
+    if (browser && typeof window !== "undefined") {
+      window.localStorage.setItem("bt-servant-server", server);
+    }
+    // TODO: Fetch logs from the selected server
+  }
 
   $: selectedLog = selectedLogId
     ? (filteredLogs.find((log) => log.id === selectedLogId) ?? null)
@@ -178,6 +202,28 @@
           class="absolute inset-0 -translate-x-full animate-shimmer-badge bg-gradient-to-r from-transparent via-white/10 to-transparent"
         ></div>
       </span>
+    </div>
+
+    <!-- Center: Server selector -->
+    <div class="relative z-10 flex items-center gap-2">
+      <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"
+        />
+      </svg>
+      <select
+        bind:value={selectedServer}
+        on:change={() => {
+          handleServerChange(selectedServer);
+        }}
+        class="cursor-pointer rounded-lg border border-gray-600/50 bg-background-secondary/80 px-3 py-1.5 text-sm font-medium text-gray-300 shadow-lg backdrop-blur-sm transition-all hover:border-accent-cyan/50 hover:bg-background-secondary focus:border-accent-cyan focus:outline-none focus:ring-2 focus:ring-accent-cyan/20"
+      >
+        <option value="qa">QA Server</option>
+        <option value="prod">Production</option>
+      </select>
     </div>
 
     <!-- Right side: Search bar -->
