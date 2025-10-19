@@ -204,35 +204,59 @@
       </span>
     </div>
 
-    <!-- Center: Server selector -->
-    <div class="relative z-10 flex items-center gap-2">
-      <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"
+    <!-- Right side: Search bar and Server selector -->
+    <div class="relative z-10 ml-auto flex items-center gap-3">
+      <div class="w-full md:w-96 lg:w-[500px]">
+        <SearchBar
+          on:search={(e) => {
+            handleSearch(e.detail as string);
+          }}
         />
-      </svg>
-      <select
-        bind:value={selectedServer}
-        on:change={() => {
-          handleServerChange(selectedServer);
-        }}
-        class="cursor-pointer rounded-lg border border-gray-600/50 bg-background-secondary/80 px-3 py-1.5 text-sm font-medium text-gray-300 shadow-lg backdrop-blur-sm transition-all hover:border-accent-cyan/50 hover:bg-background-secondary focus:border-accent-cyan focus:outline-none focus:ring-2 focus:ring-accent-cyan/20"
-      >
-        <option value="qa">QA Server</option>
-        <option value="prod">Production</option>
-      </select>
-    </div>
+      </div>
 
-    <!-- Right side: Search bar -->
-    <div class="relative z-10 ml-auto flex items-center w-full md:w-96 lg:w-[500px]">
-      <SearchBar
-        on:search={(e) => {
-          handleSearch(e.detail as string);
-        }}
-      />
+      <!-- Server selector with custom styling -->
+      <div class="relative flex items-center">
+        <div class="absolute left-3 pointer-events-none">
+          <svg
+            class="h-3.5 w-3.5 text-accent-cyan/70"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"
+            />
+          </svg>
+        </div>
+        <select
+          bind:value={selectedServer}
+          on:change={() => {
+            handleServerChange(selectedServer);
+          }}
+          class="cursor-pointer appearance-none rounded-full border border-accent-cyan/30 bg-gradient-to-r from-accent-cyan/10 to-accent-teal/10 pl-9 pr-8 py-2 text-xs font-semibold text-accent-cyan shadow-lg shadow-accent-cyan/10 backdrop-blur-sm transition-all hover:scale-105 hover:border-accent-cyan/50 hover:shadow-accent-cyan/20 focus:border-accent-cyan focus:outline-none focus:ring-2 focus:ring-accent-cyan/30"
+        >
+          <option value="qa">QA</option>
+          <option value="prod">Production</option>
+        </select>
+        <div class="absolute right-3 pointer-events-none">
+          <svg
+            class="h-3 w-3 text-accent-cyan/70"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </div>
+      </div>
     </div>
   </header>
 
