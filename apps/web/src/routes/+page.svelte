@@ -143,7 +143,7 @@
 <div class="flex h-screen flex-col bg-background">
   <!-- Header with gradient background and animations -->
   <header
-    class="relative flex items-center justify-between gap-3 overflow-hidden border-b-2 border-accent-cyan/20 bg-gradient-to-r from-background-secondary via-background-secondary to-background px-4 py-4 shadow-lg shadow-black/5 md:px-6"
+    class="relative z-50 flex items-center justify-between gap-3 overflow-hidden border-b-2 border-accent-cyan/20 bg-gradient-to-r from-background-secondary via-background-secondary to-background px-4 py-4 shadow-lg shadow-black/5 md:px-6"
   >
     <!-- Animated gradient glow effect -->
     <div
