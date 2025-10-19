@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
   import { mockLogs } from "$lib/data/mockLogs";
+  import { logApiClient, type ServerEnvironment } from "$lib/services/LogApiClient";
   import SearchBar from "$lib/components/SearchBar.svelte";
   import FiltersBar from "$lib/components/FiltersBar.svelte";
   import LogTable from "$lib/components/LogTable.svelte";
@@ -9,8 +10,9 @@
   import ConversationGroup from "$lib/components/ConversationGroup.svelte";
   import type { LogEntry } from "@bt-log-viewer/domain";
 
-  type Server = "qa" | "prod";
+  type Server = ServerEnvironment;
 
+  let allLogs: LogEntry[] = mockLogs;
   let filteredLogs: LogEntry[] = mockLogs;
   let searchQuery = "";
   let selectedLogId: string | null = null;
@@ -20,24 +22,98 @@
   let groupByConversation = false;
   let selectedServer: Server = "qa";
   let showServerDropdown = false;
+  let isLoading = false;
+  let loadingProgress = { current: 0, total: 0, filename: "" };
+  let errorMessage: string | null = null;
+  let availableServers: Server[] = ["dev", "qa", "prod"];
+  let serverHealth = { dev: false, qa: false, prod: false };
+  let healthCheckInterval: number | null = null;
 
-  // Load saved server preference from localStorage
+  // Load configured servers and start health check polling on mount
   onMount(() => {
     if (browser && typeof window !== "undefined") {
+      void loadConfiguredServers();
+      void checkServerHealth();
+
+      // Poll health check every 60 seconds
+      healthCheckInterval = window.setInterval(() => {
+        void checkServerHealth();
+      }, 60000);
+
       const saved = window.localStorage.getItem("bt-servant-server");
-      if (saved === "qa" || saved === "prod") {
+      if (saved === "dev" || saved === "qa" || saved === "prod") {
         selectedServer = saved;
       }
+      // Load logs from the selected server
+      void loadLogsFromServer(selectedServer);
     }
+
+    // Cleanup interval on unmount
+    return () => {
+      if (healthCheckInterval !== null) {
+        window.clearInterval(healthCheckInterval);
+      }
+    };
   });
 
-  // Save server preference to localStorage
+  // Load list of configured servers (those with URL and token set)
+  async function loadConfiguredServers(): Promise<void> {
+    try {
+      const servers = await logApiClient.getConfiguredServers();
+      availableServers = servers;
+
+      // If selected server is not configured, switch to first configured
+      if (!availableServers.includes(selectedServer) && availableServers.length > 0) {
+        const firstAvailable = availableServers[0];
+        if (firstAvailable) {
+          selectedServer = firstAvailable;
+        }
+      }
+    } catch {
+      // If request fails, show all servers as fallback
+      availableServers = ["dev", "qa", "prod"];
+    }
+  }
+
+  // Check which servers are currently reachable
+  async function checkServerHealth(): Promise<void> {
+    try {
+      serverHealth = await logApiClient.checkHealth();
+    } catch {
+      // If health check fails, mark all as disconnected
+      serverHealth = { dev: false, qa: false, prod: false };
+    }
+  }
+
+  // Load logs from a specific server
+  async function loadLogsFromServer(server: Server): Promise<void> {
+    isLoading = true;
+    errorMessage = null;
+    loadingProgress = { current: 0, total: 0, filename: "" };
+
+    try {
+      const logs = await logApiClient.loadRecentLogs(server, 21, (current, total, filename) => {
+        loadingProgress = { current, total, filename };
+      });
+
+      allLogs = logs;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      errorMessage = `Failed to load logs: ${message}`;
+      // Fall back to mock data on error
+      allLogs = mockLogs;
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  // Save server preference and fetch logs from the selected server
   function handleServerChange(server: Server): void {
     selectedServer = server;
     if (browser && typeof window !== "undefined") {
       window.localStorage.setItem("bt-servant-server", server);
     }
-    // TODO: Fetch logs from the selected server
+    void loadLogsFromServer(server);
   }
 
   $: selectedLog = selectedLogId
@@ -46,7 +122,7 @@
 
   // Extract available users from logs
   $: availableUsers = Array.from(
-    new Set(mockLogs.map((log) => log.userId).filter(Boolean))
+    new Set(allLogs.map((log) => log.userId).filter(Boolean))
   ).sort() as string[];
 
   // Group logs by CID when in conversation mode
@@ -79,7 +155,7 @@
 
   // Apply all filters
   $: {
-    let logs = mockLogs;
+    let logs = allLogs;
 
     // Search filter
     if (searchQuery) {
@@ -231,7 +307,7 @@
               d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"
             />
           </svg>
-          {selectedServer === "qa" ? "QA" : "Production"}
+          {selectedServer === "dev" ? "Dev" : selectedServer === "qa" ? "QA" : "Production"}
           <svg
             class="h-3 w-3 transition-transform"
             class:rotate-180={showServerDropdown}
@@ -252,32 +328,51 @@
           <div
             class="absolute right-0 top-full z-[9999] mt-1 max-h-64 w-48 overflow-y-auto rounded-lg border border-surface-active bg-background-secondary shadow-xl"
           >
-            <button
-              type="button"
-              on:click={() => {
-                handleServerChange("qa");
-                showServerDropdown = false;
-              }}
-              class="w-full px-3 py-2 text-left text-xs font-medium transition-colors hover:bg-surface
-                {selectedServer === 'qa'
-                ? 'bg-accent-cyan/10 text-accent-cyan'
-                : 'text-text-secondary'}"
-            >
-              QA
-            </button>
-            <button
-              type="button"
-              on:click={() => {
-                handleServerChange("prod");
-                showServerDropdown = false;
-              }}
-              class="w-full px-3 py-2 text-left text-xs font-medium transition-colors hover:bg-surface
-                {selectedServer === 'prod'
-                ? 'bg-accent-cyan/10 text-accent-cyan'
-                : 'text-text-secondary'}"
-            >
-              Production
-            </button>
+            {#if availableServers.includes("dev")}
+              <button
+                type="button"
+                on:click={() => {
+                  handleServerChange("dev");
+                  showServerDropdown = false;
+                }}
+                class="w-full px-3 py-2 text-left text-xs font-medium transition-colors hover:bg-surface
+                  {selectedServer === 'dev'
+                  ? 'bg-accent-cyan/10 text-accent-cyan'
+                  : 'text-text-secondary'}"
+              >
+                Dev
+              </button>
+            {/if}
+            {#if availableServers.includes("qa")}
+              <button
+                type="button"
+                on:click={() => {
+                  handleServerChange("qa");
+                  showServerDropdown = false;
+                }}
+                class="w-full px-3 py-2 text-left text-xs font-medium transition-colors hover:bg-surface
+                  {selectedServer === 'qa'
+                  ? 'bg-accent-cyan/10 text-accent-cyan'
+                  : 'text-text-secondary'}"
+              >
+                QA
+              </button>
+            {/if}
+            {#if availableServers.includes("prod")}
+              <button
+                type="button"
+                on:click={() => {
+                  handleServerChange("prod");
+                  showServerDropdown = false;
+                }}
+                class="w-full px-3 py-2 text-left text-xs font-medium transition-colors hover:bg-surface
+                  {selectedServer === 'prod'
+                  ? 'bg-accent-cyan/10 text-accent-cyan'
+                  : 'text-text-secondary'}"
+              >
+                Production
+              </button>
+            {/if}
           </div>
         {/if}
       </div>
@@ -286,6 +381,78 @@
 
   <!-- Filters bar -->
   <FiltersBar {availableUsers} on:filterChange={handleFilterChange} />
+
+  <!-- Loading state -->
+  {#if isLoading}
+    <div
+      class="border-b border-accent-cyan/20 bg-gradient-to-r from-accent-cyan/5 to-accent-teal/5 px-6 py-3"
+    >
+      <div class="flex items-center gap-3">
+        <div
+          class="h-4 w-4 animate-spin rounded-full border-2 border-accent-cyan border-t-transparent"
+        ></div>
+        <div class="flex-1">
+          <div class="text-sm font-medium text-accent-cyan">
+            Loading logs from {selectedServer === "dev"
+              ? "Dev"
+              : selectedServer === "qa"
+                ? "QA"
+                : "Production"} server...
+          </div>
+          {#if loadingProgress.total > 0}
+            <div class="mt-1 flex items-center gap-2">
+              <div class="flex-1 overflow-hidden rounded-full bg-surface">
+                <div
+                  class="h-1.5 rounded-full bg-gradient-to-r from-accent-cyan to-accent-teal transition-all duration-300"
+                  style="width: {(loadingProgress.current / loadingProgress.total) * 100}%"
+                ></div>
+              </div>
+              <span class="text-xs text-text-muted">
+                {loadingProgress.current}/{loadingProgress.total} files
+              </span>
+            </div>
+            {#if loadingProgress.filename}
+              <div class="mt-1 text-xs text-text-dim">
+                Processing: {loadingProgress.filename}
+              </div>
+            {/if}
+          {/if}
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  <!-- Error state -->
+  {#if errorMessage}
+    <div
+      class="border-b border-red-500/20 bg-gradient-to-r from-red-500/10 to-orange-500/10 px-6 py-3"
+    >
+      <div class="flex items-center gap-3">
+        <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <div class="flex-1">
+          <div class="text-sm font-medium text-red-400">Error loading logs</div>
+          <div class="mt-0.5 text-xs text-red-300/80">{errorMessage}</div>
+        </div>
+        <button
+          type="button"
+          on:click={() => {
+            errorMessage = null;
+            void loadLogsFromServer(selectedServer);
+          }}
+          class="rounded border border-red-400/50 bg-red-500/10 px-3 py-1 text-xs font-medium text-red-400 transition-colors hover:bg-red-500/20"
+        >
+          Retry
+        </button>
+      </div>
+    </div>
+  {/if}
 
   <!-- Grouping toggle (shown when user is selected) -->
   {#if filterUserId}
@@ -349,7 +516,59 @@
   <div class="flex flex-1 flex-col overflow-hidden">
     <!-- Log display area -->
     <main class="flex flex-1 flex-col overflow-hidden">
-      {#if filterUserId && groupByConversation}
+      {#if availableServers.length === 0}
+        <!-- No servers configured state -->
+        <div class="flex h-full items-center justify-center p-8">
+          <div class="max-w-md text-center">
+            <div
+              class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-orange-500/20 to-yellow-500/20"
+            >
+              <svg
+                class="h-8 w-8 text-orange-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+            </div>
+            <h2 class="mb-2 text-xl font-bold text-text-primary">No Servers Configured</h2>
+            <p class="mb-4 text-sm text-text-secondary">
+              BT-Servant API credentials have not been configured for this deployment.
+            </p>
+            <div
+              class="rounded-lg border border-surface-active bg-surface/30 p-4 text-left text-xs"
+            >
+              <p class="mb-2 font-medium text-text-secondary">To fix this:</p>
+              <ol class="list-inside list-decimal space-y-1 text-text-muted">
+                <li>Set environment variables with BT-Servant API tokens</li>
+                <li>
+                  For Fly.io: <code class="text-accent-cyan"
+                    >flyctl secrets set BT_SERVANT_QA_TOKEN=...</code
+                  >
+                </li>
+                <li>
+                  For local: Add tokens to <code class="text-accent-cyan">apps/api/.env</code>
+                </li>
+                <li>Restart the application</li>
+              </ol>
+              <p class="mt-3 text-text-dim">
+                See <a
+                  href="https://github.com/yourusername/bt-servant-log-viewer/blob/main/docs/configuration.md"
+                  class="text-accent-cyan hover:underline"
+                  target="_blank"
+                  rel="noopener noreferrer">docs/configuration.md</a
+                > for details.
+              </p>
+            </div>
+          </div>
+        </div>
+      {:else if filterUserId && groupByConversation}
         <!-- Grouped conversation view -->
         <div
           class="h-full overflow-auto bg-gradient-to-b from-background to-background-secondary/20"
@@ -388,7 +607,7 @@
       {/if}
 
       <!-- Empty state with animation -->
-      {#if filteredLogs.length === 0}
+      {#if availableServers.length > 0 && filteredLogs.length === 0}
         <div class="flex h-full items-center justify-center p-8 animate-fade-in">
           <div class="text-center">
             <div
@@ -426,7 +645,7 @@
         <span class="font-medium text-text-secondary">
           {filteredLogs.length}
           <span class="text-text-muted">of</span>
-          {mockLogs.length}
+          {allLogs.length}
           <span class="text-text-muted">logs</span>
         </span>
       </div>
@@ -452,7 +671,28 @@
         </div>
       {/if}
     </div>
-    <span class="text-text-dim">Phase 1a · Live View</span>
+    <!-- Server connection status -->
+    <div
+      class="flex items-center gap-1.5 rounded-full border px-2 py-0.5 transition-colors {serverHealth[
+        selectedServer
+      ]
+        ? 'border-emerald-500/40 bg-emerald-500/10'
+        : 'border-red-500/40 bg-red-500/10'}"
+    >
+      <div
+        class="h-1.5 w-1.5 rounded-full {serverHealth[selectedServer]
+          ? 'bg-emerald-400 animate-pulse'
+          : 'bg-red-400'}"
+      ></div>
+      <span
+        class="text-xs font-medium {serverHealth[selectedServer]
+          ? 'text-emerald-400'
+          : 'text-red-400'}"
+      >
+        {selectedServer === "dev" ? "Dev" : selectedServer === "qa" ? "QA" : "Prod"}:
+        {serverHealth[selectedServer] ? "Connected" : "Disconnected"}
+      </span>
+    </div>
   </footer>
 </div>
 
