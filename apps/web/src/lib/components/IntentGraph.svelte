@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
-  import cytoscape from "cytoscape";
-  import dagre from "cytoscape-dagre";
+  import { browser } from "$app/environment";
   import type { PerfReport, Span } from "@bt-log-viewer/domain";
   import type { Core, EventObject } from "cytoscape";
 
@@ -10,15 +9,6 @@
   let selectedNode: Span | null = null;
   let cy: Core | null = null;
   let containerRef: HTMLDivElement | undefined;
-  let dagreRegistered = false;
-
-  // Register dagre layout once
-  function registerDagre(): void {
-    if (!dagreRegistered) {
-      cytoscape.use(dagre as never);
-      dagreRegistered = true;
-    }
-  }
 
   // Aggregate all spans from all perfReports for this user
   $: allSpans = perfReports.flatMap((report) => report.spans ?? []);
@@ -69,10 +59,17 @@
     return `$${total.toFixed(2)}`;
   }
 
-  function initializeCytoscape(): void {
-    if (!containerRef || nodes.length === 0) return;
+  async function initializeCytoscape(): Promise<void> {
+    if (!browser || !containerRef || nodes.length === 0) return;
 
-    registerDagre();
+    // Dynamic import of Cytoscape libraries (client-side only)
+    const [{ default: cytoscape }, { default: dagre }] = await Promise.all([
+      import("cytoscape"),
+      import("cytoscape-dagre"),
+    ]);
+
+    // Register dagre layout
+    cytoscape.use(dagre as never);
 
     // Clean up existing instance
     if (cy) {
@@ -182,7 +179,7 @@
   }
 
   onMount(() => {
-    initializeCytoscape();
+    void initializeCytoscape();
   });
 
   onDestroy(() => {
@@ -192,9 +189,9 @@
   });
 
   // Reinitialize when nodes change
-  $: if (nodes.length > 0 && containerRef) {
+  $: if (browser && nodes.length > 0 && containerRef) {
     // Use Promise for async initialization
-    void Promise.resolve().then(initializeCytoscape);
+    void initializeCytoscape();
   }
 </script>
 
