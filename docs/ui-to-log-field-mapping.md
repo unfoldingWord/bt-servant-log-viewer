@@ -408,12 +408,104 @@ Maps to: `apps/web/src/lib/components/IntentGraph.svelte`
 | **Edge Labels**      | Time between intent detections              | Calculate from timestamp diffs                                |
 | **Highlighted Path** | Selected conversation CID                   | Highlight all nodes/edges for that CID                        |
 
+### Intent Node Click Interaction (Phase 1c)
+
+**Concept:** Clicking an intent node opens a detail panel showing **aggregated
+intent-specific data** for all log entries with that intent.
+
+**UX Flow:**
+
+1. User clicks intent node (e.g., "get-translation-helps")
+2. Side panel slides in from right
+3. Panel shows:
+   - **Header:** Intent name + count (e.g., "get-translation-helps (12
+     occurrences)")
+   - **Intent-specific contextual sections** (same as LogDetailPanel, but
+     aggregated)
+   - **Log entries list** (all entries with this intent, expandable)
+
+**Intent Node Detail Panel Layout:**
+
+```
+┌────────────────────────────────────────────────────────┐
+│ ✕  get-translation-helps (12 occurrences)             │
+├────────────────────────────────────────────────────────┤
+│                                                         │
+│ 📖 Biblical References Accessed (Aggregated)          │
+│ ┌─────────────────────────────────────────────────────┐│
+│ │ • John 4:1-3         (3 times)                      ││
+│ │ • Genesis 1:1-5      (2 times)                      ││
+│ │ • Matthew 5:1-10     (1 time)                       ││
+│ │ • Romans 8:28-39     (6 times)                      ││
+│ └─────────────────────────────────────────────────────┘│
+│                                                         │
+│ 🔍 Translation Resources Used (Aggregated)            │
+│ ┌─────────────────────────────────────────────────────┐│
+│ │ ✓ Translation Notes       (12 times)                ││
+│ │ ✓ Translation Words       (8 times)                 ││
+│ │ ✓ Translation Questions   (3 times)                 ││
+│ └─────────────────────────────────────────────────────┘│
+│                                                         │
+│ 📊 Performance Summary                                 │
+│ ┌─────────────────────────────────────────────────────┐│
+│ │ Avg Duration:    4.2s                               ││
+│ │ Total Tokens:    45,231                             ││
+│ │ Total Cost:      $0.23                              ││
+│ └─────────────────────────────────────────────────────┘│
+│                                                         │
+│ 📋 All Log Entries (12)                ▼ Expand All   │
+│ ┌─────────────────────────────────────────────────────┐│
+│ │ [2025-10-18 23:10:07] user: kwlv1sX...  ▼         ││
+│ │ [2025-10-18 23:15:22] user: anotherUser ▶         ││
+│ │ [2025-10-18 23:18:45] user: kwlv1sX...  ▶         ││
+│ │ ... (9 more)                                        ││
+│ └─────────────────────────────────────────────────────┘│
+│                                                         │
+└────────────────────────────────────────────────────────┘
+```
+
+**Aggregation Logic by Intent Type:**
+
+| Intent Type           | Aggregated Data Shown                                                                                             |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **Scripture-Related** | • List of all biblical references with occurrence counts<br>• Top 5 most queried passages<br>• Distribution chart |
+| **Translation Help**  | • Resources used (with frequency)<br>• Avg time per query<br>• Success rate (if determinable)                     |
+| **Conversational**    | • Common topics/keywords<br>• Avg response length<br>• User satisfaction indicators                               |
+| **All Intents**       | • Performance metrics (avg duration, tokens, cost)<br>• User distribution<br>• Time distribution chart            |
+
+**Click Behavior:**
+
+- **Single click:** Open intent detail panel
+- **Double click:** Filter main log view to show only this intent
+- **Ctrl/Cmd + click:** Open in new tab (if multi-tab supported)
+- **Right click:** Context menu with options:
+  - "Filter to this intent"
+  - "Copy intent name"
+  - "Export intent data"
+  - "Show related intents"
+
+**Implementation Notes:**
+
+- Intent detail panel is a NEW component: `IntentDetailPanel.svelte`
+- Reuses intent-specific section components from `LogDetailPanel`
+- Aggregation happens at query time (or cached)
+- Performance: Lazy-load entry list, show first 10 with "Load more" button
+- Mobile: Slides up from bottom instead of right
+
+**Phase Priority:**
+
+- Phase 1b: Basic node click shows filtered log list
+- Phase 1c: Full intent detail panel with aggregated contextual sections
+- Phase 2: Advanced aggregations (charts, distributions, correlations)
+
 **Implementation Notes:**
 
 - Requires correlation across multiple log entries by CID
 - Intent flow visualization requires temporal ordering
-- Performance data from PerfReport provides node coloring (green/yellow/red based on duration)
+- Performance data from PerfReport provides node coloring (green/yellow/red
+  based on duration)
 - Multi-intent requests create branching visualization
+- **Node click interaction** provides drill-down from overview to detail
 
 ---
 
