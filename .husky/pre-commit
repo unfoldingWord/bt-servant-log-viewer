@@ -1,4 +1,9 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
 pnpm lint-staged
+
+# Run typecheck to catch type errors before CI
+echo "Running typecheck..."
+pnpm typecheck
+
+# Run knip to catch unused files/exports before CI
+echo "Running knip..."
+pnpm knip

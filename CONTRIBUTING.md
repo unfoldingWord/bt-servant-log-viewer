@@ -43,6 +43,9 @@ pnpm lint
 # Fix linting issues automatically
 pnpm lint:fix
 
+# Clear ESLint cache (if you see unexpected linting errors)
+rm -rf node_modules/.cache
+
 # Run unit tests
 pnpm test
 
@@ -218,13 +221,15 @@ When adding UI:
    git commit -m "feat: add your feature"
    ```
 
-   (Pre-commit hooks will run automatically)
+   (Pre-commit hooks will run lint-staged, typecheck, and knip automatically)
 
 5. **Push to GitHub**:
 
    ```bash
    git push origin feat/your-feature-name
    ```
+
+   (Pre-push hook will run full `pnpm lint` to catch any issues before CI)
 
 6. **Open Pull Request**:
    - Describe what you changed and why

@@ -16,7 +16,10 @@
     "clean": "rm -rf .svelte-kit build node_modules"
   },
   "dependencies": {
+    "@bt-log-viewer/domain": "workspace:*",
     "@sveltejs/adapter-node": "^5.2.9",
+    "cytoscape": "^3.33.1",
+    "cytoscape-dagre": "^2.5.0",
     "svelte": "^5.2.7"
   },
   "devDependencies": {
@@ -27,6 +30,7 @@
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@tailwindcss/typography": "^0.5.16",
     "@types/chai": "^5.0.1",
+    "@types/cytoscape-dagre": "^2.3.4",
     "@types/node": "^22.10.2",
     "@vitest/coverage-v8": "^2.1.8",
     "autoprefixer": "^10.4.20",
