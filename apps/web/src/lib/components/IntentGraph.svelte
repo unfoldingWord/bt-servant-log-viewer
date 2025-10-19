@@ -105,7 +105,8 @@
           selector: "node",
           style: {
             "background-color": "#6b7280", // gray-500
-            "background-gradient-stop-colors": ["#6b7280", "#4b5563"], // gray-500 to gray-600
+            "background-fill": "linear-gradient",
+            "background-gradient-stop-colors": ["#9ca3af", "#4b5563"], // gray-400 to gray-600 (more pronounced)
             "background-gradient-direction": "to-bottom-right",
             width: 40,
             height: 40,
@@ -118,14 +119,16 @@
             "font-weight": 500,
             "text-max-width": "120px",
             "text-wrap": "wrap",
-            "text-overflow-wrap": "anywhere",
+            "text-overflow-wrap": "whitespace",
           },
         },
         {
           selector: "node:selected",
           style: {
             "background-color": "#22d3ee", // accent-cyan
+            "background-fill": "linear-gradient",
             "background-gradient-stop-colors": ["#22d3ee", "#14b8a6"], // cyan to teal
+            "background-gradient-direction": "to-bottom-right",
             "border-width": 4,
             "border-color": "#22d3ee",
             "border-opacity": 0.5,
@@ -176,10 +179,31 @@
         cy?.nodes().unselect();
       }
     });
+
+    // Fit the graph to the container with padding
+    cy.fit(undefined, 50);
   }
 
   onMount(() => {
     void initializeCytoscape();
+
+    // Handle window resize to make graph responsive
+    const handleResize = (): void => {
+      if (cy && browser) {
+        cy.resize();
+        cy.fit(undefined, 50); // Fit with 50px padding
+      }
+    };
+
+    if (browser && typeof window !== "undefined") {
+      window.addEventListener("resize", handleResize);
+    }
+
+    return () => {
+      if (browser && typeof window !== "undefined") {
+        window.removeEventListener("resize", handleResize);
+      }
+    };
   });
 
   onDestroy(() => {

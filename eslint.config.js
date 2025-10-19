@@ -91,6 +91,10 @@ export default tseslint.config(
       parserOptions: {
         parser: tseslint.parser,
       },
+      globals: {
+        window: "readonly",
+        document: "readonly",
+      },
     },
     rules: {
       // Svelte-specific
