@@ -43,7 +43,10 @@
     return tokens.toLocaleString();
   }
 
-  function getNodeColor(index: number): string {
+  function getNodeColor(index: number, isSelected: boolean): string {
+    if (isSelected) {
+      return "from-accent-cyan to-accent-teal";
+    }
     const colors = [
       "from-gray-500 to-gray-600",
       "from-gray-600 to-gray-700",
@@ -51,6 +54,21 @@
       "from-gray-500 to-gray-700",
     ];
     return colors[index % colors.length] ?? "from-gray-500 to-gray-600";
+  }
+
+  function calculateCost(
+    inputTokens: number | undefined,
+    outputTokens: number | undefined
+  ): string {
+    // Using Claude 3.5 Sonnet pricing as example: $3/MTok input, $15/MTok output
+    const inputCost = ((inputTokens ?? 0) / 1_000_000) * 3;
+    const outputCost = ((outputTokens ?? 0) / 1_000_000) * 15;
+    const total = inputCost + outputCost;
+
+    if (total < 0.01) {
+      return `$${total.toFixed(4)}`;
+    }
+    return `$${total.toFixed(2)}`;
   }
 </script>
 
@@ -60,7 +78,7 @@
   >
     <div class="mb-4 flex items-center gap-3">
       <div class="h-1 w-1 rounded-full bg-gray-500 animate-pulse"></div>
-      <h3 class="text-sm font-semibold text-gray-300">Intent Flow Visualization</h3>
+      <h3 class="text-sm font-semibold text-gray-300">Intent Flow</h3>
       <span class="text-xs text-text-dim">
         ({nodes.length} nodes · {perfReports.length} traces)
       </span>
@@ -81,15 +99,15 @@
             <!-- Node circle with gradient -->
             <div
               class="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br shadow-lg transition-all duration-300 animate-fade-in-scale
-              {getNodeColor(i)}
+              {getNodeColor(i, selectedNode?.name === node.name)}
               {selectedNode?.name === node.name
-                ? 'ring-4 ring-gray-400/50 scale-110 shadow-gray-500/50'
+                ? 'ring-4 ring-accent-cyan/50 scale-110 shadow-accent-cyan/50'
                 : 'hover:shadow-gray-500/30'}"
             >
               <!-- Pulsing background effect for selected node -->
               {#if selectedNode?.name === node.name}
                 <div
-                  class="absolute inset-0 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 opacity-30 blur-lg animate-pulse"
+                  class="absolute inset-0 rounded-full bg-gradient-to-br from-accent-cyan to-accent-teal opacity-30 blur-lg animate-pulse"
                 ></div>
               {/if}
 
@@ -107,7 +125,7 @@
             <span
               class="mt-2 max-w-[120px] truncate text-[10px] font-medium transition-colors
                 {selectedNode?.name === node.name
-                ? 'text-gray-300'
+                ? 'text-accent-cyan'
                 : 'text-text-secondary group-hover:text-gray-300'}"
               title={node.name}
             >
@@ -115,9 +133,16 @@
             </span>
           </button>
 
-          <!-- Connecting line (except for last node) - thick timeline style -->
+          <!-- Connecting line with arrow (except for last node) - thick timeline style -->
           {#if i < nodes.length - 1}
-            <div class="absolute left-full top-5 h-1 bg-gray-600" style="width: 4rem;"></div>
+            <div class="absolute left-full top-5 flex items-center" style="width: 4rem;">
+              <div class="h-1 flex-1 bg-gray-600"></div>
+              <svg class="h-3 w-3 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                />
+              </svg>
+            </div>
           {/if}
         </div>
       {/each}
@@ -142,7 +167,7 @@
           </h4>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 text-xs md:grid-cols-4">
+        <div class="grid grid-cols-2 gap-4 text-xs md:grid-cols-3 lg:grid-cols-5">
           <div
             class="rounded-lg border border-surface-active bg-background-secondary/50 p-3 transition-all hover:border-gray-500/50"
           >
@@ -176,6 +201,18 @@
             <div class="text-text-dim">Total Tokens</div>
             <div class="mt-1 font-mono text-lg font-bold text-gray-400">
               {formatTokens(selectedNode.total_tokens_expended)}
+            </div>
+          </div>
+
+          <div
+            class="rounded-lg border border-accent-teal/30 bg-accent-teal/5 p-3 transition-all hover:border-accent-teal/50"
+          >
+            <div class="text-text-dim">Est. Cost</div>
+            <div class="mt-1 font-mono text-lg font-bold text-accent-teal">
+              {calculateCost(
+                selectedNode.input_tokens_expended,
+                selectedNode.output_tokens_expended
+              )}
             </div>
           </div>
         </div>
