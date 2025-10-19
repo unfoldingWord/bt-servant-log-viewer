@@ -214,15 +214,19 @@
         />
       </div>
 
-      <!-- Server selector with custom styling -->
+      <!-- Server selector with All Users dropdown styling -->
       <div class="relative flex items-center">
-        <div class="absolute left-3 pointer-events-none">
-          <svg
-            class="h-3.5 w-3.5 text-accent-blue"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+        <button
+          type="button"
+          on:click={(e) => {
+            const select = e.currentTarget.nextElementSibling;
+            if (select instanceof HTMLSelectElement) {
+              select.click();
+            }
+          }}
+          class="flex items-center gap-1.5 rounded border px-2.5 py-1 text-xs font-medium transition-all hover:scale-105 border-surface-active bg-surface/30 text-text-dim hover:bg-surface"
+        >
+          <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -230,27 +234,8 @@
               d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"
             />
           </svg>
-        </div>
-        <select
-          bind:value={selectedServer}
-          on:change={() => {
-            handleServerChange(selectedServer);
-          }}
-          class="cursor-pointer appearance-none rounded-full border border-accent-blue/40 bg-gradient-to-r from-accent-blue/10 to-accent-cyan/10 pl-9 pr-8 py-2 text-xs font-semibold text-accent-blue shadow-md shadow-accent-blue/10 backdrop-blur-sm transition-all hover:scale-105 hover:shadow-accent-blue/20 focus:border-accent-blue focus:outline-none focus:ring-2 focus:ring-accent-blue/30"
-          style="background-color: transparent;"
-        >
-          <option class="rounded-lg bg-background-secondary text-accent-blue" value="qa">QA</option>
-          <option class="rounded-lg bg-background-secondary text-accent-blue" value="prod"
-            >Production</option
-          >
-        </select>
-        <div class="absolute right-3 pointer-events-none">
-          <svg
-            class="h-3 w-3 text-accent-blue"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          {selectedServer === "qa" ? "QA" : "Production"}
+          <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -258,7 +243,17 @@
               d="M19 9l-7 7-7-7"
             />
           </svg>
-        </div>
+        </button>
+        <select
+          bind:value={selectedServer}
+          on:change={() => {
+            handleServerChange(selectedServer);
+          }}
+          class="absolute inset-0 opacity-0 cursor-pointer"
+        >
+          <option value="qa">QA</option>
+          <option value="prod">Production</option>
+        </select>
       </div>
     </div>
   </header>
