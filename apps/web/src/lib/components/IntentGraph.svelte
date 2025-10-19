@@ -138,7 +138,7 @@
             width: 4,
             "line-color": "#4b5563", // gray-600
             "target-arrow-color": "#4b5563",
-            "target-arrow-shape": "none",
+            "target-arrow-shape": "triangle",
             "curve-style": "bezier",
           },
         },
