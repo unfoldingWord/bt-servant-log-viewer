@@ -1,9 +1,24 @@
 <script lang="ts">
+  import { onMount, onDestroy } from "svelte";
+  import cytoscape from "cytoscape";
+  import dagre from "cytoscape-dagre";
   import type { PerfReport, Span } from "@bt-log-viewer/domain";
+  import type { Core, EventObject } from "cytoscape";
 
   export let perfReports: PerfReport[] = [];
 
   let selectedNode: Span | null = null;
+  let cy: Core | null = null;
+  let containerRef: HTMLDivElement | undefined;
+  let dagreRegistered = false;
+
+  // Register dagre layout once
+  function registerDagre(): void {
+    if (!dagreRegistered) {
+      cytoscape.use(dagre as never);
+      dagreRegistered = true;
+    }
+  }
 
   // Aggregate all spans from all perfReports for this user
   $: allSpans = perfReports.flatMap((report) => report.spans ?? []);
@@ -29,10 +44,6 @@
       return acc;
     }, []);
 
-  function selectNode(span: Span): void {
-    selectedNode = selectedNode?.name === span.name ? null : span;
-  }
-
   function formatDuration(ms: number): string {
     if (ms < 1000) return `${ms.toFixed(0)}ms`;
     return `${(ms / 1000).toFixed(2)}s`;
@@ -41,19 +52,6 @@
   function formatTokens(tokens: number | undefined): string {
     if (!tokens) return "0";
     return tokens.toLocaleString();
-  }
-
-  function getNodeColor(index: number, isSelected: boolean): string {
-    if (isSelected) {
-      return "from-accent-cyan to-accent-teal";
-    }
-    const colors = [
-      "from-gray-500 to-gray-600",
-      "from-gray-600 to-gray-700",
-      "from-gray-400 to-gray-500",
-      "from-gray-500 to-gray-700",
-    ];
-    return colors[index % colors.length] ?? "from-gray-500 to-gray-600";
   }
 
   function calculateCost(
@@ -70,6 +68,134 @@
     }
     return `$${total.toFixed(2)}`;
   }
+
+  function initializeCytoscape(): void {
+    if (!containerRef || nodes.length === 0) return;
+
+    registerDagre();
+
+    // Clean up existing instance
+    if (cy) {
+      cy.destroy();
+    }
+
+    // Convert nodes to cytoscape format
+    const cytoscapeNodes = nodes.map((node, index) => ({
+      data: {
+        id: node.name,
+        label: node.name.split(":")[1]?.replace(/_/g, " ") ?? node.name.replace(/_/g, " "),
+        nodeData: node,
+        index,
+      },
+    }));
+
+    // Create edges between consecutive nodes
+    const cytoscapeEdges = nodes.slice(0, -1).map((node, index) => {
+      const nextNode = nodes[index + 1];
+      return {
+        data: {
+          source: node.name,
+          target: nextNode?.name ?? "",
+        },
+      };
+    });
+
+    cy = cytoscape({
+      container: containerRef,
+      elements: [...cytoscapeNodes, ...cytoscapeEdges],
+      style: [
+        {
+          selector: "node",
+          style: {
+            "background-color": "#6b7280", // gray-500
+            "background-gradient-stop-colors": ["#6b7280", "#4b5563"], // gray-500 to gray-600
+            "background-gradient-direction": "to-bottom-right",
+            width: 40,
+            height: 40,
+            label: "data(label)",
+            "text-valign": "bottom",
+            "text-halign": "center",
+            "text-margin-y": 8,
+            "font-size": 10,
+            color: "#9ca3af", // text-secondary
+            "font-weight": 500,
+            "text-max-width": "120px",
+            "text-wrap": "wrap",
+            "text-overflow-wrap": "anywhere",
+          },
+        },
+        {
+          selector: "node:selected",
+          style: {
+            "background-color": "#22d3ee", // accent-cyan
+            "background-gradient-stop-colors": ["#22d3ee", "#14b8a6"], // cyan to teal
+            "border-width": 4,
+            "border-color": "#22d3ee",
+            "border-opacity": 0.5,
+            color: "#22d3ee",
+          },
+        },
+        {
+          selector: "edge",
+          style: {
+            width: 4,
+            "line-color": "#4b5563", // gray-600
+            "target-arrow-color": "#4b5563",
+            "target-arrow-shape": "none",
+            "curve-style": "bezier",
+          },
+        },
+      ],
+      layout: {
+        name: "dagre",
+        rankDir: "LR", // Left to right
+        nodeSep: 160,
+        rankSep: 100,
+        padding: 50,
+      } as never,
+      userZoomingEnabled: false,
+      userPanningEnabled: true,
+      boxSelectionEnabled: false,
+    });
+
+    // Handle node selection
+    cy.on("tap", "node", (evt: EventObject) => {
+      const target = evt.target as {
+        data: (key: string) => Span;
+      };
+      const nodeData: Span = target.data("nodeData");
+      if (selectedNode?.name === nodeData.name) {
+        selectedNode = null;
+        cy?.nodes().unselect();
+      } else {
+        selectedNode = nodeData;
+      }
+    });
+
+    // Deselect when clicking background
+    cy.on("tap", (evt) => {
+      if (evt.target === cy) {
+        selectedNode = null;
+        cy?.nodes().unselect();
+      }
+    });
+  }
+
+  onMount(() => {
+    initializeCytoscape();
+  });
+
+  onDestroy(() => {
+    if (cy) {
+      cy.destroy();
+    }
+  });
+
+  // Reinitialize when nodes change
+  $: if (nodes.length > 0 && containerRef) {
+    // Use Promise for async initialization
+    void Promise.resolve().then(initializeCytoscape);
+  }
 </script>
 
 {#if nodes.length > 0}
@@ -84,62 +210,8 @@
       </span>
     </div>
 
-    <!-- Graph visualization -->
-    <div class="relative flex items-center justify-center gap-16 overflow-x-auto px-8 py-4">
-      {#each nodes as node, i}
-        <div class="relative flex flex-col items-center">
-          <button
-            type="button"
-            on:click={() => {
-              selectNode(node);
-            }}
-            class="group relative flex flex-col items-center transition-all duration-300 hover:scale-110"
-            style="animation-delay: {i * 100}ms"
-          >
-            <!-- Node circle with gradient -->
-            <div
-              class="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br shadow-lg transition-all duration-300 animate-fade-in-scale
-              {getNodeColor(i, selectedNode?.name === node.name)}
-              {selectedNode?.name === node.name
-                ? 'ring-4 ring-accent-cyan/50 scale-110 shadow-accent-cyan/50'
-                : 'hover:shadow-gray-500/30'}"
-            >
-              <!-- Pulsing background effect for selected node -->
-              {#if selectedNode?.name === node.name}
-                <div
-                  class="absolute inset-0 rounded-full bg-gradient-to-br from-accent-cyan to-accent-teal opacity-30 blur-lg animate-pulse"
-                ></div>
-              {/if}
-
-              <!-- Count badge -->
-              {#if node.count && node.count > 1}
-                <span
-                  class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-background text-[10px] font-bold text-gray-400 ring-2 ring-gray-500/50"
-                >
-                  {node.count}
-                </span>
-              {/if}
-
-              <!-- Connecting line (except for last node) - positioned relative to circle -->
-              {#if i < nodes.length - 1}
-                <div class="absolute left-full top-1/2 h-1 w-80 -translate-y-1/2 bg-gray-600"></div>
-              {/if}
-            </div>
-
-            <!-- Node label -->
-            <span
-              class="mt-2 max-w-[120px] truncate text-[10px] font-medium transition-colors
-                {selectedNode?.name === node.name
-                ? 'text-accent-cyan'
-                : 'text-text-secondary group-hover:text-gray-300'}"
-              title={node.name}
-            >
-              {node.name.split(":")[1]?.replace(/_/g, " ") ?? node.name.replace(/_/g, " ")}
-            </span>
-          </button>
-        </div>
-      {/each}
-    </div>
+    <!-- Cytoscape graph container -->
+    <div bind:this={containerRef} class="h-64 w-full rounded-lg bg-background/50"></div>
 
     <!-- Metrics panel for selected node -->
     {#if selectedNode}
@@ -248,22 +320,7 @@
     }
   }
 
-  @keyframes fade-in-scale {
-    from {
-      opacity: 0;
-      transform: scale(0.8);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
   .animate-slide-in {
     animation: slide-in 0.4s ease-out;
-  }
-
-  .animate-fade-in-scale {
-    animation: fade-in-scale 0.3s ease-out forwards;
   }
 </style>
