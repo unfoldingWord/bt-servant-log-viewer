@@ -119,6 +119,21 @@
                   {node.count}
                 </span>
               {/if}
+
+              <!-- Connecting line with arrow (except for last node) - positioned relative to circle -->
+              {#if i < nodes.length - 1}
+                <div
+                  class="absolute left-full top-1/2 -translate-y-1/2 flex items-center"
+                  style="width: 4rem;"
+                >
+                  <div class="h-1 flex-1 bg-gray-600"></div>
+                  <svg class="h-3 w-3 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                    />
+                  </svg>
+                </div>
+              {/if}
             </div>
 
             <!-- Node label -->
@@ -132,18 +147,6 @@
               {node.name.split(":")[1]?.replace(/_/g, " ") ?? node.name.replace(/_/g, " ")}
             </span>
           </button>
-
-          <!-- Connecting line with arrow (except for last node) - thick timeline style -->
-          {#if i < nodes.length - 1}
-            <div class="absolute left-full top-5 flex items-center" style="width: 4rem;">
-              <div class="h-1 flex-1 bg-gray-600"></div>
-              <svg class="h-3 w-3 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                />
-              </svg>
-            </div>
-          {/if}
         </div>
       {/each}
     </div>
