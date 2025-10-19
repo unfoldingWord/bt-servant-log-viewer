@@ -1,8 +1,50 @@
 # UI Component → Log Field Mapping
 
-**Purpose:** Explicit mapping from UI components to log patterns/fields for Phase 1b implementation
+**Purpose:** Explicit mapping from UI components to log patterns/fields for
+Phase 1b implementation
 
 **Last Updated:** 2025-10-18
+
+---
+
+## Coverage Status
+
+### ✅ VERIFIED: All patterns exist in actual logs
+
+Every extraction pattern documented below has been verified against the actual
+`docs/example_bt_servant.log` file:
+
+- ✅ Direct JSON fields (timestamp, level, logger, cid, user, client_ip,
+  taskName, message)
+- ✅ Language detection pattern: `"language detection (model): {code}"`
+- ✅ Intent extraction pattern: `"extracted user intents: {list}"`
+- ✅ Original/preprocessed pattern: `"original_message: ...\nnew_message: ..."`
+- ✅ Response pattern: `"Response from bt_servant: {text}"`
+- ✅ Biblical reference patterns: `"[selection-helper] canonical_book={book}"`
+  - `"ranges=[(ch,v,ch,v)]"`
+- ✅ Resources pattern: `"[translation-helps] selected {n} help entries"`
+- ✅ PerfReport: `"PerfReport {"` with full JSON structure
+
+### ⚠️ UI Implementation Gaps
+
+Some fields exist in the domain model and logs but are **not yet displayed** in
+the Phase 1a UI:
+
+**LogDetailPanel missing:**
+
+- client_ip, taskName (simple fields)
+- message_original, message_preprocessed, final_message (require CID
+  correlation)
+- Structured PerfReport visualization (currently shows raw JSON dump)
+- Biblical reference display
+- Resources searched display
+
+**These will be added in Phase 1b and Phase 2** (see section 4 for details).
+
+### ✅ Full Coverage Confirmed
+
+Every UI component has a clear data source mapping with extraction logic
+documented.
 
 ---
 
@@ -80,39 +122,62 @@ Maps to: `apps/web/src/lib/components/LogDetailPanel.svelte`
 
 ### Detail Fields Displayed
 
-| UI Section                           | Source Field/Pattern                                                             | Extraction Details                 |
-| ------------------------------------ | -------------------------------------------------------------------------------- | ---------------------------------- |
-| **Basic Info**                       |                                                                                  |                                    |
-| → Timestamp                          | JSON field: `timestamp`                                                          | Full precision display             |
-| → Level                              | JSON field: `level`                                                              | With color coding                  |
-| → Logger                             | JSON field: `logger`                                                             | Full path, copyable                |
-| → Correlation ID                     | JSON field: `cid`                                                                | Full value, copyable               |
-| → User                               | JSON field: `user`                                                               | Full user ID                       |
-| → Task Name                          | JSON field: `taskName`                                                           | May be null                        |
-| → Client IP                          | JSON field: `client_ip`                                                          | IPv4/IPv6 or "-"                   |
-| **Extracted Fields**                 |                                                                                  |                                    |
-| → Language                           | Pattern: `"language detection (model): {code}"`                                  | 2-letter ISO code                  |
-| → Region/Country                     | GeoIP lookup on `client_ip`                                                      | Requires GeoLite2 database         |
-| → Original Message                   | Pattern: `"original_message: {text}\n"`                                          | From preprocessing logs            |
-| → Preprocessed Message               | Pattern: `"new_message: {text}\n"`                                               | From preprocessing logs            |
-| → Intents                            | Pattern: `"extracted user intents: {list}"`                                      | Parse comma-separated              |
-| → Response to User                   | Pattern: `"Response from bt_servant: {text}"`                                    | Full response text                 |
-| → Biblical Reference                 | Pattern: `"[selection-helper] canonical_book={book}"` + `"ranges=[(ch,v,ch,v)]"` | Combine book + ranges              |
-| → Resources Searched                 | Pattern: `"[translation-helps] selected {n} help entries"`                       | Count + resource list if available |
-| **Performance Data** (if PerfReport) |                                                                                  |                                    |
-| → Trace ID                           | PerfReport JSON: `trace_id`                                                      | Full trace ID                      |
-| → Total Duration                     | PerfReport JSON: `total_ms`                                                      | Display as seconds                 |
-| → Total Tokens                       | PerfReport JSON: `total_tokens`                                                  | Input + output                     |
-| → Total Cost                         | PerfReport JSON: `total_cost_usd`                                                | Format as currency                 |
-| → Spans List                         | PerfReport JSON: `spans[]`                                                       | Table of all spans with timing     |
+| UI Section                             | Source Field/Pattern                                                             | Status         | Extraction Details                         |
+| -------------------------------------- | -------------------------------------------------------------------------------- | -------------- | ------------------------------------------ |
+| **Basic Info** (Currently Implemented) |                                                                                  |                |                                            |
+| → Timestamp                            | JSON field: `timestamp`                                                          | ✅ Implemented | Full precision display                     |
+| → Level                                | JSON field: `level`                                                              | ✅ Implemented | With color coding                          |
+| → Logger                               | JSON field: `logger`                                                             | ✅ Implemented | Full path, copyable                        |
+| → Message (raw)                        | JSON field: `message`                                                            | ✅ Implemented | Displayed in collapsible section           |
+| → Correlation ID                       | JSON field: `cid`                                                                | ✅ Implemented | Full value, copyable                       |
+| → Trace ID                             | Domain field: `traceId`                                                          | ✅ Implemented | From PerfReport or extracted               |
+| → User                                 | JSON field: `user`                                                               | ✅ Implemented | Full user ID                               |
+| → Language                             | Pattern: `"language detection (model): {code}"`                                  | ✅ Implemented | 2-letter ISO code                          |
+| → Region/Country                       | GeoIP lookup on `client_ip`                                                      | ✅ Implemented | Shows country, region, city                |
+| → Intents                              | Pattern: `"extracted user intents: {list}"`                                      | ✅ Implemented | Badge list with colors                     |
+| **Fields to ADD in Phase 1b/2**        |                                                                                  |                |                                            |
+| → Task Name                            | JSON field: `taskName`                                                           | ⚠️ TO ADD      | May be null                                |
+| → Client IP                            | JSON field: `client_ip`                                                          | ⚠️ TO ADD      | IPv4/IPv6 or "-"                           |
+| → Original Message                     | Pattern: `"original_message: {text}\n"`                                          | ⚠️ TO ADD      | From preprocessing logs (correlate by CID) |
+| → Preprocessed Message                 | Pattern: `"new_message: {text}\n"`                                               | ⚠️ TO ADD      | From preprocessing logs (correlate by CID) |
+| → Response to User                     | Pattern: `"Response from bt_servant: {text}"`                                    | ⚠️ TO ADD      | Full response text (correlate by CID)      |
+| → Biblical Reference                   | Pattern: `"[selection-helper] canonical_book={book}"` + `"ranges=[(ch,v,ch,v)]"` | ⚠️ TO ADD      | Combine book + ranges (correlate by CID)   |
+| → Resources Searched                   | Pattern: `"[translation-helps] selected {n} help entries"`                       | ⚠️ TO ADD      | Count + resource list (correlate by CID)   |
+| **Performance Data** (Structured View) |                                                                                  |                |                                            |
+| → PerfReport Overview                  | PerfReport JSON: `total_ms`, `total_cost_usd`, `total_tokens`                    | ⚠️ TO ADD      | Summary card at top of detail panel        |
+| → Spans Timeline                       | PerfReport JSON: `spans[]`                                                       | ⚠️ TO ADD      | Waterfall/timeline visualization           |
+| → Intent Cost Breakdown                | PerfReport JSON: `grouped_totals_by_intent`                                      | ⚠️ TO ADD      | Bar chart or table by intent               |
+| → Token Usage Chart                    | PerfReport JSON: `total_input_tokens`, `total_output_tokens`                     | ⚠️ TO ADD      | Pie or bar chart                           |
+| **Currently Shows**                    |                                                                                  |                |                                            |
+| → Raw JSON Data                        | Complete log entry as JSON                                                       | ✅ Implemented | Collapsible section (not ideal for users)  |
 
 **Implementation Notes:**
 
-- All extracted fields are **optional** - display "—" or "(not available)" when missing
+- ✅ = Currently implemented in Phase 1a UI
+- ⚠️ TO ADD = Domain model has field, but UI doesn't display it yet
+- All extracted fields require **correlation by CID** - single log entry doesn't
+  contain all data
 - PerfReport section should only show when `hasJson === true`
-- PerfReport JSON extraction: when message starts with "PerfReport {", extract substring from "{" to end, parse as JSON
-- Biblical reference requires combining multiple log patterns - may need to correlate by CID
-- Resources searched may need separate query to find related entries
+- PerfReport JSON extraction: when message starts with "PerfReport {", extract
+  substring from "{" to end, parse as JSON
+- Current UI shows raw JSON dump - Phase 2 should add structured visualization
+- Biblical reference requires combining multiple log patterns from different
+  entries with same CID
+- Resources searched may need separate query to find related entries by CID
+
+**Phase 1b Priority:**
+
+1. Add client_ip and taskName display (simple direct fields)
+2. Implement CID-based correlation service for multi-entry patterns
+3. Add original/preprocessed/response message sections
+4. Add biblical reference display
+
+**Phase 2 Priority:**
+
+5. Replace raw JSON dump with structured PerfReport visualization
+6. Add waterfall timeline for spans
+7. Add cost/token breakdown charts
+8. Add resources searched display
 
 ---
 

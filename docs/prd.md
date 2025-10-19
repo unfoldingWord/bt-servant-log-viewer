@@ -610,15 +610,38 @@ For BT-Servant application:
 - Session management for loaded files.
 - Cache management for performance.
 
-**Deliverables:** Fully functional app with the chosen UI connected to real data sources.
+**Deliverables:** Fully functional app with the chosen UI connected to real data
+sources. All core parsing and extraction working. App usable for daily log
+analysis.
 
-### Phase 2 — Complete Parser & Extractors (Week 3)
+### Phase 2 — Performance, Polish & Testing (Week 3)
 
-- Full parser implementation with error recovery.
-- All derived field extractors (intents, language, references, etc.).
-- Handle missing fields gracefully.
-- MiniSearch integration for text search.
-- Golden file test suite with real log samples.
+**Focus: Production readiness, optimization, and comprehensive testing**
+
+- **Performance Optimization:**
+  - Profile parser to meet 2s/10MB target
+  - Optimize memory usage for large datasets (100k+ entries)
+  - Benchmark filtering and search performance
+  - Lazy loading and virtualization improvements
+- **Error Recovery Polish:**
+  - Handle all edge cases in message pattern extraction
+  - Graceful degradation for malformed PerfReports
+  - Robust handling of encoding issues
+  - Better user feedback for parse errors
+- **Testing Suite:**
+  - Golden file tests with actual log samples
+  - Property-based testing for parser
+  - Performance regression tests
+  - Edge case test coverage (missing fields, malformed JSON, etc.)
+- **UI Enhancements (from PRD gaps):**
+  - Add message_original, message_preprocessed, final_message to
+    LogDetailPanel
+  - Add structured PerfReport display (not just raw JSON)
+  - Add resources_searched display
+- **Documentation:**
+  - Parser performance benchmarks
+  - Extraction pattern documentation
+  - Troubleshooting guide
 
 ### Phase 3 — Live Tail & Advanced Features (Week 4)
 
@@ -954,12 +977,19 @@ type IntentFlow = {
 
 ## 19) Related Documentation
 
-- **Example JSON Logs**: `/docs/example_bt_servant.log` — Actual JSON log format from BT-Servant
-- **API Specification**: `/docs/bt-servant-log-api-spec.md` — Complete FastAPI implementation guide for log endpoints
+- **Example JSON Logs**: `/docs/example_bt_servant.log` — Actual JSON log format
+  from BT-Servant
+- **API Specification**: `/docs/bt-servant-log-api-spec.md` — Complete FastAPI
+  implementation guide for log endpoints
+- **UI Field Mapping**: `/docs/ui-to-log-field-mapping.md` — Comprehensive
+  mapping from UI components to log patterns/fields
 - **Architecture Decisions**: See sections 6 & 7 for clean architecture details
-- **Deployment Guide**: `/docs/fly-io-setup.md` — Fly.io deployment for staging/production
-- **Phase 1 Split**: `/docs/bot-competition.md` — Phase 1a/1b split for bot testing
-- **Claude Instructions**: `/CLAUDE.md` — Guidance for AI assistants working with codebase
+- **Deployment Guide**: `/docs/fly-io-setup.md` — Fly.io deployment for
+  staging/production
+- **Phase 1 Split**: `/docs/bot-competition.md` — Phase 1a/1b split for bot
+  testing
+- **Claude Instructions**: `/CLAUDE.md` — Guidance for AI assistants working
+  with codebase
 
 ---
 
