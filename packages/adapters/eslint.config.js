@@ -50,5 +50,13 @@ export default tseslint.config(
       "@typescript-eslint/explicit-function-return-type": "error",
       "@typescript-eslint/no-non-null-assertion": "error",
     },
+  },
+  {
+    // Allow non-null assertions in test files
+    files: ["**/*.test.ts", "**/*.spec.ts"],
+    rules: {
+      "@typescript-eslint/no-non-null-assertion": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+    },
   }
 );
