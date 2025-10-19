@@ -252,7 +252,7 @@
 
         {#if showServerDropdown}
           <div
-            class="absolute right-0 top-full z-50 mt-1 max-h-64 w-48 overflow-y-auto rounded-lg border border-surface-active bg-background-secondary shadow-xl"
+            class="absolute right-0 top-full z-[100] mt-1 max-h-64 w-48 overflow-y-auto rounded-lg border border-surface-active bg-background-secondary shadow-xl"
           >
             <button
               type="button"
