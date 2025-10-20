@@ -26,6 +26,7 @@ RUN pnpm --filter @bt-log-viewer/api build
 
 # Stage 4: Production dependencies only
 FROM base AS prod-deps
+ENV PNPM_NODE_LINKER=hoisted
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY apps/api/package.json ./apps/api/
 COPY packages/domain/package.json ./packages/domain/
