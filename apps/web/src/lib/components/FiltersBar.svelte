@@ -173,7 +173,7 @@
     <div class="flex items-center gap-2">
       <span class="text-xs font-medium text-text-dim">Time:</span>
       <div class="flex gap-1.5">
-        {#each ["1h", "6h", "24h", "7d", "all"] as range}
+        {#each ["1h", "6h", "24h", "3d", "7d", "30d", "all"] as range}
           <button
             type="button"
             on:click={() => {

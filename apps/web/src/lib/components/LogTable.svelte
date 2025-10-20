@@ -154,7 +154,7 @@
           <td class="relative px-4 py-3.5">
             <div class="flex items-center gap-2">
               <div
-                class="h-1.5 w-1.5 rounded-full bg-accent-cyan/50 group-hover:bg-accent-cyan group-hover:shadow-[0_0_8px_rgba(34,211,238,0.6)] transition-all"
+                class="h-1.5 w-1.5 rounded-full bg-accent-cyan/50 group-hover:bg-accent-cyan transition-colors"
               ></div>
               <span
                 class="font-mono text-xs text-text-muted group-hover:text-text-secondary transition-colors"
@@ -166,7 +166,7 @@
 
           <td class="relative px-4 py-3.5">
             <span
-              class="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold transition-colors transition-shadow group-hover:shadow-md {getLevelBadgeClass(
+              class="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold transition-colors {getLevelBadgeClass(
                 log.level
               )}"
             >
@@ -179,7 +179,7 @@
             <div class="flex items-center gap-2">
               {#if log.userId}
                 <div
-                  class="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-accent-cyan/20 to-accent-teal/20 text-xs font-medium text-accent-cyan ring-1 ring-accent-cyan/30 group-hover:ring-2 transition-all"
+                  class="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-accent-cyan/20 to-accent-teal/20 text-xs font-medium text-accent-cyan ring-1 ring-accent-cyan/30 group-hover:ring-accent-cyan/50 transition-colors"
                 >
                   {log.userId.substring(0, 2).toUpperCase()}
                 </div>
@@ -195,7 +195,7 @@
           </td>
 
           <td class="relative max-w-md px-4 py-3.5">
-            <p class="text-text group-hover:text-text transition-colors leading-relaxed truncate">
+            <p class="leading-relaxed truncate text-text transition-colors">
               {log.message}
             </p>
           </td>

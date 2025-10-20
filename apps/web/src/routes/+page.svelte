@@ -640,19 +640,6 @@
   <footer
     class="relative flex items-center justify-between border-t border-accent-cyan/10 bg-gradient-to-r from-background-secondary to-background px-4 py-2.5 text-xs md:px-6"
   >
-    <!-- Progress bar overlay (when loading) -->
-    {#if loadingProgress.total > 0}
-      <div
-        class="absolute left-0 right-0 top-0 h-0.5 overflow-hidden bg-surface/30"
-        style="transform: translateY(-100%);"
-      >
-        <div
-          class="h-full bg-gradient-to-r from-accent-cyan to-accent-teal transition-all duration-300"
-          style="width: {(loadingProgress.current / loadingProgress.total) * 100}%"
-        ></div>
-      </div>
-    {/if}
-
     <div class="flex items-center gap-3">
       <div class="flex items-center gap-1.5">
         <div class="h-1.5 w-1.5 rounded-full bg-accent-teal animate-pulse"></div>
@@ -663,12 +650,7 @@
           <span class="text-text-muted">logs</span>
         </span>
       </div>
-      {#if loadingProgress.total > 0}
-        <span class="text-text-dim">·</span>
-        <span class="text-text-muted">
-          Loading {loadingProgress.current}/{loadingProgress.total} files
-        </span>
-      {:else if searchQuery}
+      {#if searchQuery}
         <span class="text-text-dim">·</span>
         <div
           class="flex items-center gap-1.5 rounded-full border border-accent-cyan/20 bg-accent-cyan/5 px-2 py-0.5"
@@ -690,27 +672,45 @@
         </div>
       {/if}
     </div>
-    <!-- Server connection status -->
-    <div
-      class="flex items-center gap-1.5 rounded-full border px-2 py-0.5 transition-colors {serverHealth[
-        selectedServer
-      ]
-        ? 'border-emerald-500/40 bg-emerald-500/10'
-        : 'border-red-500/40 bg-red-500/10'}"
-    >
+
+    <div class="flex items-center gap-3">
+      <!-- Progress bar (inline in footer) -->
+      {#if loadingProgress.total > 0}
+        <div class="flex items-center gap-2">
+          <div class="h-1 w-16 overflow-hidden rounded-full bg-surface/50">
+            <div
+              class="h-full bg-gradient-to-r from-accent-cyan to-accent-teal transition-all duration-300"
+              style="width: {(loadingProgress.current / loadingProgress.total) * 100}%"
+            ></div>
+          </div>
+          <span class="text-text-muted">
+            {loadingProgress.current}/{loadingProgress.total}
+          </span>
+        </div>
+      {/if}
+
+      <!-- Server connection status -->
       <div
-        class="h-1.5 w-1.5 rounded-full {serverHealth[selectedServer]
-          ? 'bg-emerald-400 animate-pulse'
-          : 'bg-red-400'}"
-      ></div>
-      <span
-        class="text-xs font-medium {serverHealth[selectedServer]
-          ? 'text-emerald-400'
-          : 'text-red-400'}"
+        class="flex items-center gap-1.5 rounded-full border px-2 py-0.5 transition-colors {serverHealth[
+          selectedServer
+        ]
+          ? 'border-emerald-500/40 bg-emerald-500/10'
+          : 'border-red-500/40 bg-red-500/10'}"
       >
-        {selectedServer === "dev" ? "Dev" : selectedServer === "qa" ? "QA" : "Prod"}:
-        {serverHealth[selectedServer] ? "Connected" : "Disconnected"}
-      </span>
+        <div
+          class="h-1.5 w-1.5 rounded-full {serverHealth[selectedServer]
+            ? 'bg-emerald-400 animate-pulse'
+            : 'bg-red-400'}"
+        ></div>
+        <span
+          class="text-xs font-medium {serverHealth[selectedServer]
+            ? 'text-emerald-400'
+            : 'text-red-400'}"
+        >
+          {selectedServer === "dev" ? "Dev" : selectedServer === "qa" ? "QA" : "Prod"}:
+          {serverHealth[selectedServer] ? "Connected" : "Disconnected"}
+        </span>
+      </div>
     </div>
   </footer>
 </div>
