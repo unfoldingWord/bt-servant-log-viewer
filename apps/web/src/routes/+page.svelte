@@ -18,7 +18,7 @@
   let filterLevels: string[] = [];
   let filterUserId: string | null = null;
   let filterTimeRange = "all";
-  let groupByConversation = false;
+  let groupByConversation = true;
   let selectedServer: Server = "qa";
   let showServerDropdown = false;
   let isLoading = false;

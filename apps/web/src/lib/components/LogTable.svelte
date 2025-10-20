@@ -45,10 +45,6 @@
     };
     return icons[level] ?? "○";
   }
-
-  function truncate(text: string, maxLength: number): string {
-    return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
-  }
 </script>
 
 <div class="h-full overflow-auto bg-gradient-to-b from-background to-background-secondary/20">
@@ -199,8 +195,8 @@
           </td>
 
           <td class="relative max-w-md px-4 py-3.5">
-            <p class="text-text group-hover:text-text transition-colors leading-relaxed">
-              {truncate(log.message, 100)}
+            <p class="text-text group-hover:text-text transition-colors leading-relaxed truncate">
+              {log.message}
             </p>
           </td>
         </tr>
