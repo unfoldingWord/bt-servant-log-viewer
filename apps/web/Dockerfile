@@ -50,7 +50,7 @@ RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 sveltekit
 
 COPY --from=prod-deps /app/node_modules ./node_modules
-COPY --from=prod-deps /app/apps/web/node_modules ./node_modules
+COPY --from=prod-deps /app/apps/web/node_modules ./apps/web/node_modules
 COPY --from=builder --chown=sveltekit:nodejs /app/apps/web/build ./build
 COPY --from=builder --chown=sveltekit:nodejs /app/apps/web/package.json ./
 
