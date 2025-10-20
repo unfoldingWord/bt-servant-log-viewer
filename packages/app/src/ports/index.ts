@@ -2,8 +2,13 @@
 
 import type { LogEntry } from "@bt-log-viewer/domain";
 
+export interface ParseOptions {
+  fileId?: string;
+  fileName?: string;
+}
+
 export interface ParsingPort {
-  parse(content: string): Promise<LogEntry[]>;
+  parse(content: string, options?: ParseOptions): Promise<LogEntry[]>;
 }
 
 export interface IndexPort {

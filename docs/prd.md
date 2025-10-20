@@ -1,23 +1,26 @@
-# BT Servant Log Viewer — PRD v0.6
+# BT Servant Log Viewer — PRD v0.7
 
 **Owner:** Ian Lindsley
-**Date:** 2025-10-16
-**Status:** Draft → Scaffold-ready → Enhanced → Flow Visualization → Mobile-First → Phase 1 Split for Bot Competition
+**Date:** 2025-10-18
+**Status:** Phase 1a Complete (UI with Mock Data) → Phase 1b Starting (Data Integration)
 **Guiding Style:** _Zero-warning policy_, clean/onion/hexagonal architecture, same UI stack & dark/techy theme as ChessCoachAI.
 
 ---
 
 ## 1) TL;DR
 
-Build **BT Servant Log Viewer** — a fast, dark-themed, web-based log viewer for BT-Servant telemetry. It automatically loads the last 21 days of logs on startup, parses structured fields (timestamp, level, logger, correlation id), recognizes multi-line JSON payloads (e.g., **PerfReport**), and surfaces filters, timelines, search, and cost/latency analytics. **Key extractions** are first-class UI citizens and have dedicated UI elements:
+Build **BT Servant Log Viewer** — a fast, dark-themed, web-based log viewer for BT-Servant telemetry. It automatically loads the last 21 days of logs on startup, parses **JSON-formatted log entries** (one JSON object per line), extracts all structured fields including embedded **PerfReport** data, and surfaces filters, timelines, search, and cost/latency analytics. **Key extractions** are first-class UI citizens and have dedicated UI elements:
 
-1. **Language code detected**
-2. **IP → Region/Country** (GeoIP) - when IP field is present
-3. **Original message**
-4. **Preprocessed/normalized message**
-5. **Intents detected** (critical)
-6. **Final message returned to the user**
-   Additionally, for **reference-oriented flows** we capture the **reference extracted** (e.g., "Gen 1:3-5"), and for **get-bible-translation-assistance** we list **which resources were searched**.
+1. **Language code detected** (from `language detection (model): en` messages)
+2. **IP → Region/Country** (GeoIP lookup from `client_ip` field)
+3. **Original message** (from preprocessing logs)
+4. **Preprocessed/normalized message** (from preprocessing logs)
+5. **Intents detected** (from `extracted user intents:` messages)
+6. **Final message returned to the user** (from `Response from bt_servant:`)
+7. **User ID** (from `user` field for filtering all activity)
+8. **Biblical references** (e.g., "John 4:1-3" from passage selection)
+9. **Resources searched** (for translation assistance flows)
+10. **PerfReport data** (token usage, costs, spans, timing from embedded JSON)
 
 From day zero: **strict typing**, **linting**, **import boundaries**, **tests**, **pre-commit**, and **CI/CD** to Fly.io — **no warnings suppressed, ever**. A **companion scaffold** (monorepo layout, strict configs, CI, Fly stubs, parser skeleton, **golden-file tests**) is included as Phase 0 deliverable.
 
@@ -47,75 +50,64 @@ From day zero: **strict typing**, **linting**, **import boundaries**, **tests**,
 
 ---
 
-## 3) Sample Log Dialect (What we parse)
+## 3) Sample Log Format (JSON Lines)
 
-### Header Line Format
+### JSON Log Entry Format
 
-```
-[2025-10-15 20:28:48] [INFO] [bt_servant_engine.apps.api.routes.webhooks] [cid=466256e...]: text message from ... received.
-```
-
-### PerfReport JSON Block Example
+Each line in the log file is a complete JSON object with the following structure:
 
 ```json
-[2025-10-15 20:29:09] [INFO] [...] [cid=466256eb842f434c9b11738498710c8a]: PerfReport {
-   "user_id":"kwlv1sXnUvYT9dnn",
-   "trace_id":"wamid.HBgLMTQ0Mzg2NzMzNjgVAgASGBQzRkU5MTZEOEZEMjRGNzlBQzM2NgA=",
-   "total_ms":21337.01,
-   "total_s":21.34,
-   "total_input_tokens":9411,
-   "total_output_tokens":102,
-   "total_tokens":9513,
-   "total_cached_input_tokens":0,
-   "total_audio_input_tokens":0,
-   "total_audio_output_tokens":0,
-   "total_input_cost_usd":0.023527,
-   "total_output_cost_usd":0.00102,
-   "total_cached_input_cost_usd":0.0,
-   "total_audio_input_cost_usd":0.0,
-   "total_audio_output_cost_usd":0.0,
-   "total_cost_usd":0.024548,
-   "grouped_totals_by_intent":{
-      "get-translation-helps":{
-         "input_tokens":2281,
-         "output_tokens":418,
-         "total_tokens":2699,
-         "cached_input_tokens":0,
-         "audio_input_tokens":0,
-         "audio_output_tokens":0,
-         "input_cost_usd":0.005703,
-         "output_cost_usd":0.00418,
-         "cached_input_cost_usd":0.0,
-         "audio_input_cost_usd":0.0,
-         "audio_output_cost_usd":0.0,
-         "total_cost_usd":0.009883
-      }
-   },
-   "spans":[
-      {
-         "name":"bt_servant:verify_facebook_signature",
-         "duration_ms":0.52,
-         "duration_se":0.0,
-         "duration_percentage":"0.0%",
-         "start_offset_ms":0.0,
-         "token_percentage":"0.0%"
-      },
-      {
-         "name":"messaging:send_typing_indicator_message",
-         "duration_ms":845.49,
-         "duration_se":0.85,
-         "duration_percentage":"4.0%",
-         "start_offset_ms":0.52,
-         "input_tokens_expended":0,
-         "output_tokens_expended":0,
-         "total_tokens_expended":0,
-         "token_percentage":"0.0%"
-      }
-   ]
+{
+  "message": "text message from kwlv1sXnUvYT9dnn with id wamid.HBgLMTQ0Mz... received.",
+  "client_ip": "2a03:2880:12ff:70::",
+  "taskName": "Task-4",
+  "timestamp": "2025-10-18 23:08:31",
+  "level": "INFO",
+  "logger": "bt_servant_engine.apps.api.routes.webhooks",
+  "cid": "5d0101ac8cf34fb5949217328533ccb3",
+  "user": "kwlv1sXnUvYT9dnn"
 }
 ```
 
-We will additionally derive or extract: **language**, **client IP** (when added), **region/country**, **original vs. preprocessed message**, **intents detected**, **final message**, **reference extracted** (e.g., "Gen 1:3-5"), **resources searched** (when present). All extracted fields are optional and the parser handles missing fields gracefully.
+Key fields in each JSON entry:
+
+- **`timestamp`**: ISO-format timestamp (YYYY-MM-DD HH:MM:SS)
+- **`level`**: Log level (TRACE, DEBUG, INFO, WARN, ERROR)
+- **`logger`**: Module path (e.g., bt_servant_engine.services.preprocessing)
+- **`cid`**: Correlation ID for request tracing
+- **`user`**: User identifier (or "-" if not applicable)
+- **`client_ip`**: Client IP address (IPv4 or IPv6, or "-" if not available)
+- **`taskName`**: Async task identifier (or null)
+- **`message`**: Log message content (may contain structured data)
+
+### PerfReport Embedded in Message Field
+
+When a PerfReport is logged, it appears as a JSON entry where the `message` field contains the string "PerfReport " followed by the JSON performance data:
+
+```json
+{
+  "message": "PerfReport {\n   \"user_id\":\"kwlv1sXnUvYT9dnn\",\n   \"trace_id\":\"wamid.HBgLMTQ0Mzg2NzMzNjgVAgASGBQzRkU5MTZEOEZEMjRGNzlBQzM2NgA=\",\n   \"total_ms\":21337.01,\n   \"total_s\":21.34,\n   \"total_input_tokens\":9411,\n   \"total_output_tokens\":102,\n   \"total_tokens\":9513,\n   \"total_cost_usd\":0.024548,\n   \"grouped_totals_by_intent\":{...},\n   \"spans\":[...]}",
+  "client_ip": "2a03:2880:12ff:70::",
+  "taskName": "Task-5",
+  "timestamp": "2025-10-18 23:08:50",
+  "level": "INFO",
+  "logger": "bt_servant_engine.apps.api.routes.webhooks",
+  "cid": "5d0101ac8cf34fb5949217328533ccb3",
+  "user": "kwlv1sXnUvYT9dnn"
+}
+```
+
+### Key Message Patterns to Extract
+
+From the `message` field, we extract structured data based on patterns:
+
+1. **Language detection**: `"language detection (model): en"`
+2. **Intents extracted**: `"extracted user intents: get-translation-helps"`
+3. **Original vs preprocessed**: `"original_message: hello bt servant!\nnew_message: Hello, BT Servant!"`
+4. **Response to user**: `"Response from bt_servant: [actual response text]"`
+5. **Biblical references**: `"[selection-helper] ranges=[(4, 1, 4, 3)]"` → "John 4:1-3"
+6. **Resources searched**: `"[translation-helps] selected 2 help entries"`
+7. **PerfReport**: When message starts with `"PerfReport {"`, parse the embedded JSON
 
 ---
 
@@ -276,56 +268,67 @@ scripts/           # build, deploy, maintenance scripts
 
 ---
 
-## 7) Parser Spec (Enhanced)
+## 7) Parser Spec (JSON Lines)
 
-### Header line regex
+### JSON Line Parser
 
-```regex
-/^\[(?<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]\s
- \[(?<level>TRACE|DEBUG|INFO|WARN|ERROR)\]\s
- \[(?<logger>[^\]]+)\]\s
- \[(?<cid>cid=[^\]]+|-)\]:\s
- (?<message>.*)$/x
+Each line is a complete JSON object that can be parsed directly:
+
+```typescript
+interface LogEntry {
+  message: string;
+  client_ip: string;
+  taskName: string | null;
+  timestamp: string; // "YYYY-MM-DD HH:MM:SS"
+  level: "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR";
+  logger: string;
+  cid: string;
+  user: string;
+}
 ```
 
-### JSON block (e.g., "PerfReport { … }")
+### PerfReport Extraction
 
-- Start token: `PerfReport {`
-- Capture until **balanced braces** (nested arrays/objects OK).
-- Parse with tolerant JSON parser (handle trailing commas, comments); if invalid, attach raw block with line range.
-- Maximum nesting depth: 10 levels for safety.
+When `message` field starts with "PerfReport {":
+
+1. Extract substring from `"PerfReport {"` to the end
+2. Parse as JSON (the braces are balanced within the message)
+3. Type the extracted data with PerfReport interface
+4. Attach to log entry as structured data
 
 ### Error Recovery Strategies
 
-- **Corrupted headers**: Skip line, log as unparseable with line number
-- **Incomplete JSON blocks**: Store as raw text with `parse_error` flag
-- **Malformed timestamps**: Use file position as fallback ordering
+- **Invalid JSON lines**: Skip line, log as unparseable with line number
+- **Malformed PerfReport JSON**: Store message as-is, flag as `perf_parse_error`
+- **Missing required fields**: Use defaults (e.g., "-" for user, null for taskName)
 - **Encoding issues**: Attempt UTF-8, fallback to Latin-1, mark as `encoding_warning`
 - **Truncated files**: Process what's available, add warning in UI
-- **Missing fields**: All extracted fields are optional; handle gracefully
+- **Large message fields**: Truncate at reasonable limit (e.g., 10KB per message)
 
-### Derived fields (matchers & transforms)
+### Derived Fields (Pattern Matching in Message Field)
 
-- **Language code** (e.g., `lang=en|es|…`) — from message or JSON block.
-- **Client IP** (`ip=…`) → **Region/Country** via **GeoIP** adapter (offline DB like **GeoLite2** with quarterly updates). Store as `{country, region?, city?, lat?, lon?}`. Country-level resolution sufficient.
-- **Original message** vs **Preprocessed/normalized message** (from preprocessor logs).
-- **Intents detected** — List of known intents plus dynamic discovery:
-  - GET_BIBLE_TRANSLATION_ASSISTANCE = "get-bible-translation-assistance"
-  - CONSULT_FIA_RESOURCES = "consult-fia-resources"
-  - GET_PASSAGE_SUMMARY = "get-passage-summary"
-  - GET_PASSAGE_KEYWORDS = "get-passage-keywords"
-  - GET_TRANSLATION_HELPS = "get-translation-helps"
-  - RETRIEVE_SCRIPTURE = "retrieve-scripture"
-  - LISTEN_TO_SCRIPTURE = "listen-to-scripture"
-  - TRANSLATE_SCRIPTURE = "translate-scripture"
-  - PERFORM_UNSUPPORTED_FUNCTION = "perform-unsupported-function"
-  - RETRIEVE_SYSTEM_INFORMATION = "retrieve-system-information"
-  - SET_RESPONSE_LANGUAGE = "set-response-language"
-  - SET_AGENTIC_STRENGTH = "set-agentic-strength"
-  - CONVERSE_WITH_BT_SERVANT = "converse-with-bt-servant"
-- **Final message** returned to user (post-processing/templating result).
-- **Reference extracted** (e.g., "Gen 1:3-5", "John 3:16-18") - the biblical reference, NOT the text content.
-- **Resources searched** for **get-bible-translation-assistance** (array of resource names/IDs).
+Extract structured data by matching patterns in the `message` field:
+
+- **Language code** — Match `"language detection (model): {code}"` or `"language code {code} detected"`
+- **Client IP → Region/Country** — Use `client_ip` field with **GeoIP** adapter (offline DB like **GeoLite2**). Store as `{country, region?, city?}`. Country-level resolution sufficient.
+- **Original vs Preprocessed message** — Match `"original_message: {text}\nnew_message: {text}"` pattern
+- **Intents detected** — Match `"extracted user intents: {intent1,intent2,...}"` pattern. Known intents:
+  - `get-bible-translation-assistance` (Get Bible translation assistance)
+  - `consult-fia-resources` (Consult FIA resources)
+  - `get-passage-summary` (Summarize passage)
+  - `get-passage-keywords` (Get keywords)
+  - `get-translation-helps` (Get translation helps)
+  - `retrieve-scripture` (Show scripture text)
+  - `listen-to-scripture` (Read aloud)
+  - `translate-scripture` (Translate to language)
+  - `perform-unsupported-function` (Unsupported request)
+  - `retrieve-system-information` (System info)
+  - `set-response-language` (Set language)
+  - `set-agentic-strength` (Set AI strength)
+  - `converse-with-bt-servant` (General conversation)
+- **Final message** — Match `"Response from bt_servant: {text}"` pattern
+- **Biblical references** — Extract from `"[selection-helper] ranges="` or `"canonical_book={book}"` patterns
+- **Resources searched** — Match `"[translation-helps] selected {n} help entries"` pattern
 
 ### Indexing & Storage Strategy
 
@@ -389,54 +392,61 @@ These endpoints are implemented as SvelteKit server routes (`+server.ts` files) 
 - `GET /api/metrics` → Prometheus-compatible metrics endpoint
 - `POST /api/logs/:sessionId/search` → Advanced search with query DSL
 
-### B. BT-Servant Log Source API (Implemented)
+### B. BT-Servant Log Source API (Required)
 
-The BT-Servant application provides admin log endpoints for fetching log files (see `/docs/log_api_reference.md` for complete reference):
+**Status:** Fully specified in [`docs/bt-servant-log-api-spec.md`](./bt-servant-log-api-spec.md)
 
-**Base Path:** `/admin/logs`
+The BT-Servant application must implement log-serving endpoints. Complete implementation guide with FastAPI code examples available in the API specification document.
 
-**Authentication:**
+**Base Path:** `/api/logs`
 
-- Requires admin token when `ENABLE_ADMIN_AUTH` is `true` (default)
-- Provide token via `Authorization: Bearer <ADMIN_API_TOKEN>` or `X-Admin-Token: <ADMIN_API_TOKEN>` header
-- Returns `401 Unauthorized` if missing/invalid
+**Core Endpoints:**
 
-**Endpoints:**
-
-- `GET /admin/logs/files` → List all `.log` files (sorted newest first)
+- `GET /api/logs/files` → List all `.log` files with metadata
 
   ```json
   {
     "files": [
       {
-        "name": "bt_servant.log",
-        "size_bytes": 12345,
-        "modified_at": "2024-05-01T18:34:12Z",
-        "created_at": "2024-05-01T17:00:00Z"
+        "name": "bt_servant_2025-01-15.log",
+        "size_mb": 8.2,
+        "size_bytes": 8598456,
+        "modified": "2025-01-15T23:59:59Z",
+        "created": "2025-01-15T00:00:01Z",
+        "line_count": 45000,
+        "readable": true
       }
     ],
-    "total_files": 1,
-    "total_size_bytes": 12345
+    "total_files": 23,
+    "total_size_mb": 189.3
   }
   ```
 
-- `GET /admin/logs/files/{filename}` → Stream specific log file as UTF-8 text
-  - Filename must end with `.log`
-  - Sets `Content-Disposition: attachment` and `Content-Length`
-  - Returns `400` for invalid filenames, `404` if not found
+- `GET /api/logs/files/{filename}` → Stream specific log file
+  - Streaming support for large files (>10MB)
+  - Optional gzip compression via `?compress=true`
+  - Path traversal protection
+  - Returns `404` if not found, `403` for invalid extensions
 
-- `GET /admin/logs/recent?days=7&limit=100` → Filtered list of recent files
-  - `days`: default `7`, allowed range `1–90`
-  - `limit`: default `100`, allowed range `1–500`
-  - Response format matches `/admin/logs/files` but filtered
-  - Returns `400` if params out of range
+- `GET /api/logs/recent?days=21&max_files=100` → Get recent logs
+  - `days`: default `7`, max `90`
+  - `max_files`: default `100`, max `500`
+  - Response format matches `/api/logs/files`
+
+**Security & Performance:**
+
+- Rate limiting: 60-100 requests/minute per endpoint
+- Path traversal prevention with filename validation
+- CORS configuration for log viewer domain
+- Streaming responses to handle large files efficiently
+- Optional compression for bandwidth optimization
 
 **Integration Notes:**
 
-- Call `/admin/logs/files` or `/admin/logs/recent` to populate file pickers
-- Defer `/admin/logs/files/{filename}` until user requests content to avoid large transfers
-- Cache listing results briefly if polling frequently (server rescans filesystem on each call)
-- Surface `404` or `500` errors to operators (indicates missing/permission-denied storage)
+- Auto-load last 21 days on app startup via `/api/logs/recent?days=21`
+- Use Web Workers for non-blocking JSON parsing
+- Cache file listings for 60 seconds
+- Display progress bar during multi-file loading
 
 ### Rate Limiting
 
@@ -558,35 +568,133 @@ For BT-Servant application:
 
 **Deliverables:** Complete UI shell that looks and feels production-ready but uses static mock data. All interactions work but with fake data.
 
-### Phase 1b — Backend Integration (Week 2)
+### Phase 1b — Backend Integration (Current Phase)
 
-**Focus: Connect the chosen UI from Phase 1a to real systems**
+**Focus: Connect the Phase 1a UI to real JSON log data**
 
-- **Refactor mock data to service layer:**
-  - Implement proper port interfaces (`QueryPort`, `ParsingPort`, etc.)
-  - Create service implementations that replace direct mock data imports
-  - Update UI components to use dependency injection
-  - Transition from `import { mockLogs }` to `const entries = await queryService.getEntries()`
-- **BT-Servant API client** for fetching log files.
-- **Auto-load last 21 days** of logs on app open.
-- **Web Worker integration** for non-blocking parsing.
-- Real data fetching and streaming.
-- Connect filters to actual parsed data.
-- Implement real search with MiniSearch.
-- Loading progress with actual file processing.
+- **JSON Line Parser Implementation:**
+  - Parse each line as complete JSON object
+  - Extract core fields: timestamp, level, logger, cid, user, client_ip, taskName
+  - Handle malformed JSON gracefully with error recovery
+
+- **Message Pattern Extraction:**
+  - Language: `"language detection (model): {code}"`
+  - Intents: `"extracted user intents: {intent1,intent2,...}"`
+  - Original/Preprocessed: `"original_message: ...\nnew_message: ..."`
+  - Response: `"Response from bt_servant: {text}"`
+  - References: `"[selection-helper] canonical_book={book}"` + ranges
+  - PerfReport: Parse embedded JSON when message starts with "PerfReport {"
+
+- **Service Layer Architecture:**
+  - Implement proper port interfaces (`QueryPort`, `ParsingPort`)
+  - Replace mock data imports with service calls
+  - Transition from `import { mockLogs }` to `await logService.getEntries()`
+
+- **BT-Servant API Integration:**
+  - Implement client for `/api/logs/files`, `/api/logs/recent`
+  - Auto-load last 21 days on startup
+  - Streaming support for large files
+  - Progress reporting during multi-file load
+
+- **Web Worker Pipeline:**
+  - Move JSON parsing to worker threads
+  - Non-blocking processing with progress updates
+  - Chunked parsing for memory efficiency
+
+- **Data Features:**
+  - Connect all filters to parsed data
+  - Implement MiniSearch for full-text search
+  - GeoIP lookup for client_ip → country mapping
+  - Real-time filtering and search
 - Error handling and retry logic.
 - Session management for loaded files.
 - Cache management for performance.
 
-**Deliverables:** Fully functional app with the chosen UI connected to real data sources.
+**Deliverables:** Fully functional app with the chosen UI connected to real data
+sources. All core parsing and extraction working. Basic filters and search
+operational. App usable for daily log analysis with essential features.
 
-### Phase 2 — Complete Parser & Extractors (Week 3)
+### Phase 1c — Extracted Fields UI & Intent-Specific Sections (Week 2.5)
 
-- Full parser implementation with error recovery.
-- All derived field extractors (intents, language, references, etc.).
-- Handle missing fields gracefully.
-- MiniSearch integration for text search.
-- Golden file test suite with real log samples.
+**Focus: Complete the UI by adding all extracted fields with intent-aware
+contextual display**
+
+- **Universal Extracted Fields (all entries):**
+  - Add client_ip → GeoIP country resolution display
+  - Add message_original and message_preprocessed comparison view
+    (side-by-side or toggle)
+  - Add final_message display (response sent to user)
+  - CID-based correlation service to gather multi-entry patterns
+
+- **Intent-Specific Contextual Sections:**
+  - **Two locations for intent context:**
+    1. **LogDetailPanel** (individual entry) - when clicking a log row
+    2. **IntentGraph** (conversation-level) - below graph visualization
+  - **Biblical Reference Section** (for scripture-related intents):
+    - Intents: `retrieve-scripture`, `get-passage-summary`,
+      `get-passage-keywords`, `get-translation-helps`, `translate-scripture`
+    - Display: Formatted reference (e.g., "John 4:1-3" with book icon)
+    - Extracted from: `[selection-helper] canonical_book` + `ranges` patterns
+    - Visual: Purple border, book icon, book/chapter/verse breakdown
+  - **Translation Resources Section** (for translation assistance intents):
+    - Intents: `get-translation-helps`, `get-bible-translation-assistance`,
+      `consult-fia-resources`
+    - Display: List of resources searched with checkmarks
+    - Extracted from: `[translation-helps] selected {n} help entries` pattern
+    - Visual: Teal border, search icon, resource count + list
+  - **Message Flow Section** (universal):
+    - Shows: Original → Preprocessed → Response comparison
+    - Visual: Cyan border, three-column layout (accordion on mobile)
+
+- **UI/UX Design:**
+  - Intent-specific sections appear **below** basic info, **above** PerfReport
+  - Sections use distinct styling (border color, icon) per intent category
+  - Smooth animations when sections appear/disappear
+  - Empty states: "No biblical reference detected" vs section not shown
+  - Sections are collapsible with default expanded state
+
+- **CID Correlation Architecture:**
+  - Implement service to find related entries by CID
+  - Cache correlation results for performance
+  - Show "Correlated from N other entries" hint when fields come from
+    different log lines
+
+**Deliverables:** Complete extracted field display. LogDetailPanel shows all
+contextual information with intent-aware sections. Users can see
+original/preprocessed/final messages, biblical references, and resources
+searched when applicable.
+
+### Phase 2 — Performance, Polish & Testing (Week 3)
+
+**Focus: Production readiness, optimization, and comprehensive testing**
+
+- **Performance Optimization:**
+  - Profile parser to meet 2s/10MB target
+  - Optimize memory usage for large datasets (100k+ entries)
+  - Benchmark filtering and search performance
+  - Lazy loading and virtualization improvements
+  - Optimize CID correlation queries
+- **Error Recovery Polish:**
+  - Handle all edge cases in message pattern extraction
+  - Graceful degradation for malformed PerfReports
+  - Robust handling of encoding issues
+  - Better user feedback for parse errors
+- **Testing Suite:**
+  - Golden file tests with actual log samples
+  - Property-based testing for parser
+  - Performance regression tests
+  - Edge case test coverage (missing fields, malformed JSON, etc.)
+  - Test intent-specific section rendering
+- **PerfReport Visualization:**
+  - Replace raw JSON dump with structured display
+  - Waterfall timeline for spans
+  - Cost breakdown by intent
+  - Token usage charts
+- **Documentation:**
+  - Parser performance benchmarks
+  - Extraction pattern documentation
+  - Intent-specific UI section guide
+  - Troubleshooting guide
 
 ### Phase 3 — Live Tail & Advanced Features (Week 4)
 
@@ -621,9 +729,21 @@ For BT-Servant application:
 
 ---
 
-## 13) Data Model (Enhanced)
+## 13) Data Model (JSON-Based)
 
 ```ts
+// Raw JSON log entry as received from API
+interface RawLogEntry {
+  message: string;
+  client_ip: string; // IPv4/IPv6 or "-"
+  taskName: string | null;
+  timestamp: string; // "YYYY-MM-DD HH:MM:SS"
+  level: "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR";
+  logger: string;
+  cid: string; // Correlation ID
+  user: string; // User ID or "-"
+}
+
 // Known intents enum
 enum KnownIntent {
   GET_BIBLE_TRANSLATION_ASSISTANCE = "get-bible-translation-assistance",
@@ -650,32 +770,41 @@ type GeoLocation = {
   confidence?: number;
 };
 
+// Parsed and enriched log entry
 type LogEntry = {
-  id: string;
+  id: string; // UUID generated on parse
   fileId: string;
   fileName: string; // Which file this entry came from
-  ts: Date;
+  ts: Date; // Parsed from timestamp field
   level: "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR";
-  logger: string;
-  cid?: string; // correlation id
-  message: string; // header message
+  logger: string; // From logger field
+  cid?: string; // From cid field (may be "-")
+  message: string; // From message field
+
+  // Direct from JSON fields
+  clientIp?: string; // From client_ip field
+  userId?: string; // From user field (for filtering)
+  taskName?: string; // From taskName field
+
+  // Extracted from message patterns
+  language?: string; // From "language detection (model): {code}"
+  location?: GeoLocation; // GeoIP lookup on clientIp
+  message_original?: string; // From "original_message:" pattern
+  message_preprocessed?: string; // From "new_message:" pattern
+  intents?: Intent[]; // From "extracted user intents:"
+  final_message?: string; // From "Response from bt_servant:"
+  reference_extracted?: BibleReference; // From selection-helper patterns
+  resources_searched?: Resource[]; // From translation-helps patterns
+
+  // PerfReport data (when message starts with "PerfReport {")
   hasJson: boolean;
   perfReport?: PerfReport;
-  // All derived fields are optional - handle missing gracefully:
-  language?: string; // e.g., 'en', 'es'
-  ip?: string; // raw ip if present
-  location?: GeoLocation; // GeoIP data when available
-  message_original?: string; // as received
-  message_preprocessed?: string; // normalized form
-  intents?: Intent[]; // detected intents with confidence
-  final_message?: string; // returned to the user
-  reference_extracted?: BibleReference; // e.g., "Gen 1:3-5"
-  resources_searched?: Resource[]; // for translation assistance
-  traceId?: string;
-  userId?: string; // User ID for filtering
-  node?: string; // "Routing to node: …"
+  traceId?: string; // From PerfReport trace_id
+
+  // Metadata
+  node?: string; // From "Routing to node:" patterns
   raw: { startLine: number; endLine: number };
-  parse_errors?: string[]; // Any parsing issues
+  parse_errors?: string[]; // Any extraction failures
 };
 
 type Intent = {
@@ -901,10 +1030,20 @@ type IntentFlow = {
 
 ## 19) Related Documentation
 
-- **BT-Servant Log API Implementation**: `/docs/bt-servant-log-api-spec.md` - Complete guide for implementing the required endpoints in BT-Servant
-- **Architecture Decisions**: See sections 6 & 7
-- **Example Logs**: `/docs/example_bt_servant.log`
+- **Example JSON Logs**: `/docs/example_bt_servant.log` — Actual JSON log format
+  from BT-Servant
+- **API Specification**: `/docs/bt-servant-log-api-spec.md` — Complete FastAPI
+  implementation guide for log endpoints
+- **UI Field Mapping**: `/docs/ui-to-log-field-mapping.md` — Comprehensive
+  mapping from UI components to log patterns/fields
+- **Architecture Decisions**: See sections 6 & 7 for clean architecture details
+- **Deployment Guide**: `/docs/fly-io-setup.md` — Fly.io deployment for
+  staging/production
+- **Phase 1 Split**: `/docs/bot-competition.md` — Phase 1a/1b split for bot
+  testing
+- **Claude Instructions**: `/CLAUDE.md` — Guidance for AI assistants working
+  with codebase
 
 ---
 
-### End of BT Servant Log Viewer — PRD v0.6
+### End of BT Servant Log Viewer — PRD v0.7

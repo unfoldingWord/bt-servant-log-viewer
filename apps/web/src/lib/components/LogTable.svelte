@@ -45,10 +45,6 @@
     };
     return icons[level] ?? "○";
   }
-
-  function truncate(text: string, maxLength: number): string {
-    return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
-  }
 </script>
 
 <div class="h-full overflow-auto bg-gradient-to-b from-background to-background-secondary/20">
@@ -137,30 +133,10 @@
             Message
           </div>
         </th>
-        <th class="px-4 py-3.5 text-left">
-          <div
-            class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-muted"
-          >
-            <svg
-              class="h-3.5 w-3.5 text-accent-cyan"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
-              />
-            </svg>
-            Language
-          </div>
-        </th>
       </tr>
       <tr>
         <th
-          colspan="5"
+          colspan="4"
           class="h-px bg-gradient-to-r from-transparent via-accent-cyan/30 to-transparent"
         ></th>
       </tr>
@@ -172,17 +148,15 @@
             handleRowClick(log.id);
           }}
           style="animation-delay: {i * 20}ms"
-          class="log-row group relative cursor-pointer border-b border-surface/50 transition-all duration-200 hover:bg-gradient-to-r hover:from-accent-cyan/5 hover:via-accent-teal/5 hover:to-transparent"
+          class="log-row group relative cursor-pointer border-b border-surface/50 hover:bg-gradient-to-r hover:from-accent-cyan/5 hover:via-accent-teal/5 hover:to-transparent"
           class:selected-row={selectedId === log.id}
         >
           <td class="relative px-4 py-3.5">
             <div class="flex items-center gap-2">
               <div
-                class="h-1.5 w-1.5 rounded-full bg-accent-cyan/50 group-hover:bg-accent-cyan group-hover:shadow-[0_0_8px_rgba(34,211,238,0.6)] transition-all"
+                class="h-1.5 w-1.5 rounded-full bg-accent-cyan/50 group-hover:bg-accent-cyan"
               ></div>
-              <span
-                class="font-mono text-xs text-text-muted group-hover:text-text-secondary transition-colors"
-              >
+              <span class="font-mono text-xs text-text-muted">
                 {formatTimestamp(log.ts)}
               </span>
             </div>
@@ -190,7 +164,7 @@
 
           <td class="relative px-4 py-3.5">
             <span
-              class="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold transition-colors transition-shadow group-hover:shadow-md {getLevelBadgeClass(
+              class="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold {getLevelBadgeClass(
                 log.level
               )}"
             >
@@ -203,13 +177,11 @@
             <div class="flex items-center gap-2">
               {#if log.userId}
                 <div
-                  class="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-accent-cyan/20 to-accent-teal/20 text-xs font-medium text-accent-cyan ring-1 ring-accent-cyan/30 group-hover:ring-2 transition-all"
+                  class="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-accent-cyan/20 to-accent-teal/20 text-xs font-medium text-accent-cyan ring-1 ring-accent-cyan/30 group-hover:ring-accent-cyan/50"
                 >
                   {log.userId.substring(0, 2).toUpperCase()}
                 </div>
-                <span
-                  class="font-mono text-xs text-text-secondary group-hover:text-text transition-colors"
-                >
+                <span class="font-mono text-xs text-text-secondary">
                   {log.userId}
                 </span>
               {:else}
@@ -219,29 +191,16 @@
           </td>
 
           <td class="relative max-w-md px-4 py-3.5">
-            <p class="text-text group-hover:text-text transition-colors leading-relaxed">
-              {truncate(log.message, 100)}
+            <p class="leading-relaxed truncate text-text">
+              {log.message}
             </p>
-          </td>
-
-          <td class="relative px-4 py-3.5">
-            {#if log.language}
-              <span
-                class="inline-flex items-center gap-1.5 rounded-full bg-surface px-3 py-1 text-xs text-text-secondary group-hover:bg-surface-active transition-colors"
-              >
-                <span class="h-1.5 w-1.5 rounded-full bg-accent-teal"></span>
-                {log.language}
-              </span>
-            {:else}
-              <span class="text-text-dim">—</span>
-            {/if}
           </td>
         </tr>
 
         <!-- Inline detail row (expands below the clicked row) -->
         {#if selectedId === log.id && selectedLog}
           <tr class="detail-row">
-            <td colspan="5" class="p-0">
+            <td colspan="4" class="p-0">
               <LogDetailInline log={selectedLog} />
             </td>
           </tr>
@@ -252,17 +211,6 @@
 </div>
 
 <style>
-  @keyframes slideIn {
-    from {
-      opacity: 0;
-      transform: translateX(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-
   @keyframes glow {
     0%,
     100% {
@@ -273,10 +221,6 @@
         0 0 20px rgba(34, 211, 238, 0.4),
         0 0 30px rgba(6, 182, 212, 0.2);
     }
-  }
-
-  .log-row {
-    animation: slideIn 0.3s ease-out forwards;
   }
 
   .selected-row {

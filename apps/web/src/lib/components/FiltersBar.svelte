@@ -15,13 +15,11 @@
   }>();
 
   let selectedLevels: string[] = [];
-  let selectedLanguages: string[] = [];
   let selectedUserId: string | null = null;
   let selectedTimeRange = "all";
   let showUserDropdown = false;
 
   const logLevels = ["TRACE", "DEBUG", "INFO", "WARN", "ERROR"];
-  const languages = ["en", "es", "fr", "pt", "sw", "ar"];
 
   function getLevelColorClass(level: string): string {
     const colors: Record<string, string> = {
@@ -43,15 +41,6 @@
     emitFilterChange();
   }
 
-  function toggleLanguage(lang: string): void {
-    if (selectedLanguages.includes(lang)) {
-      selectedLanguages = selectedLanguages.filter((l) => l !== lang);
-    } else {
-      selectedLanguages = [...selectedLanguages, lang];
-    }
-    emitFilterChange();
-  }
-
   function selectUser(userId: string | null): void {
     selectedUserId = userId;
     showUserDropdown = false;
@@ -60,7 +49,6 @@
 
   function clearAll(): void {
     selectedLevels = [];
-    selectedLanguages = [];
     selectedUserId = null;
     emitFilterChange();
   }
@@ -77,7 +65,7 @@
   function emitFilterChange(): void {
     dispatch("filterChange", {
       levels: selectedLevels,
-      languages: selectedLanguages,
+      languages: [],
       userId: selectedUserId,
       timeRange: selectedTimeRange,
     });
@@ -87,8 +75,7 @@
     return userId.replace("user_", "").replace(/_/g, " ");
   }
 
-  $: hasActiveFilters =
-    selectedLevels.length > 0 || selectedLanguages.length > 0 || selectedUserId !== null;
+  $: hasActiveFilters = selectedLevels.length > 0 || selectedUserId !== null;
 </script>
 
 <div class="border-b border-surface/50 bg-background-secondary/50 px-6 py-4 md:px-8">
@@ -110,30 +97,6 @@
               : 'border-surface-active bg-surface/30 text-text-dim hover:bg-surface'}"
           >
             {level}
-          </button>
-        {/each}
-      </div>
-    </div>
-
-    <div class="h-4 w-px bg-surface"></div>
-
-    <!-- Language filters -->
-    <div class="flex items-center gap-2">
-      <span class="text-xs font-medium text-text-dim">Language:</span>
-      <div class="flex gap-1.5">
-        {#each languages as lang}
-          <button
-            type="button"
-            on:click={() => {
-              toggleLanguage(lang);
-            }}
-            class="rounded border px-2 py-1 text-xs font-medium uppercase transition-colors {selectedLanguages.includes(
-              lang
-            )
-              ? 'border-2 border-accent-teal/50 bg-accent-teal/10 text-accent-teal'
-              : 'border-surface-active bg-surface/30 text-text-dim hover:bg-surface'}"
-          >
-            {lang}
           </button>
         {/each}
       </div>
@@ -210,7 +173,7 @@
     <div class="flex items-center gap-2">
       <span class="text-xs font-medium text-text-dim">Time:</span>
       <div class="flex gap-1.5">
-        {#each ["1h", "6h", "24h", "7d", "all"] as range}
+        {#each ["1h", "6h", "24h", "3d", "7d", "30d", "all"] as range}
           <button
             type="button"
             on:click={() => {

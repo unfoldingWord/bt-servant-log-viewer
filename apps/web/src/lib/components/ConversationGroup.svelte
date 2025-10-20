@@ -32,6 +32,12 @@
     return `${(ms / 1000).toFixed(2)}s`;
   }
 
+  function formatCost(cost: number | undefined): string {
+    if (cost === undefined || cost === 0) return "$0.00";
+    if (cost < 0.01) return `$${cost.toFixed(4)}`;
+    return `$${cost.toFixed(2)}`;
+  }
+
   function getLevelBadgeClass(level: string): string {
     const classes: Record<string, string> = {
       TRACE: "bg-level-trace/10 text-level-trace border-level-trace/30",
@@ -52,10 +58,6 @@
       ERROR: "✕",
     };
     return icons[level] ?? "○";
-  }
-
-  function truncate(text: string, maxLength: number): string {
-    return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
   }
 </script>
 
@@ -86,9 +88,9 @@
       <!-- Conversation info -->
       <div class="flex flex-1 flex-col gap-2 md:flex-row md:items-center md:gap-4">
         <!-- First message preview -->
-        <div class="flex-1">
-          <p class="text-sm text-text group-hover:text-text transition-colors">
-            {truncate(firstLog.message, 80)}
+        <div class="flex-1 min-w-0">
+          <p class="text-sm text-text group-hover:text-text transition-colors truncate">
+            {firstLog.message}
           </p>
         </div>
 
@@ -134,6 +136,26 @@
             </div>
           {/if}
 
+          <!-- Cost -->
+          {#if perfReport?.total_cost_usd !== undefined}
+            <div class="flex items-center gap-1.5">
+              <svg
+                class="h-3.5 w-3.5 text-green-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span class="font-mono text-green-400">{formatCost(perfReport.total_cost_usd)}</span>
+            </div>
+          {/if}
+
           <!-- Log count -->
           <div
             class="flex items-center gap-1.5 rounded-full border border-accent-cyan/30 bg-accent-cyan/5 px-2.5 py-0.5"
@@ -162,7 +184,7 @@
 
   <!-- Expanded content -->
   {#if expanded}
-    <div class="animate-expand">
+    <div class="border-t border-surface/30 bg-background-secondary/30">
       <!-- Intent Flow Visualization -->
       {#if perfReport}
         <IntentGraph perfReports={[perfReport]} {logs} />
@@ -186,11 +208,6 @@
               <th class="px-4 py-2 text-left">
                 <div class="text-xs font-semibold uppercase tracking-wider text-text-muted">
                   Message
-                </div>
-              </th>
-              <th class="px-4 py-2 text-left">
-                <div class="text-xs font-semibold uppercase tracking-wider text-text-muted">
-                  Language
                 </div>
               </th>
             </tr>
@@ -219,27 +236,15 @@
                     {log.level}
                   </span>
                 </td>
-                <td class="px-4 py-2.5">
-                  <p class="text-text leading-relaxed">{log.message}</p>
-                </td>
-                <td class="px-4 py-2.5">
-                  {#if log.language}
-                    <span
-                      class="inline-flex items-center gap-1.5 rounded-full bg-surface px-2.5 py-0.5 text-xs text-text-secondary"
-                    >
-                      <span class="h-1.5 w-1.5 rounded-full bg-accent-teal"></span>
-                      {log.language}
-                    </span>
-                  {:else}
-                    <span class="text-text-dim">—</span>
-                  {/if}
+                <td class="px-4 py-2.5 max-w-md">
+                  <p class="text-text leading-relaxed truncate">{log.message}</p>
                 </td>
               </tr>
 
               <!-- Inline detail row (expands below the clicked row) -->
               {#if selectedLogId === log.id && selectedLog}
                 <tr class="detail-row">
-                  <td colspan="4" class="p-0">
+                  <td colspan="3" class="p-0">
                     <LogDetailInline log={selectedLog} />
                   </td>
                 </tr>
@@ -253,21 +258,6 @@
 </div>
 
 <style>
-  @keyframes expand {
-    from {
-      opacity: 0;
-      max-height: 0;
-    }
-    to {
-      opacity: 1;
-      max-height: 2000px;
-    }
-  }
-
-  .animate-expand {
-    animation: expand 0.3s ease-out forwards;
-  }
-
   .selected-row {
     background: linear-gradient(to right, rgb(34 211 238 / 0.08), transparent);
     border-left: 3px solid rgb(34 211 238);

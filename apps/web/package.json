@@ -16,11 +16,13 @@
     "clean": "rm -rf .svelte-kit build node_modules"
   },
   "dependencies": {
+    "@bt-log-viewer/adapters": "workspace:*",
     "@bt-log-viewer/domain": "workspace:*",
     "@sveltejs/adapter-node": "^5.2.9",
     "cytoscape": "^3.33.1",
     "cytoscape-dagre": "^2.5.0",
-    "svelte": "^5.2.7"
+    "svelte": "^5.2.7",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

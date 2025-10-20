@@ -105,6 +105,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@bt-log-viewer/adapters':
+        specifier: workspace:*
+        version: link:../../packages/adapters
       '@bt-log-viewer/domain':
         specifier: workspace:*
         version: link:../../packages/domain
@@ -120,6 +123,9 @@ importers:
       svelte:
         specifier: ^5.2.7
         version: 5.40.2
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.76
     devDependencies:
       '@eslint/js':
         specifier: ^9.17.0
@@ -202,6 +208,9 @@ importers:
       '@bt-log-viewer/domain':
         specifier: workspace:*
         version: link:../domain
+      nanoid:
+        specifier: ^5.1.6
+        version: 5.1.6
     devDependencies:
       '@eslint/js':
         specifier: ^9.17.0
@@ -2219,6 +2228,11 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
+  nanoid@5.1.6:
+    resolution: {integrity: sha512-c7+7RQ+dMB5dPwwCp4ee1/iV/q2P6aK1mTZcfr1BTuVlyW9hJYiMPybJCcnBlQtuSmTIWNeazm/zqNoZSSElBg==}
+    engines: {node: ^18 || >=20}
+    hasBin: true
+
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
 
@@ -3771,10 +3785,10 @@ snapshots:
 
   '@types/resolve@1.20.2': {}
 
-  '@typescript-eslint/eslint-plugin@8.46.1(@typescript-eslint/parser@8.46.1(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3))(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)':
+  '@typescript-eslint/eslint-plugin@8.46.1(@typescript-eslint/parser@8.46.1(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.1
-      '@typescript-eslint/parser': 8.46.1(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)
+      '@typescript-eslint/parser': 8.46.1(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3)
       '@typescript-eslint/scope-manager': 8.46.1
       '@typescript-eslint/type-utils': 8.46.1(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)
       '@typescript-eslint/utils': 8.46.1(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)
@@ -5182,6 +5196,8 @@ snapshots:
 
   nanoid@3.3.11: {}
 
+  nanoid@5.1.6: {}
+
   natural-compare@1.4.0: {}
 
   node-releases@2.0.25: {}
@@ -5832,7 +5848,7 @@ snapshots:
 
   typescript-eslint@8.46.1(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3):
     dependencies:
-      '@typescript-eslint/eslint-plugin': 8.46.1(@typescript-eslint/parser@8.46.1(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3))(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)
+      '@typescript-eslint/eslint-plugin': 8.46.1(@typescript-eslint/parser@8.46.1(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)
       '@typescript-eslint/parser': 8.46.1(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)
       '@typescript-eslint/typescript-estree': 8.46.1(typescript@5.9.3)
       '@typescript-eslint/utils': 8.46.1(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)

@@ -107,7 +107,7 @@ pnpm scan:forbidden   # Check for forbidden patterns
 
 ### Commit Author
 
-- **Author:** `Codex Assistant <noreply@openai.com>`
+- **Author:** `Codex Assistant <codex@bt-log-viewer.local>`
 - **NO Co-Authored-By:** Do not include co-author lines
 
 ### Commit Message Format

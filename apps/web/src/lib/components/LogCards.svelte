@@ -259,21 +259,6 @@
 </div>
 
 <style>
-  @keyframes cardSlideIn {
-    from {
-      opacity: 0;
-      transform: translateY(20px) scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-  }
-
-  .log-card {
-    animation: cardSlideIn 0.4s ease-out forwards;
-  }
-
   .selected-card {
     border-color: rgb(34 211 238 / 0.5);
     box-shadow:

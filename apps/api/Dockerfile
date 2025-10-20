@@ -26,13 +26,14 @@ RUN pnpm --filter @bt-log-viewer/api build
 
 # Stage 4: Production dependencies only
 FROM base AS prod-deps
+ENV PNPM_NODE_LINKER=hoisted
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY apps/api/package.json ./apps/api/
 COPY packages/domain/package.json ./packages/domain/
 COPY packages/app/package.json ./packages/app/
 COPY packages/adapters/package.json ./packages/adapters/
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile --prod
+    pnpm install --frozen-lockfile --prod --filter @bt-log-viewer/api...
 
 # Stage 5: Production image
 FROM base AS runner

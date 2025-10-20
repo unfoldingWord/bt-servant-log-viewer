@@ -1,6 +1,20 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { healthRoutes } from "./routes/health.js";
+import { logRoutes } from "./routes/logs.js";
+import { validateBtServantConfig } from "./config/btServant.js";
+
+// Validate BT-Servant configuration on startup
+// This will throw if required environment variables are missing
+try {
+  validateBtServantConfig();
+} catch (error) {
+  // In production, fail fast if configuration is invalid
+  if (process.env["NODE_ENV"] === "production") {
+    throw error;
+  }
+  // In development, continue without validation (allows testing with partial config)
+}
 
 const server = Fastify({
   logger: {
@@ -15,6 +29,7 @@ await server.register(cors, {
 
 // Register routes
 await server.register(healthRoutes);
+await server.register(logRoutes);
 
 // Graceful shutdown
 const handleShutdown = async (): Promise<void> => {

@@ -2,6 +2,18 @@
 
 export type LogLevel = "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR";
 
+// Raw log entry as it appears in JSON log files
+export interface RawLogEntry {
+  message: string;
+  client_ip: string;
+  taskName: string | null;
+  timestamp: string; // "YYYY-MM-DD HH:MM:SS"
+  level: LogLevel;
+  logger: string;
+  cid: string;
+  user: string;
+}
+
 export interface LogEntry {
   id: string;
   fileId: string;
