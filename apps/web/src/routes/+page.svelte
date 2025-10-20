@@ -22,7 +22,6 @@
   let selectedServer: Server = "qa";
   let showServerDropdown = false;
   let isLoading = false;
-  let loadingProgress = { current: 0, total: 0, filename: "" };
   let errorMessage: string | null = null;
   let availableServers: Server[] = [];
   let serverHealth = { dev: false, qa: false, prod: false };
@@ -88,12 +87,9 @@
   async function loadLogsFromServer(server: Server): Promise<void> {
     isLoading = true;
     errorMessage = null;
-    loadingProgress = { current: 0, total: 0, filename: "" };
 
     try {
-      const logs = await logApiClient.loadRecentLogs(server, 21, (current, total, filename) => {
-        loadingProgress = { current, total, filename };
-      });
+      const logs = await logApiClient.loadRecentLogs(server, 21);
 
       allLogs = logs;
     } catch (error) {
@@ -403,26 +399,6 @@
   <!-- Filters bar -->
   <FiltersBar {availableUsers} on:filterChange={handleFilterChange} on:refresh={handleRefresh} />
 
-  <!-- Loading state -->
-  {#if isLoading}
-    <div
-      class="border-b border-accent-cyan/20 bg-gradient-to-r from-accent-cyan/5 to-accent-teal/5 px-6 py-3"
-    >
-      <div class="flex items-center gap-3">
-        <div
-          class="h-4 w-4 animate-spin rounded-full border-2 border-accent-cyan border-t-transparent"
-        ></div>
-        <div class="text-sm font-medium text-accent-cyan">
-          Loading logs from {selectedServer === "dev"
-            ? "Dev"
-            : selectedServer === "qa"
-              ? "QA"
-              : "Production"} server...
-        </div>
-      </div>
-    </div>
-  {/if}
-
   <!-- Error state -->
   {#if errorMessage}
     <div
@@ -674,17 +650,18 @@
     </div>
 
     <div class="flex items-center gap-3">
-      <!-- Progress bar (inline in footer) -->
-      {#if loadingProgress.total > 0}
+      <!-- Loading indicator in footer -->
+      {#if isLoading}
         <div class="flex items-center gap-2">
-          <div class="h-1 w-16 overflow-hidden rounded-full bg-surface/50">
-            <div
-              class="h-full bg-gradient-to-r from-accent-cyan to-accent-teal transition-all duration-300"
-              style="width: {(loadingProgress.current / loadingProgress.total) * 100}%"
-            ></div>
-          </div>
-          <span class="text-text-muted">
-            {loadingProgress.current}/{loadingProgress.total}
+          <div
+            class="h-3 w-3 animate-spin rounded-full border-2 border-accent-cyan border-t-transparent"
+          ></div>
+          <span class="text-xs text-accent-cyan">
+            Loading logs from {selectedServer === "dev"
+              ? "Dev"
+              : selectedServer === "qa"
+                ? "QA"
+                : "Prod"} server...
           </span>
         </div>
       {/if}
