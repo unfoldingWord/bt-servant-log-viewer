@@ -49,34 +49,25 @@ ENV PORT=3000
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 sveltekit
 
-# Copy the build output first
-COPY --from=builder --chown=sveltekit:nodejs /app/apps/web/build ./build
-COPY --from=builder --chown=sveltekit:nodejs /app/apps/web/package.json ./package.json
+# Recreate the monorepo structure
+WORKDIR /app
 
-# Install production dependencies directly in the runtime container
-# This ensures all dependencies are properly resolved
-RUN pnpm install --prod --ignore-scripts
+# Copy the entire node_modules tree (includes .pnpm store)
+COPY --from=prod-deps --chown=sveltekit:nodejs /app/node_modules ./node_modules
 
-# Add diagnostic script to debug module resolution
-RUN echo '#!/bin/sh' > /app/debug-start.sh && \
-    echo 'echo "=== DIAGNOSTIC INFO ===" ' >> /app/debug-start.sh && \
-    echo 'echo "Current directory: $(pwd)" ' >> /app/debug-start.sh && \
-    echo 'echo "Directory contents:" ' >> /app/debug-start.sh && \
-    echo 'ls -la' >> /app/debug-start.sh && \
-    echo 'echo "Build directory contents:" ' >> /app/debug-start.sh && \
-    echo 'ls -la /app/build/' >> /app/debug-start.sh && \
-    echo 'echo "Build node_modules contents:" ' >> /app/debug-start.sh && \
-    echo 'ls -la /app/build/node_modules/ | head -20' >> /app/debug-start.sh && \
-    echo 'echo "Looking for zod:" ' >> /app/debug-start.sh && \
-    echo 'find /app -name "zod" -type d 2>/dev/null | head -10' >> /app/debug-start.sh && \
-    echo 'echo "Node paths:" ' >> /app/debug-start.sh && \
-    echo 'node -e "console.log(module.paths)"' >> /app/debug-start.sh && \
-    echo 'echo "Starting server..." ' >> /app/debug-start.sh && \
-    echo 'exec node build' >> /app/debug-start.sh && \
-    chmod +x /app/debug-start.sh
+# Copy workspace packages
+COPY --from=builder --chown=sveltekit:nodejs /app/packages ./packages
+
+# Copy the web app directory structure
+COPY --from=builder --chown=sveltekit:nodejs /app/apps/web/build ./apps/web/build
+COPY --from=builder --chown=sveltekit:nodejs /app/apps/web/package.json ./apps/web/package.json
+COPY --from=prod-deps --chown=sveltekit:nodejs /app/apps/web/node_modules ./apps/web/node_modules
+
+# Change to web directory to run the app
+WORKDIR /app/apps/web
 
 USER sveltekit
 
 EXPOSE 3000
 
-CMD ["/app/debug-start.sh"]
+CMD ["node", "build"]
