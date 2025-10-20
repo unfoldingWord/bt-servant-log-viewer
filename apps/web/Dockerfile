@@ -57,8 +57,26 @@ COPY --from=builder --chown=sveltekit:nodejs /app/apps/web/build ./build
 COPY --from=prod-deps --chown=sveltekit:nodejs /app/apps/web/node_modules ./build/node_modules
 COPY --from=builder --chown=sveltekit:nodejs /app/apps/web/package.json ./
 
+# Add diagnostic script to debug module resolution
+RUN echo '#!/bin/sh' > /app/debug-start.sh && \
+    echo 'echo "=== DIAGNOSTIC INFO ===" ' >> /app/debug-start.sh && \
+    echo 'echo "Current directory: $(pwd)" ' >> /app/debug-start.sh && \
+    echo 'echo "Directory contents:" ' >> /app/debug-start.sh && \
+    echo 'ls -la' >> /app/debug-start.sh && \
+    echo 'echo "Build directory contents:" ' >> /app/debug-start.sh && \
+    echo 'ls -la /app/build/' >> /app/debug-start.sh && \
+    echo 'echo "Build node_modules contents:" ' >> /app/debug-start.sh && \
+    echo 'ls -la /app/build/node_modules/ | head -20' >> /app/debug-start.sh && \
+    echo 'echo "Looking for zod:" ' >> /app/debug-start.sh && \
+    echo 'find /app -name "zod" -type d 2>/dev/null | head -10' >> /app/debug-start.sh && \
+    echo 'echo "Node paths:" ' >> /app/debug-start.sh && \
+    echo 'node -e "console.log(module.paths)"' >> /app/debug-start.sh && \
+    echo 'echo "Starting server..." ' >> /app/debug-start.sh && \
+    echo 'exec node build' >> /app/debug-start.sh && \
+    chmod +x /app/debug-start.sh
+
 USER sveltekit
 
 EXPOSE 3000
 
-CMD ["node", "build"]
+CMD ["/app/debug-start.sh"]
