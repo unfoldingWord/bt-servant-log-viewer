@@ -148,13 +148,13 @@
             handleRowClick(log.id);
           }}
           style="animation-delay: {i * 20}ms"
-          class="log-row group relative cursor-pointer border-b border-surface/50 transition-all duration-200 hover:bg-gradient-to-r hover:from-accent-cyan/5 hover:via-accent-teal/5 hover:to-transparent"
+          class="log-row group relative cursor-pointer border-b border-surface/50 hover:bg-gradient-to-r hover:from-accent-cyan/5 hover:via-accent-teal/5 hover:to-transparent"
           class:selected-row={selectedId === log.id}
         >
           <td class="relative px-4 py-3.5">
             <div class="flex items-center gap-2">
               <div
-                class="h-1.5 w-1.5 rounded-full bg-accent-cyan/50 group-hover:bg-accent-cyan transition-colors"
+                class="h-1.5 w-1.5 rounded-full bg-accent-cyan/50 group-hover:bg-accent-cyan"
               ></div>
               <span class="font-mono text-xs text-text-muted">
                 {formatTimestamp(log.ts)}
@@ -164,7 +164,7 @@
 
           <td class="relative px-4 py-3.5">
             <span
-              class="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold transition-colors {getLevelBadgeClass(
+              class="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold {getLevelBadgeClass(
                 log.level
               )}"
             >
@@ -177,7 +177,7 @@
             <div class="flex items-center gap-2">
               {#if log.userId}
                 <div
-                  class="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-accent-cyan/20 to-accent-teal/20 text-xs font-medium text-accent-cyan ring-1 ring-accent-cyan/30 group-hover:ring-accent-cyan/50 transition-colors"
+                  class="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-accent-cyan/20 to-accent-teal/20 text-xs font-medium text-accent-cyan ring-1 ring-accent-cyan/30 group-hover:ring-accent-cyan/50"
                 >
                   {log.userId.substring(0, 2).toUpperCase()}
                 </div>
