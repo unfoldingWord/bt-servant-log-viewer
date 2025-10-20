@@ -49,13 +49,13 @@ ENV PORT=3000
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 sveltekit
 
-# Copy the root node_modules (contains .pnpm store with hoisted deps)
-COPY --from=prod-deps /app/node_modules ./node_modules
-# Copy the build output
+# Copy the build output first
 COPY --from=builder --chown=sveltekit:nodejs /app/apps/web/build ./build
-# Copy web's node_modules to the build directory so Node can resolve modules
-COPY --from=prod-deps --chown=sveltekit:nodejs /app/apps/web/node_modules ./build/node_modules
-COPY --from=builder --chown=sveltekit:nodejs /app/apps/web/package.json ./
+COPY --from=builder --chown=sveltekit:nodejs /app/apps/web/package.json ./package.json
+
+# Install production dependencies directly in the runtime container
+# This ensures all dependencies are properly resolved
+RUN pnpm install --prod --ignore-scripts
 
 # Add diagnostic script to debug module resolution
 RUN echo '#!/bin/sh' > /app/debug-start.sh && \
