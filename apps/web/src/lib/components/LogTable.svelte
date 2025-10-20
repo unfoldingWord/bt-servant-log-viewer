@@ -156,9 +156,7 @@
               <div
                 class="h-1.5 w-1.5 rounded-full bg-accent-cyan/50 group-hover:bg-accent-cyan transition-colors"
               ></div>
-              <span
-                class="font-mono text-xs text-text-muted group-hover:text-text-secondary transition-colors"
-              >
+              <span class="font-mono text-xs text-text-muted">
                 {formatTimestamp(log.ts)}
               </span>
             </div>
@@ -183,9 +181,7 @@
                 >
                   {log.userId.substring(0, 2).toUpperCase()}
                 </div>
-                <span
-                  class="font-mono text-xs text-text-secondary group-hover:text-text transition-colors"
-                >
+                <span class="font-mono text-xs text-text-secondary">
                   {log.userId}
                 </span>
               {:else}
@@ -195,7 +191,7 @@
           </td>
 
           <td class="relative max-w-md px-4 py-3.5">
-            <p class="leading-relaxed truncate text-text transition-colors">
+            <p class="leading-relaxed truncate text-text">
               {log.message}
             </p>
           </td>

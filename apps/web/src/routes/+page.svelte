@@ -167,8 +167,14 @@
         case "24h":
           cutoffTime.setHours(now.getHours() - 24);
           break;
+        case "3d":
+          cutoffTime.setDate(now.getDate() - 3);
+          break;
         case "7d":
           cutoffTime.setDate(now.getDate() - 7);
+          break;
+        case "30d":
+          cutoffTime.setDate(now.getDate() - 30);
           break;
       }
 
