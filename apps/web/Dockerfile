@@ -38,7 +38,7 @@ COPY packages/app/package.json ./packages/app/
 COPY packages/adapters/package.json ./packages/adapters/
 COPY packages/workers/package.json ./packages/workers/
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile --prod
+    pnpm install --frozen-lockfile --prod --ignore-scripts
 
 # Stage 5: Production image
 FROM base AS runner
