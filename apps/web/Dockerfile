@@ -29,7 +29,18 @@ COPY --from=deps /app/packages/workers/node_modules ./packages/workers/node_modu
 COPY . .
 RUN pnpm --filter @bt-log-viewer/web build
 
-# Stage 4: Production image
+# Stage 4: Production dependencies
+FROM base AS prod-deps
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY apps/web/package.json ./apps/web/
+COPY packages/domain/package.json ./packages/domain/
+COPY packages/app/package.json ./packages/app/
+COPY packages/adapters/package.json ./packages/adapters/
+COPY packages/workers/package.json ./packages/workers/
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile --prod
+
+# Stage 5: Production image
 FROM base AS runner
 ENV NODE_ENV=production
 ENV PORT=3000
@@ -37,6 +48,8 @@ ENV PORT=3000
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 sveltekit
 
+COPY --from=prod-deps /app/node_modules ./node_modules
+COPY --from=prod-deps /app/apps/web/node_modules ./node_modules
 COPY --from=builder --chown=sveltekit:nodejs /app/apps/web/build ./build
 COPY --from=builder --chown=sveltekit:nodejs /app/apps/web/package.json ./
 
