@@ -215,17 +215,6 @@
 </div>
 
 <style>
-  @keyframes slideIn {
-    from {
-      opacity: 0;
-      transform: translateX(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-
   @keyframes glow {
     0%,
     100% {
@@ -236,10 +225,6 @@
         0 0 20px rgba(34, 211, 238, 0.4),
         0 0 30px rgba(6, 182, 212, 0.2);
     }
-  }
-
-  .log-row {
-    animation: slideIn 0.3s ease-out forwards;
   }
 
   .selected-row {

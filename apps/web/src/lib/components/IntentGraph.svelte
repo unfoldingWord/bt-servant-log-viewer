@@ -65,6 +65,37 @@
     return `$${total.toFixed(2)}`;
   }
 
+  function calculateCostRaw(
+    inputTokens: number | undefined,
+    outputTokens: number | undefined
+  ): number {
+    // Using Claude 3.5 Sonnet pricing as example: $3/MTok input, $15/MTok output
+    const inputCost = ((inputTokens ?? 0) / 1_000_000) * 3;
+    const outputCost = ((outputTokens ?? 0) / 1_000_000) * 15;
+    return inputCost + outputCost;
+  }
+
+  // Calculate total cost across all nodes
+  $: totalCost = nodes.reduce((sum, node) => {
+    return sum + calculateCostRaw(node.input_tokens_expended, node.output_tokens_expended);
+  }, 0);
+
+  // Calculate cost percentage for selected node
+  $: selectedNodeCostPercentage =
+    selectedNode && totalCost > 0
+      ? (
+          (calculateCostRaw(
+            selectedNode.input_tokens_expended,
+            selectedNode.output_tokens_expended
+          ) /
+            totalCost) *
+          100
+        ).toFixed(1)
+      : null;
+
+  // Check if we should show the percentage line
+  $: showPercentages = Boolean(selectedNode?.duration_percentage ?? selectedNodeCostPercentage);
+
   async function initializeCytoscape(): Promise<void> {
     if (!browser || !containerRef || nodes.length === 0) return;
 
@@ -328,9 +359,16 @@
           </div>
         </div>
 
-        {#if selectedNode.duration_percentage}
+        {#if showPercentages}
           <div class="mt-3 text-xs text-text-muted">
-            Represents {selectedNode.duration_percentage} of total execution time
+            {#if selectedNode.duration_percentage && selectedNodeCostPercentage}
+              Represents {selectedNode.duration_percentage} of total execution time and {selectedNodeCostPercentage}%
+              of total cost
+            {:else if selectedNode.duration_percentage}
+              Represents {selectedNode.duration_percentage} of total execution time
+            {:else if selectedNodeCostPercentage}
+              Represents {selectedNodeCostPercentage}% of total cost
+            {/if}
           </div>
         {/if}
       </div>

@@ -412,32 +412,12 @@
         <div
           class="h-4 w-4 animate-spin rounded-full border-2 border-accent-cyan border-t-transparent"
         ></div>
-        <div class="flex-1">
-          <div class="text-sm font-medium text-accent-cyan">
-            Loading logs from {selectedServer === "dev"
-              ? "Dev"
-              : selectedServer === "qa"
-                ? "QA"
-                : "Production"} server...
-          </div>
-          {#if loadingProgress.total > 0}
-            <div class="mt-1 flex items-center gap-2">
-              <div class="flex-1 overflow-hidden rounded-full bg-surface">
-                <div
-                  class="h-1.5 rounded-full bg-gradient-to-r from-accent-cyan to-accent-teal transition-all duration-300"
-                  style="width: {(loadingProgress.current / loadingProgress.total) * 100}%"
-                ></div>
-              </div>
-              <span class="text-xs text-text-muted">
-                {loadingProgress.current}/{loadingProgress.total} files
-              </span>
-            </div>
-            {#if loadingProgress.filename}
-              <div class="mt-1 text-xs text-text-dim">
-                Processing: {loadingProgress.filename}
-              </div>
-            {/if}
-          {/if}
+        <div class="text-sm font-medium text-accent-cyan">
+          Loading logs from {selectedServer === "dev"
+            ? "Dev"
+            : selectedServer === "qa"
+              ? "QA"
+              : "Production"} server...
         </div>
       </div>
     </div>
@@ -660,6 +640,19 @@
   <footer
     class="relative flex items-center justify-between border-t border-accent-cyan/10 bg-gradient-to-r from-background-secondary to-background px-4 py-2.5 text-xs md:px-6"
   >
+    <!-- Progress bar overlay (when loading) -->
+    {#if loadingProgress.total > 0}
+      <div
+        class="absolute left-0 right-0 top-0 h-0.5 overflow-hidden bg-surface/30"
+        style="transform: translateY(-100%);"
+      >
+        <div
+          class="h-full bg-gradient-to-r from-accent-cyan to-accent-teal transition-all duration-300"
+          style="width: {(loadingProgress.current / loadingProgress.total) * 100}%"
+        ></div>
+      </div>
+    {/if}
+
     <div class="flex items-center gap-3">
       <div class="flex items-center gap-1.5">
         <div class="h-1.5 w-1.5 rounded-full bg-accent-teal animate-pulse"></div>
@@ -670,7 +663,12 @@
           <span class="text-text-muted">logs</span>
         </span>
       </div>
-      {#if searchQuery}
+      {#if loadingProgress.total > 0}
+        <span class="text-text-dim">·</span>
+        <span class="text-text-muted">
+          Loading {loadingProgress.current}/{loadingProgress.total} files
+        </span>
+      {:else if searchQuery}
         <span class="text-text-dim">·</span>
         <div
           class="flex items-center gap-1.5 rounded-full border border-accent-cyan/20 bg-accent-cyan/5 px-2 py-0.5"
