@@ -16,8 +16,8 @@
   let searchQuery = "";
   let selectedLogId: string | null = null;
   let filterLevels: string[] = [];
-  let filterLanguages: string[] = [];
   let filterUserId: string | null = null;
+  let filterTimeRange = "all";
   let groupByConversation = false;
   let selectedServer: Server = "qa";
   let showServerDropdown = false;
@@ -156,6 +156,29 @@
   $: {
     let logs = allLogs;
 
+    // Time range filter
+    if (filterTimeRange !== "all") {
+      const now = new Date();
+      const cutoffTime = new Date();
+
+      switch (filterTimeRange) {
+        case "1h":
+          cutoffTime.setHours(now.getHours() - 1);
+          break;
+        case "6h":
+          cutoffTime.setHours(now.getHours() - 6);
+          break;
+        case "24h":
+          cutoffTime.setHours(now.getHours() - 24);
+          break;
+        case "7d":
+          cutoffTime.setDate(now.getDate() - 7);
+          break;
+      }
+
+      logs = logs.filter((log) => log.ts >= cutoffTime);
+    }
+
     // Search filter
     if (searchQuery) {
       const lowerQuery = searchQuery.toLowerCase();
@@ -170,11 +193,6 @@
     // Level filter
     if (filterLevels.length > 0) {
       logs = logs.filter((log) => filterLevels.includes(log.level));
-    }
-
-    // Language filter
-    if (filterLanguages.length > 0) {
-      logs = logs.filter((log) => log.language && filterLanguages.includes(log.language));
     }
 
     // User filter
@@ -198,10 +216,14 @@
       timeRange: string;
     }>
   ): void {
-    const { levels, languages, userId } = event.detail;
+    const { levels, userId, timeRange } = event.detail;
     filterLevels = levels;
-    filterLanguages = languages;
     filterUserId = userId;
+    filterTimeRange = timeRange;
+  }
+
+  function handleRefresh(): void {
+    void loadLogsFromServer(selectedServer);
   }
 
   function handleLogSelect(logId: string): void {
@@ -379,7 +401,7 @@
   </header>
 
   <!-- Filters bar -->
-  <FiltersBar {availableUsers} on:filterChange={handleFilterChange} />
+  <FiltersBar {availableUsers} on:filterChange={handleFilterChange} on:refresh={handleRefresh} />
 
   <!-- Loading state -->
   {#if isLoading}

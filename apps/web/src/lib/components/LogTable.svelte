@@ -137,30 +137,10 @@
             Message
           </div>
         </th>
-        <th class="px-4 py-3.5 text-left">
-          <div
-            class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-muted"
-          >
-            <svg
-              class="h-3.5 w-3.5 text-accent-cyan"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
-              />
-            </svg>
-            Language
-          </div>
-        </th>
       </tr>
       <tr>
         <th
-          colspan="5"
+          colspan="4"
           class="h-px bg-gradient-to-r from-transparent via-accent-cyan/30 to-transparent"
         ></th>
       </tr>
@@ -223,25 +203,12 @@
               {truncate(log.message, 100)}
             </p>
           </td>
-
-          <td class="relative px-4 py-3.5">
-            {#if log.language}
-              <span
-                class="inline-flex items-center gap-1.5 rounded-full bg-surface px-3 py-1 text-xs text-text-secondary group-hover:bg-surface-active transition-colors"
-              >
-                <span class="h-1.5 w-1.5 rounded-full bg-accent-teal"></span>
-                {log.language}
-              </span>
-            {:else}
-              <span class="text-text-dim">—</span>
-            {/if}
-          </td>
         </tr>
 
         <!-- Inline detail row (expands below the clicked row) -->
         {#if selectedId === log.id && selectedLog}
           <tr class="detail-row">
-            <td colspan="5" class="p-0">
+            <td colspan="4" class="p-0">
               <LogDetailInline log={selectedLog} />
             </td>
           </tr>

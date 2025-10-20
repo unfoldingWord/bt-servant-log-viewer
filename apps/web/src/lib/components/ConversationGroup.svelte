@@ -162,7 +162,7 @@
 
   <!-- Expanded content -->
   {#if expanded}
-    <div class="animate-expand">
+    <div class="border-t border-surface/30 bg-background-secondary/30">
       <!-- Intent Flow Visualization -->
       {#if perfReport}
         <IntentGraph perfReports={[perfReport]} {logs} />
@@ -186,11 +186,6 @@
               <th class="px-4 py-2 text-left">
                 <div class="text-xs font-semibold uppercase tracking-wider text-text-muted">
                   Message
-                </div>
-              </th>
-              <th class="px-4 py-2 text-left">
-                <div class="text-xs font-semibold uppercase tracking-wider text-text-muted">
-                  Language
                 </div>
               </th>
             </tr>
@@ -222,24 +217,12 @@
                 <td class="px-4 py-2.5">
                   <p class="text-text leading-relaxed">{log.message}</p>
                 </td>
-                <td class="px-4 py-2.5">
-                  {#if log.language}
-                    <span
-                      class="inline-flex items-center gap-1.5 rounded-full bg-surface px-2.5 py-0.5 text-xs text-text-secondary"
-                    >
-                      <span class="h-1.5 w-1.5 rounded-full bg-accent-teal"></span>
-                      {log.language}
-                    </span>
-                  {:else}
-                    <span class="text-text-dim">—</span>
-                  {/if}
-                </td>
               </tr>
 
               <!-- Inline detail row (expands below the clicked row) -->
               {#if selectedLogId === log.id && selectedLog}
                 <tr class="detail-row">
-                  <td colspan="4" class="p-0">
+                  <td colspan="3" class="p-0">
                     <LogDetailInline log={selectedLog} />
                   </td>
                 </tr>
@@ -253,21 +236,6 @@
 </div>
 
 <style>
-  @keyframes expand {
-    from {
-      opacity: 0;
-      max-height: 0;
-    }
-    to {
-      opacity: 1;
-      max-height: 2000px;
-    }
-  }
-
-  .animate-expand {
-    animation: expand 0.3s ease-out forwards;
-  }
-
   .selected-row {
     background: linear-gradient(to right, rgb(34 211 238 / 0.08), transparent);
     border-left: 3px solid rgb(34 211 238);
