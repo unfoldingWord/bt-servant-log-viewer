@@ -157,8 +157,22 @@ export class JsonLineParser {
     // Extract derived fields from message
     const derivedFields = extractDerivedFields(raw.message);
 
-    // Check if message contains "PerfReport" reference
-    const hasPerfReportReference = raw.message.includes("PerfReport");
+    // Check if message contains PerfReport JSON and extract it
+    let perfReport: PerfReport | undefined;
+    let hasPerfReportReference = false;
+
+    if (raw.message.includes("PerfReport {")) {
+      hasPerfReportReference = true;
+      try {
+        // Extract JSON from message: "PerfReport {..." -> "{..."
+        const perfReportStart = raw.message.indexOf("PerfReport {");
+        const perfReportJson = raw.message.substring(perfReportStart + "PerfReport ".length);
+        perfReport = JSON.parse(perfReportJson) as PerfReport;
+      } catch {
+        // If parsing fails, just log it in parse_errors
+        parseErrors.push("Failed to parse embedded PerfReport JSON");
+      }
+    }
 
     // Treat "-" as undefined for optional fields
     const cid = raw.cid && raw.cid !== "-" ? raw.cid : undefined;
@@ -175,7 +189,9 @@ export class JsonLineParser {
       cid,
       message: raw.message,
       hasJson: hasPerfReportReference,
-      userId,
+      perfReport,
+      traceId: perfReport?.trace_id,
+      userId: userId ?? perfReport?.user_id,
       ip,
       ...derivedFields,
       raw: { startLine: lineNumber, endLine: lineNumber },
