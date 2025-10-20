@@ -309,21 +309,27 @@ GET /api/logs/recent?days=21 # Get files from last N days
 
 ## Deployment
 
-The project uses Fly.io for automatic deployments via GitHub Actions. See [docs/fly-io-setup.md](./docs/fly-io-setup.md) for complete setup instructions.
+The project uses Fly.io with a **QA → Production promotion pipeline** via GitHub Actions. See [docs/fly-io-setup.md](./docs/fly-io-setup.md) for complete setup instructions.
 
 ### Deployment Environments
 
-- **Production** (`main` branch) → `bt-log-viewer.fly.dev`
-- **Staging** (`develop` branch) → `bt-log-viewer-staging.fly.dev`
+- **QA** (auto-deploys when CI passes on `main`) → `bt-log-viewer-qa.fly.dev`
+- **Production** (manual promotion with approval) → `bt-log-viewer.fly.dev`
 - **Preview** (`phase-*`, `bot-*` branches) → `bt-log-viewer-{branch-name}.fly.dev`
+
+### Workflow
+
+1. **Push to `main`** → All CI checks run (typecheck, lint, tests, e2e, build)
+2. **If all checks pass** → Auto-deploy to QA
+3. **Manual promotion** → Deploy to Production via GitHub Actions button
 
 ### Quick Start
 
 1. Set up `FLY_API_TOKEN` secret in GitHub repository settings (see fly-io-setup.md)
-2. Push to any branch:
-   - `main` → Production deployment
-   - `develop` → Staging deployment
-   - `phase-*` or `bot-*` → Preview deployment
+2. Push to `main` → CI runs, then auto-deploys to QA (creates `bt-log-viewer-qa` on first run)
+3. Configure secrets: `flyctl secrets set BT_SERVANT_DEV_TOKEN=... --app bt-log-viewer-qa`
+4. Test QA deployment at `https://bt-log-viewer-qa.fly.dev`
+5. Promote to production: **Actions** → **"Promote to Production"** → **Run workflow**
 
 ### Bot Competition Workflow
 

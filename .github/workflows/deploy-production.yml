@@ -1,9 +1,12 @@
-name: Deploy to Production
+name: Promote to Production
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
+    inputs:
+      git_ref:
+        description: "Git ref (branch/tag/SHA) to deploy"
+        required: false
+        default: "main"
 
 concurrency:
   group: production-deployment
@@ -11,7 +14,7 @@ concurrency:
 
 jobs:
   deploy:
-    name: Deploy to Fly.io (Production)
+    name: Promote to Production
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment:
@@ -21,14 +24,30 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.git_ref || 'main' }}
 
       - name: Setup Fly CLI
         uses: superfly/flyctl-actions/setup-flyctl@master
 
-      - name: Deploy to Fly.io
+      - name: Deploy to Fly.io (Production)
         run: |
+          # Create app if it doesn't exist (ignore error if it already exists)
+          flyctl apps create bt-log-viewer-prod || true
+
+          # Deploy to Production
           flyctl deploy \
             --config infra/fly.production.toml \
-            --app bt-log-viewer-prod
+            --app bt-log-viewer-prod \
+            --auto-confirm
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Create deployment summary
+        run: |
+          echo "## 🚀 Production Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Git Ref:** \`${{ github.event.inputs.git_ref || 'main' }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit SHA:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployed by:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** https://bt-log-viewer.fly.dev" >> $GITHUB_STEP_SUMMARY

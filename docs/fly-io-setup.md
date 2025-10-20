@@ -4,10 +4,10 @@ This guide explains how to set up Fly.io deployments for the BT Servant Log View
 
 ## Overview
 
-The project is configured for automatic deployments via GitHub Actions:
+The project uses a **QA → Production promotion pipeline** via GitHub Actions:
 
-- **Production** (`main` branch) → `bt-log-viewer.fly.dev`
-- **Staging** (`develop` branch) → `bt-log-viewer-staging.fly.dev`
+- **QA** (auto-deploys when CI passes on `main`) → `bt-log-viewer-qa.fly.dev`
+- **Production** (manual promotion with approval) → `bt-log-viewer.fly.dev`
 - **Preview** (`phase-*`, `bot-*` branches) → `bt-log-viewer-{branch-name}.fly.dev`
 
 ## Prerequisites
@@ -53,19 +53,21 @@ Copy the token output. You'll need this for GitHub Actions.
 5. Value: Paste the token from step 2
 6. Click **Add secret**
 
-### 4. Create Fly.io Apps (First Deploy Only)
+### 4. Fly.io Apps Are Created Automatically
 
-The workflows will attempt to create apps automatically, but you can create them manually if preferred:
+**You don't need to manually create apps!** The workflows automatically create apps on first deployment:
+
+- **QA app** (`bt-log-viewer-qa`) - Created on first push to `main` after CI passes
+- **Production app** (`bt-log-viewer-prod`) - Created on first manual promotion
+- **Preview apps** (`bt-log-viewer-{branch}`) - Created on first push to `phase-*` or `bot-*` branches
+
+If you prefer to create them manually beforehand:
 
 ```bash
-# Production app
+# Optional: Create apps manually
+flyctl apps create bt-log-viewer-qa
 flyctl apps create bt-log-viewer-prod
-
-# Staging app
-flyctl apps create bt-log-viewer-staging
 ```
-
-For preview apps, the workflow creates them automatically using the branch name.
 
 ### 5. Set BT-Servant API Secrets
 
@@ -80,7 +82,7 @@ Each environment requires **3 variables**:
 For each environment you want to deploy, set the following secrets:
 
 ```bash
-# For staging/preview apps
+# For QA app (auto-deployed from main)
 flyctl secrets set \
   BT_SERVANT_DEV_URL=http://localhost:8080 \
   BT_SERVANT_DEV_TOKEN=your-dev-admin-logs-token \
@@ -91,9 +93,9 @@ flyctl secrets set \
   BT_SERVANT_PROD_URL=https://app.servant.bible \
   BT_SERVANT_PROD_TOKEN=your-prod-admin-logs-token \
   BT_SERVANT_PROD_ALIVE_TOKEN=your-prod-alive-token \
-  --app bt-log-viewer-staging
+  --app bt-log-viewer-qa
 
-# For production app (use same command but change --app)
+# For production app (manual promotion only)
 flyctl secrets set \
   BT_SERVANT_DEV_URL=http://localhost:8080 \
   BT_SERVANT_DEV_TOKEN=your-dev-admin-logs-token \
@@ -114,26 +116,42 @@ flyctl secrets set \
   BT_SERVANT_DEV_URL=http://localhost:8080 \
   BT_SERVANT_DEV_TOKEN=your-dev-admin-logs-token \
   BT_SERVANT_DEV_ALIVE_TOKEN=your-dev-alive-token \
-  --app bt-log-viewer-staging
+  --app bt-log-viewer-qa
 ```
 
 The app will only show servers in the dropdown that have all required credentials configured (URL + TOKEN + ALIVE_TOKEN).
 
 ## How Deployments Work
 
-### Production Deployment
+### QA Deployment (Automatic)
 
-- **Trigger**: Push to `main` branch or manual workflow dispatch
+- **Trigger**: Automatic when CI passes on `main` branch
+- **Prerequisites**: All checks must pass (typecheck, lint, tests, e2e, build)
+- **App Name**: `bt-log-viewer-qa`
+- **Config**: `infra/fly.qa.toml`
+- **URL**: https://bt-log-viewer-qa.fly.dev
+
+**Workflow:**
+
+1. Push to `main` → CI runs all quality checks
+2. If all checks pass → Auto-deploy to QA
+3. QA is ready for testing and validation
+
+### Production Promotion (Manual)
+
+- **Trigger**: Manual button in GitHub Actions (requires approval)
 - **App Name**: `bt-log-viewer-prod`
 - **Config**: `infra/fly.production.toml`
 - **URL**: https://bt-log-viewer.fly.dev
 
-### Staging Deployment
+**How to promote to production:**
 
-- **Trigger**: Push to `develop` branch or manual workflow dispatch
-- **App Name**: `bt-log-viewer-staging`
-- **Config**: `infra/fly.staging.toml`
-- **URL**: https://bt-log-viewer-staging.fly.dev
+1. Go to **Actions** tab in GitHub
+2. Select **"Promote to Production"** workflow
+3. Click **"Run workflow"**
+4. Choose git ref (default: `main`)
+5. Wait for approval (if configured)
+6. Deployment runs after approval
 
 ### Preview Deployments (Bot Competition)
 
@@ -155,13 +173,16 @@ The app will only show servers in the dropdown that have all required credential
 You can also deploy manually from any branch:
 
 ```bash
-# Deploy to a specific app
-flyctl deploy --config infra/fly.staging.toml --app bt-log-viewer-staging
+# Deploy to QA manually
+flyctl deploy --config infra/fly.qa.toml --app bt-log-viewer-qa
+
+# Deploy to production manually
+flyctl deploy --config infra/fly.production.toml --app bt-log-viewer-prod
 
 # Deploy preview from current branch
 BRANCH=$(git branch --show-current)
 APP_NAME=$(echo "bt-log-viewer-${BRANCH}" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g')
-flyctl deploy --config infra/fly.staging.toml --app "$APP_NAME" --ha=false
+flyctl deploy --config infra/fly.qa.toml --app "$APP_NAME" --ha=false
 ```
 
 ## Bot Competition Workflow
@@ -203,22 +224,24 @@ Or use the Fly.io dashboard: https://fly.io/dashboard
      BT_SERVANT_DEV_URL=http://localhost:8080 \
      BT_SERVANT_DEV_TOKEN=your-actual-admin-logs-token \
      BT_SERVANT_DEV_ALIVE_TOKEN=your-actual-alive-token \
-     --app bt-log-viewer-staging
+     --app bt-log-viewer-qa
    ```
 
-2. **Deploy to staging**:
+2. **Test QA deployment**:
 
    ```bash
-   # From your current branch (e.g., phase-1b)
-   git push origin phase-1b
+   # Push to main (will trigger CI → QA deployment if all checks pass)
+   git push origin main
    ```
 
-3. **Wait for deployment** (check GitHub Actions tab)
+3. **Wait for CI and deployment** (check GitHub Actions tab)
+   - CI jobs must pass first (verify, e2e, build)
+   - Then QA deployment runs automatically
 
-4. **Visit your app**:
+4. **Visit QA app**:
 
    ```
-   https://bt-log-viewer-phase-1b.fly.dev
+   https://bt-log-viewer-qa.fly.dev
    ```
 
 5. **Check connection status**:
@@ -227,17 +250,28 @@ Or use the Fly.io dashboard: https://fly.io/dashboard
    - Should show "Dev: Disconnected" (red) if token is invalid
 
 6. **View logs** (if issues):
+
    ```bash
-   flyctl logs --app bt-log-viewer-phase-1b
+   flyctl logs --app bt-log-viewer-qa
    ```
+
+7. **Promote to production** (when ready):
+   - Go to GitHub Actions → "Promote to Production"
+   - Click "Run workflow"
+   - Wait for approval (if configured)
+   - Visit: https://bt-log-viewer.fly.dev
 
 ### Verify Health Check
 
 You can test the health check endpoint directly:
 
 ```bash
+# QA environment
+curl https://bt-log-viewer-qa.fly.dev/api/logs/health
 # Should return {"dev":true,"qa":false,"prod":false} if only dev secrets are set
-curl https://bt-log-viewer-phase-1b.fly.dev/api/logs/health
+
+# Production environment
+curl https://bt-log-viewer.fly.dev/api/logs/health
 ```
 
 Note: The health check calls `<BT_SERVANT_URL>/alive` with the `ALIVE_TOKEN` (not the admin logs token).
@@ -257,16 +291,16 @@ Note: The health check calls `<BT_SERVANT_URL>/alive` with the `ALIVE_TOKEN` (no
 
 ### Deployment succeeds but app doesn't start
 
-- Check logs: `flyctl logs --app bt-log-viewer-staging`
+- Check logs: `flyctl logs --app bt-log-viewer-qa`
 - Verify Dockerfile builds correctly locally
 - Ensure environment variables are set correctly in fly.toml
 
 ### Server shows "Disconnected" in footer
 
-- **Check secrets are set**: `flyctl secrets list --app bt-log-viewer-phase-1b`
+- **Check secrets are set**: `flyctl secrets list --app bt-log-viewer-qa`
 - **Verify token is valid**: Test with curl against BT-Servant API directly
-- **Check logs**: `flyctl logs --app bt-log-viewer-phase-1b` for auth errors
-- **Test health endpoint**: `curl https://your-app.fly.dev/api/logs/health`
+- **Check logs**: `flyctl logs --app bt-log-viewer-qa` for auth errors
+- **Test health endpoint**: `curl https://bt-log-viewer-qa.fly.dev/api/logs/health`
 
 ### No servers appear in dropdown
 

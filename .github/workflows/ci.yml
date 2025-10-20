@@ -120,3 +120,33 @@ jobs:
             apps/*/build
             apps/*/dist
           retention-days: 7
+
+  deploy-qa:
+    name: Deploy to QA
+    needs: [verify, e2e, build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: qa
+      url: https://bt-log-viewer-qa.fly.dev
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Fly CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy to Fly.io (QA)
+        run: |
+          # Create app if it doesn't exist (ignore error if it already exists)
+          flyctl apps create bt-log-viewer-qa || true
+
+          # Deploy to QA
+          flyctl deploy \
+            --config infra/fly.qa.toml \
+            --app bt-log-viewer-qa \
+            --auto-confirm
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
