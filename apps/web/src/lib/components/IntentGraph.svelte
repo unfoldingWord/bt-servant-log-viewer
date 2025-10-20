@@ -164,7 +164,7 @@
           style: {
             "background-color": "#22d3ee", // accent-cyan
             "background-fill": "linear-gradient",
-            "background-gradient-stop-colors": ["#22d3ee", "#14b8a6"], // cyan to teal
+            "background-gradient-stop-colors": ["#67e8f9", "#0d9488"], // bright cyan to darker teal (enhanced contrast)
             "background-gradient-direction": "to-bottom-right",
             "border-width": 4,
             "border-color": "#22d3ee",
