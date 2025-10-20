@@ -287,7 +287,7 @@
         >
           BT Servant Log Viewer
         </h1>
-        <span class="text-xs font-medium text-text-dim">Real-time telemetry viewer</span>
+        <span class="text-xs font-medium text-text-dim">Log analysis tool</span>
       </div>
 
       <span
