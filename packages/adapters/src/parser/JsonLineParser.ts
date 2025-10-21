@@ -113,6 +113,10 @@ export class JsonLineParser {
       // Try to parse as standard JSON log entry
       try {
         const rawEntry = JSON.parse(line) as RawLogEntry;
+        if (rawEntry.schema_version !== "1.0.0") {
+          currentLine++;
+          continue;
+        }
         const logEntry = this.createLogEntry(rawEntry, options, currentLine);
         entries.push(logEntry);
         stats.successfulEntries++;

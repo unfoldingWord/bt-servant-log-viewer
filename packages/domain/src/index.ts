@@ -12,6 +12,7 @@ export interface RawLogEntry {
   logger: string;
   cid: string;
   user: string;
+  schema_version?: string;
 }
 
 export interface LogEntry {
