@@ -12,7 +12,22 @@ const serverQuerySchema = z.object({
 });
 
 const fileParamsSchema = z.object({
-  filename: z.string().regex(/^[a-zA-Z0-9._-]+\.log$/),
+  filename: z
+    .string()
+    .trim()
+    .min(1, "Filename is required")
+    .refine((value) => !value.includes("/") && !value.includes("\\"), {
+      message: "Filename must not contain path separators",
+    })
+    .refine((value) => !value.includes(".."), {
+      message: "Filename must not include relative path segments",
+    })
+    .refine((value) => /^[a-zA-Z0-9._-]+$/.test(value), {
+      message: "Filename contains invalid characters",
+    })
+    .refine((value) => /\.log(?:[._-][a-zA-Z0-9_-]+)*$/i.test(value), {
+      message: "Filename must end with .log and optional rotated/compressed suffixes",
+    }),
 });
 
 export const GET: RequestHandler = async ({ params, url }) => {
@@ -29,7 +44,7 @@ export const GET: RequestHandler = async ({ params, url }) => {
     }
 
     const config = getServerConfig(server);
-    const apiUrl = `${config.url}/admin/logs/files/${filename}`;
+    const apiUrl = `${config.url}/admin/logs/files/${encodeURIComponent(filename)}`;
 
     const response = await fetch(apiUrl, {
       headers: {
@@ -66,7 +81,7 @@ export const GET: RequestHandler = async ({ params, url }) => {
     return new Response(text, { headers });
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return json({ error: "Invalid parameters" }, { status: 400 });
+      return json({ error: "Invalid parameters", details: err.issues }, { status: 400 });
     }
     return json({ error: "Internal server error" }, { status: 500 });
   }
