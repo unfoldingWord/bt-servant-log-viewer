@@ -25,10 +25,12 @@
   let isLoading = false;
   let errorMessage: string | null = null;
   let warningMessage: string | null = null;
+  let diagnosticsDismissed = false;
   let availableServers: Server[] = [];
   let serverHealth = { dev: false, qa: false, prod: false };
   let healthCheckInterval: number | null = null;
   let parseDiagnostics: ParseDiagnostics[] = [];
+  const diagnosticsEnabled = (import.meta.env["PUBLIC_SHOW_DIAGNOSTICS"] ?? "false") === "true";
 
   // Load configured servers and start health check polling on mount
   onMount(() => {
@@ -96,50 +98,55 @@
 
       allLogs = logs;
       parseDiagnostics = logApiClient.getParseDiagnostics();
+      diagnosticsDismissed = false;
       warningMessage = null;
 
-      const aggregated = parseDiagnostics.reduce(
-        (acc, diag) => {
-          acc.success += diag.stats.successfulEntries;
-          acc.failed += diag.stats.failedEntries;
-          acc.skipped += diag.stats.skippedEntries;
-          acc.missingSchema += diag.stats.missingSchemaEntries;
+      if (diagnosticsEnabled) {
+        const aggregated = parseDiagnostics.reduce(
+          (acc, diag) => {
+            acc.success += diag.stats.successfulEntries;
+            acc.failed += diag.stats.failedEntries;
+            acc.skipped += diag.stats.skippedEntries;
+            acc.missingSchema += diag.stats.missingSchemaEntries;
 
-          for (const [version, count] of Object.entries(diag.stats.unsupportedSchemaVersions)) {
-            acc.unsupportedVersions.set(
-              version,
-              (acc.unsupportedVersions.get(version) ?? 0) + count
-            );
+            for (const [version, count] of Object.entries(diag.stats.unsupportedSchemaVersions)) {
+              acc.unsupportedVersions.set(
+                version,
+                (acc.unsupportedVersions.get(version) ?? 0) + count
+              );
+            }
+
+            return acc;
+          },
+          {
+            success: 0,
+            failed: 0,
+            skipped: 0,
+            missingSchema: 0,
+            unsupportedVersions: new Map<string, number>(),
           }
+        );
 
-          return acc;
-        },
-        {
-          success: 0,
-          failed: 0,
-          skipped: 0,
-          missingSchema: 0,
-          unsupportedVersions: new Map<string, number>(),
+        if (aggregated.failed > 0 || aggregated.skipped > 0) {
+          const unsupportedSummary = Array.from(aggregated.unsupportedVersions.entries())
+            .map(([version, count]) => `${version}: ${count.toLocaleString()}`)
+            .join(", ");
+
+          warningMessage = [
+            aggregated.failed > 0
+              ? `${aggregated.failed.toLocaleString()} entries failed to parse`
+              : null,
+            aggregated.skipped > 0
+              ? `${aggregated.skipped.toLocaleString()} entries skipped (${aggregated.missingSchema.toLocaleString()} missing schema${
+                  unsupportedSummary ? `; ${unsupportedSummary}` : ""
+                })`
+              : null,
+          ]
+            .filter(Boolean)
+            .join(" • ");
+        } else {
+          warningMessage = null;
         }
-      );
-
-      if (aggregated.failed > 0 || aggregated.skipped > 0) {
-        const unsupportedSummary = Array.from(aggregated.unsupportedVersions.entries())
-          .map(([version, count]) => `${version}: ${count.toLocaleString()}`)
-          .join(", ");
-
-        warningMessage = [
-          aggregated.failed > 0
-            ? `${aggregated.failed.toLocaleString()} entries failed to parse`
-            : null,
-          aggregated.skipped > 0
-            ? `${aggregated.skipped.toLocaleString()} entries skipped (${aggregated.missingSchema.toLocaleString()} missing schema${
-                unsupportedSummary ? `; ${unsupportedSummary}` : ""
-              })`
-            : null,
-        ]
-          .filter(Boolean)
-          .join(" • ");
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
@@ -148,6 +155,7 @@
       allLogs = [];
       parseDiagnostics = [];
       warningMessage = null;
+      diagnosticsDismissed = false;
     } finally {
       isLoading = false;
     }
@@ -293,11 +301,23 @@
 
 <!-- Main container with responsive layout -->
 <div class="flex h-screen flex-col bg-background">
-  {#if warningMessage}
+  {#if diagnosticsEnabled && warningMessage && !diagnosticsDismissed}
     <div
       class="mx-4 mt-4 rounded-lg border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200 shadow-md shadow-amber-500/10 md:mx-6"
     >
-      <p class="font-medium text-amber-100">{warningMessage}</p>
+      <div class="flex items-start justify-between gap-4">
+        <p class="flex-1 font-medium text-amber-100">{warningMessage}</p>
+        <button
+          type="button"
+          class="rounded-lg border border-amber-300/40 bg-transparent px-2 py-1 text-xs font-semibold uppercase tracking-wide text-amber-200 transition hover:border-amber-200/70 hover:bg-amber-400/20 hover:text-amber-100"
+          aria-label="Dismiss parser diagnostics"
+          on:click={() => {
+            diagnosticsDismissed = true;
+          }}
+        >
+          Close
+        </button>
+      </div>
       {#if parseDiagnostics.length > 0}
         <details class="mt-2 space-y-1 text-xs text-amber-200/90">
           <summary class="cursor-pointer text-amber-100">View parser diagnostics</summary>
