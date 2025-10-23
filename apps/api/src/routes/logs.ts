@@ -22,9 +22,24 @@ const recentLogsQuerySchema = z.object({
 });
 
 const fileParamsSchema = z.object({
-  filename: z.string().regex(/^[a-zA-Z0-9._-]+\.log(?:\.[a-zA-Z0-9_-]+)*$/, {
-    message: "Filename must end with .log and optional rotated/compressed suffixes",
-  }),
+  filename: z
+    .string()
+    .trim()
+    .refine((value) => value.length > 0, {
+      message: "Filename is required",
+    })
+    .refine((value) => !value.includes("/") && !value.includes("\\"), {
+      message: "Filename must not contain path separators",
+    })
+    .refine((value) => !value.includes(".."), {
+      message: "Filename must not include relative path segments",
+    })
+    .refine((value) => /^[a-zA-Z0-9._-]+$/.test(value), {
+      message: "Filename contains invalid characters",
+    })
+    .refine((value) => /\.log(?:[._-][a-zA-Z0-9_-]+)*$/i.test(value), {
+      message: "Filename must end with .log and optional rotated/compressed suffixes",
+    }),
 });
 
 /**

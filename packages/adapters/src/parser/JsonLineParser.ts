@@ -47,6 +47,7 @@ export class JsonLineParser {
     let currentLine = 0;
     let currentPerfReportBlock: string[] = [];
     let perfReportStartLine = -1;
+    let lastTimestamp: Date | undefined;
 
     while (currentLine < lines.length) {
       const line = lines[currentLine];
@@ -91,9 +92,11 @@ export class JsonLineParser {
             perfReport,
             options,
             perfReportStartLine,
-            currentLine - 1
+            currentLine - 1,
+            lastTimestamp
           );
           entries.push(perfReportEntry);
+          lastTimestamp = perfReportEntry.ts;
           stats.perfReportBlocks++;
           stats.successfulEntries++;
         } catch (error) {
@@ -119,6 +122,7 @@ export class JsonLineParser {
         }
         const logEntry = this.createLogEntry(rawEntry, options, currentLine);
         entries.push(logEntry);
+        lastTimestamp = logEntry.ts;
         stats.successfulEntries++;
       } catch (error) {
         errors.push({
@@ -210,13 +214,14 @@ export class JsonLineParser {
     perfReport: PerfReport,
     options: ParseOptions,
     startLine: number,
-    endLine: number
+    endLine: number,
+    fallbackTimestamp: Date | undefined
   ): LogEntry {
     return {
       id: nanoid(),
       fileId: options.fileId,
       fileName: options.fileName,
-      ts: new Date(), // PerfReports don't have timestamps, use current time
+      ts: fallbackTimestamp ?? new Date(),
       level: "INFO",
       logger: "bt_servant_engine.performance",
       cid: undefined,

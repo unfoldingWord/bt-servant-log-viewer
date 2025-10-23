@@ -136,13 +136,15 @@
   $: conversationGroups = Object.entries(groupedLogs)
     .filter(([, logs]) => logs.length > 0)
     .map(([cid, logs]) => {
-      const firstLog = logs[0];
+      if (logs.length === 0) return null;
+      const sortedConversationLogs = [...logs].sort((a, b) => a.ts.getTime() - b.ts.getTime());
+      const firstLog = sortedConversationLogs[0];
       if (!firstLog) return null;
       return {
         cid,
-        logs,
+        logs: sortedConversationLogs,
         firstLog,
-        perfReport: logs.find((l) => l.perfReport)?.perfReport,
+        perfReport: sortedConversationLogs.find((l) => l.perfReport)?.perfReport,
       };
     })
     .filter((group): group is NonNullable<typeof group> => group !== null)

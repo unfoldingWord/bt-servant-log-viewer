@@ -125,7 +125,9 @@ export class LogApiClient {
    * Download a specific log file and parse it into LogEntry objects
    */
   async downloadAndParseFile(server: ServerEnvironment, filename: string): Promise<LogEntry[]> {
-    const url = `${this.baseUrl}/api/logs/file/${filename}?server=${server}`;
+    const trimmedFilename = filename.trim();
+    const encodedFilename = encodeURIComponent(trimmedFilename);
+    const url = `${this.baseUrl}/api/logs/file/${encodedFilename}?server=${server}`;
 
     const response = await fetch(url);
 
@@ -138,8 +140,8 @@ export class LogApiClient {
 
     // Parse the log file content
     const entries = await this.parser.parse(content, {
-      fileId: filename,
-      fileName: filename,
+      fileId: trimmedFilename,
+      fileName: trimmedFilename,
     });
 
     return entries;
@@ -155,10 +157,21 @@ export class LogApiClient {
     onProgress?: (current: number, total: number, filename: string) => void
   ): Promise<LogEntry[]> {
     const allEntries: LogEntry[] = [];
+    const fileOrder = new Map<string, number>();
+
+    filenames.forEach((originalName, index) => {
+      const name = originalName.trim();
+      if (name.length > 0) {
+        fileOrder.set(name, index);
+      }
+    });
 
     for (let i = 0; i < filenames.length; i++) {
-      const filename = filenames[i];
-      if (!filename) continue;
+      const originalName = filenames[i];
+      if (!originalName) continue;
+
+      const filename = originalName.trim();
+      if (filename.length === 0) continue;
 
       onProgress?.(i + 1, filenames.length, filename);
 
@@ -169,6 +182,32 @@ export class LogApiClient {
         // Continue with other files even if one fails
       }
     }
+
+    allEntries.sort((a, b) => {
+      const timeA = a.ts.getTime();
+      const timeB = b.ts.getTime();
+
+      const bothHaveTime = Number.isFinite(timeA) && Number.isFinite(timeB);
+      if (bothHaveTime && timeA !== timeB) {
+        return timeB - timeA; // Newest first
+      }
+
+      if (Number.isFinite(timeA) && !Number.isFinite(timeB)) {
+        return -1;
+      }
+
+      if (!Number.isFinite(timeA) && Number.isFinite(timeB)) {
+        return 1;
+      }
+
+      const fileIndexA = fileOrder.get(a.fileName) ?? Number.MAX_SAFE_INTEGER;
+      const fileIndexB = fileOrder.get(b.fileName) ?? Number.MAX_SAFE_INTEGER;
+      if (fileIndexA !== fileIndexB) {
+        return fileIndexA - fileIndexB;
+      }
+
+      return a.raw.startLine - b.raw.startLine;
+    });
 
     return allEntries;
   }
@@ -186,7 +225,7 @@ export class LogApiClient {
     const filesResponse = await this.getRecentFiles(server, days);
 
     // Download and parse all files
-    const filenames = filesResponse.files.map((f) => f.name);
+    const filenames = filesResponse.files.map((f) => f.name.trim());
 
     return this.downloadAndParseFiles(server, filenames, onProgress);
   }
