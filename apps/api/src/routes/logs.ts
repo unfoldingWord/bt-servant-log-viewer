@@ -159,7 +159,7 @@ export function logRoutes(fastify: FastifyInstance): void {
         if (error instanceof z.ZodError) {
           return reply.code(400).send({
             error: "Invalid query parameters",
-            details: error.errors,
+            details: error.issues,
           });
         }
 
@@ -308,7 +308,7 @@ export function logRoutes(fastify: FastifyInstance): void {
         if (error instanceof z.ZodError) {
           return reply.code(400).send({
             error: "Invalid parameters",
-            details: error.errors,
+            details: error.issues,
           });
         }
 
