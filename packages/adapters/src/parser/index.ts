@@ -12,17 +12,21 @@ export class LogParser implements ParsingPort {
   }
 
   parse(content: string, options?: ParseOptions): Promise<LogEntry[]> {
+    const result = this.parseWithDiagnostics(content, options);
+    return result.then((res) => res.entries);
+  }
+
+  parseWithDiagnostics(
+    content: string,
+    options?: ParseOptions
+  ): Promise<ReturnType<JsonLineParser["parse"]>> {
     const parseOptions: JsonParseOptions = {
       fileId: options?.fileId ?? "unknown",
       fileName: options?.fileName ?? "unknown.log",
     };
 
     const result = this.jsonParser.parse(content, parseOptions);
-
-    // Parse errors are attached to individual LogEntry objects via parse_errors field
-    // No need to log here as errors are tracked per-entry
-
-    return Promise.resolve(result.entries);
+    return Promise.resolve(result);
   }
 }
 

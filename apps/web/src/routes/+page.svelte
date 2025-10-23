@@ -8,6 +8,7 @@
   import LogCards from "$lib/components/LogCards.svelte";
   import ConversationGroup from "$lib/components/ConversationGroup.svelte";
   import type { LogEntry } from "@bt-log-viewer/domain";
+  import type { ParseDiagnostics } from "$lib/services/LogApiClient";
 
   type Server = ServerEnvironment;
 
@@ -23,9 +24,11 @@
   let showServerDropdown = false;
   let isLoading = false;
   let errorMessage: string | null = null;
+  let warningMessage: string | null = null;
   let availableServers: Server[] = [];
   let serverHealth = { dev: false, qa: false, prod: false };
   let healthCheckInterval: number | null = null;
+  let parseDiagnostics: ParseDiagnostics[] = [];
 
   // Load configured servers and start health check polling on mount
   onMount(() => {
@@ -92,11 +95,59 @@
       const logs = await logApiClient.loadRecentLogs(server, 21);
 
       allLogs = logs;
+      parseDiagnostics = logApiClient.getParseDiagnostics();
+      warningMessage = null;
+
+      const aggregated = parseDiagnostics.reduce(
+        (acc, diag) => {
+          acc.success += diag.stats.successfulEntries;
+          acc.failed += diag.stats.failedEntries;
+          acc.skipped += diag.stats.skippedEntries;
+          acc.missingSchema += diag.stats.missingSchemaEntries;
+
+          for (const [version, count] of Object.entries(diag.stats.unsupportedSchemaVersions)) {
+            acc.unsupportedVersions.set(
+              version,
+              (acc.unsupportedVersions.get(version) ?? 0) + count
+            );
+          }
+
+          return acc;
+        },
+        {
+          success: 0,
+          failed: 0,
+          skipped: 0,
+          missingSchema: 0,
+          unsupportedVersions: new Map<string, number>(),
+        }
+      );
+
+      if (aggregated.failed > 0 || aggregated.skipped > 0) {
+        const unsupportedSummary = Array.from(aggregated.unsupportedVersions.entries())
+          .map(([version, count]) => `${version}: ${count.toLocaleString()}`)
+          .join(", ");
+
+        warningMessage = [
+          aggregated.failed > 0
+            ? `${aggregated.failed.toLocaleString()} entries failed to parse`
+            : null,
+          aggregated.skipped > 0
+            ? `${aggregated.skipped.toLocaleString()} entries skipped (${aggregated.missingSchema.toLocaleString()} missing schema${
+                unsupportedSummary ? `; ${unsupportedSummary}` : ""
+              })`
+            : null,
+        ]
+          .filter(Boolean)
+          .join(" • ");
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
       errorMessage = `Failed to load logs: ${message}`;
       // Leave allLogs empty on error
       allLogs = [];
+      parseDiagnostics = [];
+      warningMessage = null;
     } finally {
       isLoading = false;
     }
@@ -242,6 +293,51 @@
 
 <!-- Main container with responsive layout -->
 <div class="flex h-screen flex-col bg-background">
+  {#if warningMessage}
+    <div
+      class="mx-4 mt-4 rounded-lg border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200 shadow-md shadow-amber-500/10 md:mx-6"
+    >
+      <p class="font-medium text-amber-100">{warningMessage}</p>
+      {#if parseDiagnostics.length > 0}
+        <details class="mt-2 space-y-1 text-xs text-amber-200/90">
+          <summary class="cursor-pointer text-amber-100">View parser diagnostics</summary>
+          {#each parseDiagnostics as diag}
+            <div class="border-t border-amber-400/20 pt-2">
+              <div class="font-medium text-amber-100">{diag.filename}</div>
+              <div class="mt-1 flex flex-wrap gap-3">
+                <span>{diag.stats.successfulEntries.toLocaleString()} parsed</span>
+                <span>{diag.stats.failedEntries.toLocaleString()} failed</span>
+                <span>{diag.stats.skippedEntries.toLocaleString()} skipped</span>
+              </div>
+              {#if diag.stats.missingSchemaEntries > 0 || Object.keys(diag.stats.unsupportedSchemaVersions).length > 0}
+                <div class="mt-1 text-amber-200/80">
+                  {#if diag.stats.missingSchemaEntries > 0}
+                    <div>
+                      Missing schema version: {diag.stats.missingSchemaEntries.toLocaleString()}
+                    </div>
+                  {/if}
+                  {#if Object.keys(diag.stats.unsupportedSchemaVersions).length > 0}
+                    <div>
+                      Unsupported schema:
+                      {Object.entries(diag.stats.unsupportedSchemaVersions)
+                        .map(([version, count]) => `${version}: ${count.toLocaleString()}`)
+                        .join(", ")}
+                    </div>
+                  {/if}
+                </div>
+              {/if}
+              {#if diag.errors.length > 0}
+                <div class="mt-1 text-amber-200/80">
+                  Parse errors: {diag.errors.length.toLocaleString()}
+                </div>
+              {/if}
+            </div>
+          {/each}
+        </details>
+      {/if}
+    </div>
+  {/if}
+
   <!-- Header with gradient background and animations -->
   <header
     class="relative z-50 flex items-center justify-between gap-3 border-b-2 border-accent-cyan/20 bg-gradient-to-r from-background-secondary via-background-secondary to-background px-4 py-4 shadow-lg shadow-black/5 md:px-6"

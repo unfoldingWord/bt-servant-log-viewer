@@ -27,6 +27,9 @@ export interface ParseStats {
   successfulEntries: number;
   failedEntries: number;
   perfReportBlocks: number;
+  skippedEntries: number;
+  missingSchemaEntries: number;
+  unsupportedSchemaVersions: Record<string, number>;
 }
 
 export class JsonLineParser {
@@ -42,6 +45,9 @@ export class JsonLineParser {
       successfulEntries: 0,
       failedEntries: 0,
       perfReportBlocks: 0,
+      skippedEntries: 0,
+      missingSchemaEntries: 0,
+      unsupportedSchemaVersions: {},
     };
 
     let currentLine = 0;
@@ -116,7 +122,17 @@ export class JsonLineParser {
       // Try to parse as standard JSON log entry
       try {
         const rawEntry = JSON.parse(line) as RawLogEntry;
-        if (rawEntry.schema_version !== "1.0.0") {
+        const schemaVersion = rawEntry.schema_version;
+        if (schemaVersion === undefined || schemaVersion === "") {
+          stats.skippedEntries++;
+          stats.missingSchemaEntries++;
+          currentLine++;
+          continue;
+        }
+        if (schemaVersion !== "1.0.0") {
+          stats.skippedEntries++;
+          stats.unsupportedSchemaVersions[schemaVersion] =
+            (stats.unsupportedSchemaVersions[schemaVersion] ?? 0) + 1;
           currentLine++;
           continue;
         }

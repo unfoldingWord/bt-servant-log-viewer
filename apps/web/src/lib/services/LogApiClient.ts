@@ -2,7 +2,11 @@
 // The backend handles Bearer token authentication, keeping secrets secure
 
 import type { LogEntry } from "@bt-log-viewer/domain";
-import { LogParser } from "@bt-log-viewer/adapters";
+import {
+  LogParser,
+  type ParseError as ParserError,
+  type ParseStats as ParserStats,
+} from "@bt-log-viewer/adapters";
 
 export type ServerEnvironment = "dev" | "qa" | "prod";
 
@@ -37,6 +41,12 @@ export interface ApiError {
   details?: unknown;
 }
 
+export interface ParseDiagnostics {
+  filename: string;
+  stats: ParserStats;
+  errors: ParserError[];
+}
+
 /**
  * Client for fetching logs from BT-Servant
  * All requests go through our backend proxy which adds Bearer token authentication
@@ -44,11 +54,13 @@ export interface ApiError {
 export class LogApiClient {
   private baseUrl: string;
   private parser: LogParser;
+  private parseDiagnostics: ParseDiagnostics[];
 
   constructor(baseUrl?: string) {
     // Use relative URLs - API routes are served by the same SvelteKit app
     this.baseUrl = baseUrl ?? "";
     this.parser = new LogParser();
+    this.parseDiagnostics = [];
   }
 
   /**
@@ -139,12 +151,18 @@ export class LogApiClient {
     const content = await response.text();
 
     // Parse the log file content
-    const entries = await this.parser.parse(content, {
+    const result = await this.parser.parseWithDiagnostics(content, {
       fileId: trimmedFilename,
       fileName: trimmedFilename,
     });
 
-    return entries;
+    this.parseDiagnostics.push({
+      filename: trimmedFilename,
+      stats: result.stats,
+      errors: result.errors,
+    });
+
+    return result.entries;
   }
 
   /**
@@ -224,10 +242,16 @@ export class LogApiClient {
     // Get list of recent files
     const filesResponse = await this.getRecentFiles(server, days);
 
+    this.parseDiagnostics = [];
+
     // Download and parse all files
     const filenames = filesResponse.files.map((f) => f.name.trim());
 
     return this.downloadAndParseFiles(server, filenames, onProgress);
+  }
+
+  getParseDiagnostics(): ParseDiagnostics[] {
+    return this.parseDiagnostics;
   }
 }
 
