@@ -22,7 +22,9 @@ const recentLogsQuerySchema = z.object({
 });
 
 const fileParamsSchema = z.object({
-  filename: z.string().regex(/^[a-zA-Z0-9._-]+\.log$/),
+  filename: z.string().regex(/^[a-zA-Z0-9._-]+\.log(?:\.[a-zA-Z0-9_-]+)*$/, {
+    message: "Filename must end with .log and optional rotated/compressed suffixes",
+  }),
 });
 
 /**
