@@ -94,7 +94,7 @@
               level
             )
               ? getLevelColorClass(level) + ' border-2'
-              : 'border-surface-active bg-surface/30 text-text-dim hover:bg-surface'}"
+              : 'border-surface-active bg-surface/30 text-text-secondary hover:border-accent-cyan/50 hover:bg-accent-cyan/5 hover:text-accent-cyan'}"
           >
             {level}
           </button>
@@ -134,7 +134,7 @@
 
         {#if showUserDropdown}
           <div
-            class="absolute right-0 top-full z-50 mt-1 max-h-64 w-48 overflow-y-auto rounded-lg border border-surface-active bg-background-secondary shadow-xl"
+            class="absolute left-0 top-full z-50 mt-1 max-h-64 w-48 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-lg border border-surface-active bg-background-secondary shadow-xl md:left-auto md:right-0"
           >
             <button
               type="button"
@@ -182,7 +182,7 @@
             class="rounded border px-2 py-1 text-xs font-medium transition-colors
               {selectedTimeRange === range
               ? 'border-2 border-accent-cyan/50 bg-accent-cyan/10 text-accent-cyan'
-              : 'border-surface-active bg-surface/30 text-text-dim hover:bg-surface'}"
+              : 'border-surface-active bg-surface/30 text-text-secondary hover:border-accent-cyan/50 hover:bg-accent-cyan/5 hover:text-accent-cyan'}"
           >
             {range}
           </button>

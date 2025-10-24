@@ -47,7 +47,9 @@
   }
 </script>
 
-<div class="h-full overflow-auto bg-gradient-to-b from-background to-background-secondary/20">
+<div
+  class="h-full overflow-y-auto overflow-x-hidden bg-gradient-to-b from-background to-background-secondary/20"
+>
   <table class="w-full border-separate border-spacing-0">
     <thead class="sticky top-0 z-10">
       <tr

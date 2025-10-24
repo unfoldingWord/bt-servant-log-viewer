@@ -672,7 +672,7 @@
       {:else if filterUserId && groupByConversation}
         <!-- Grouped conversation view -->
         <div
-          class="h-full overflow-auto bg-gradient-to-b from-background to-background-secondary/20"
+          class="h-full overflow-y-auto overflow-x-hidden bg-gradient-to-b from-background to-background-secondary/20"
         >
           {#each conversationGroups as group (group.cid)}
             <ConversationGroup
@@ -695,7 +695,7 @@
           />
         </div>
 
-        <div class="block h-full md:hidden">
+        <div class="block h-full overflow-y-auto overflow-x-hidden md:hidden">
           <LogCards
             logs={filteredLogs}
             selectedId={selectedLogId}
