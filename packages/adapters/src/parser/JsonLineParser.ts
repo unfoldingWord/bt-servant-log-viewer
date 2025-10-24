@@ -263,12 +263,14 @@ export class JsonLineParser {
 
     const [, year, month, day, hour, minute, second] = match;
     return new Date(
-      Number(year),
-      Number(month) - 1, // JavaScript months are 0-indexed
-      Number(day),
-      Number(hour),
-      Number(minute),
-      Number(second)
+      Date.UTC(
+        Number(year),
+        Number(month) - 1, // Months are 0-indexed for Date.UTC as well
+        Number(day),
+        Number(hour),
+        Number(minute),
+        Number(second)
+      )
     );
   }
 
