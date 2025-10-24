@@ -82,7 +82,7 @@
   <div class="flex flex-wrap items-center gap-3">
     <!-- Level filters -->
     <div class="flex items-center gap-2">
-      <span class="text-xs font-medium text-text-dim">Level:</span>
+      <span class="text-xs font-medium text-text-secondary">Level:</span>
       <div class="flex gap-1.5">
         {#each logLevels as level}
           <button
@@ -106,7 +106,7 @@
 
     <!-- User filter dropdown -->
     <div class="relative flex items-center gap-2">
-      <span class="text-xs font-medium text-text-dim">User:</span>
+      <span class="text-xs font-medium text-text-secondary">User:</span>
       <div class="relative">
         <button
           type="button"
@@ -171,7 +171,7 @@
 
     <!-- Time range filter -->
     <div class="flex items-center gap-2">
-      <span class="text-xs font-medium text-text-dim">Time:</span>
+      <span class="text-xs font-medium text-text-secondary">Time:</span>
       <div class="flex gap-1.5">
         {#each ["1h", "6h", "24h", "3d", "7d", "30d", "all"] as range}
           <button
