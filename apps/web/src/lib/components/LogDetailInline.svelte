@@ -132,15 +132,15 @@
   @keyframes expand {
     from {
       opacity: 0;
-      max-height: 0;
+      transform: translateY(-4px);
     }
     to {
       opacity: 1;
-      max-height: 500px;
+      transform: translateY(0);
     }
   }
 
   .animate-expand {
-    animation: expand 0.2s ease-out forwards;
+    animation: expand 0.2s ease-out;
   }
 </style>

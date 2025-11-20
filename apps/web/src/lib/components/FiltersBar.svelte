@@ -16,7 +16,7 @@
 
   let selectedLevels: string[] = [];
   let selectedUserId: string | null = null;
-  let selectedTimeRange = "all";
+  let selectedTimeRange = "7d";
   let showUserDropdown = false;
 
   const logLevels = ["TRACE", "DEBUG", "INFO", "WARN", "ERROR"];
@@ -173,7 +173,7 @@
     <div class="flex items-center gap-2">
       <span class="text-xs font-medium text-text-secondary">Time:</span>
       <div class="flex gap-1.5">
-        {#each ["1h", "6h", "24h", "3d", "7d", "30d", "all"] as range}
+        {#each ["1h", "6h", "24h", "3d", "7d", "14d"] as range}
           <button
             type="button"
             on:click={() => {

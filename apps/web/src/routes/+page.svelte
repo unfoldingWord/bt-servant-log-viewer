@@ -18,7 +18,7 @@
   let selectedLogId: string | null = null;
   let filterLevels: string[] = [];
   let filterUserId: string | null = null;
-  let filterTimeRange = "all";
+  let filterTimeRange = "7d";
   let groupByConversation = true;
   let selectedServer: Server = "qa";
   let showServerDropdown = false;
@@ -94,7 +94,7 @@
     errorMessage = null;
 
     try {
-      const logs = await logApiClient.loadRecentLogs(server, 21);
+      const logs = await logApiClient.loadRecentLogs(server, 14);
 
       allLogs = logs;
       parseDiagnostics = logApiClient.getParseDiagnostics();
@@ -234,8 +234,8 @@
         case "7d":
           cutoffTime.setDate(now.getDate() - 7);
           break;
-        case "30d":
-          cutoffTime.setDate(now.getDate() - 30);
+        case "14d":
+          cutoffTime.setDate(now.getDate() - 14);
           break;
       }
 

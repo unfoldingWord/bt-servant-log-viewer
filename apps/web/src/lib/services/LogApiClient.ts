@@ -120,7 +120,7 @@ export class LogApiClient {
   /**
    * Get log files from the last N days
    */
-  async getRecentFiles(server: ServerEnvironment, days = 21): Promise<LogFilesResponse> {
+  async getRecentFiles(server: ServerEnvironment, days = 14): Promise<LogFilesResponse> {
     const url = `${this.baseUrl}/api/logs/recent?server=${server}&days=${String(days)}`;
 
     const response = await fetch(url);
@@ -231,12 +231,12 @@ export class LogApiClient {
   }
 
   /**
-   * Load the last 21 days of logs from a server
+   * Load the last 14 days of logs from a server
    * This is the primary method used by the UI on startup
    */
   async loadRecentLogs(
     server: ServerEnvironment,
-    days = 21,
+    days = 14,
     onProgress?: (current: number, total: number, filename: string) => void
   ): Promise<LogEntry[]> {
     // Get list of recent files
