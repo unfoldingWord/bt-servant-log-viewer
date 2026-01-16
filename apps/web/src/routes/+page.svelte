@@ -47,8 +47,7 @@
       if (saved === "dev" || saved === "qa" || saved === "prod") {
         selectedServer = saved;
       }
-      // Load logs from the selected server
-      void loadLogsFromServer(selectedServer);
+      // Don't auto-load - user clicks Refresh to load
     }
 
     // Cleanup interval on unmount
