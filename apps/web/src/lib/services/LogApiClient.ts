@@ -5,6 +5,8 @@ import type { LogEntry } from "@bt-log-viewer/domain";
 import type { ParseError as ParserError, ParseStats as ParserStats } from "@bt-log-viewer/adapters";
 import { parseWorkerClient } from "../workers/ParseWorkerClient.js";
 
+const FETCH_TIMEOUT_MS = 60000; // 60 second timeout for fetching files
+
 export type ServerEnvironment = "dev" | "qa" | "prod";
 
 export interface ServerHealth {
@@ -138,28 +140,38 @@ export class LogApiClient {
     const encodedFilename = encodeURIComponent(trimmedFilename);
     const url = `${this.baseUrl}/api/logs/file/${encodedFilename}?server=${server}`;
 
-    const response = await fetch(url);
+    // Use AbortController for fetch timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, FETCH_TIMEOUT_MS);
 
-    if (!response.ok) {
-      const error = (await response.json()) as ApiError;
-      throw new Error(error.message || `Failed to download file: ${response.statusText}`);
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+
+      if (!response.ok) {
+        const error = (await response.json()) as ApiError;
+        throw new Error(error.message || `Failed to download file: ${response.statusText}`);
+      }
+
+      const content = await response.text();
+
+      // Parse the log file content using Web Worker (non-blocking)
+      const result = await parseWorkerClient.parse(content, {
+        fileId: trimmedFilename,
+        fileName: trimmedFilename,
+      });
+
+      this.parseDiagnostics.push({
+        filename: trimmedFilename,
+        stats: result.stats,
+        errors: result.errors,
+      });
+
+      return result.entries;
+    } finally {
+      clearTimeout(timeoutId);
     }
-
-    const content = await response.text();
-
-    // Parse the log file content using Web Worker (non-blocking)
-    const result = await parseWorkerClient.parse(content, {
-      fileId: trimmedFilename,
-      fileName: trimmedFilename,
-    });
-
-    this.parseDiagnostics.push({
-      filename: trimmedFilename,
-      stats: result.stats,
-      errors: result.errors,
-    });
-
-    return result.entries;
   }
 
   /**
