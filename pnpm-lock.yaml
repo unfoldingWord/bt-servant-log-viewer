@@ -120,6 +120,9 @@ importers:
       cytoscape-dagre:
         specifier: ^2.5.0
         version: 2.5.0(cytoscape@3.33.1)
+      nanoid:
+        specifier: ^5.1.6
+        version: 5.1.6
       svelte:
         specifier: ^5.2.7
         version: 5.40.2
