@@ -11,7 +11,42 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  # Deploy main branch to QA environment
+  deploy-qa:
+    name: Deploy to QA
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: |
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Fly CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy to QA
+        run: |
+          flyctl deploy \
+            --config infra/fly.staging.toml \
+            --app bt-log-viewer-qa \
+            --auto-confirm
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Display QA URL
+        run: |
+          echo "=================================================="
+          echo "QA deployment complete!"
+          echo "URL: https://bt-log-viewer-qa.fly.dev"
+          echo "=================================================="
+
+  # Deploy feature branches (phase-* or bot-*) to preview environments
+  deploy-preview:
     name: Deploy Preview to Fly.io
     runs-on: ubuntu-latest
     timeout-minutes: 10
