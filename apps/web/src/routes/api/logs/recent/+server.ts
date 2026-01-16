@@ -8,15 +8,15 @@ import type { RequestHandler } from "@sveltejs/kit";
 
 const recentLogsQuerySchema = z.object({
   server: z.enum(["dev", "qa", "prod"]).default("qa"),
-  days: z.coerce.number().int().min(1).max(90).default(7),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
+  days: z.coerce.number().int().min(1).max(90).default(3),
+  limit: z.coerce.number().int().min(1).max(100).default(5),
 });
 
 export const GET: RequestHandler = async ({ url }) => {
   try {
     const serverParam = url.searchParams.get("server") ?? "qa";
-    const daysParam = url.searchParams.get("days") ?? "7";
-    const limitParam = url.searchParams.get("limit") ?? "20";
+    const daysParam = url.searchParams.get("days") ?? "3";
+    const limitParam = url.searchParams.get("limit") ?? "5";
 
     const { server, days, limit } = recentLogsQuerySchema.parse({
       server: serverParam,

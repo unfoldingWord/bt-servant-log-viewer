@@ -236,12 +236,12 @@ export class LogApiClient {
    */
   async loadRecentLogs(
     server: ServerEnvironment,
-    days = 7,
+    days = 3,
     options?: { limit?: number; maxSizeMb?: number },
     onProgress?: (current: number, total: number, filename: string) => void
   ): Promise<LogEntry[]> {
-    const limit = options?.limit ?? 20;
-    const maxSizeBytes = (options?.maxSizeMb ?? 50) * 1024 * 1024;
+    const limit = options?.limit ?? 5;
+    const maxSizeBytes = (options?.maxSizeMb ?? 10) * 1024 * 1024;
 
     // Get list of recent files (already sorted newest-first by bt-servant)
     const filesResponse = await this.getRecentFiles(server, days, limit);
