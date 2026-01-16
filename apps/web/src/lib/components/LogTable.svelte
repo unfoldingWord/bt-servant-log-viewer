@@ -209,6 +209,8 @@
       {/each}
     </tbody>
   </table>
+  <!-- Slot for load more button or other footer content -->
+  <slot />
 </div>
 
 <style>

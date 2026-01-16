@@ -703,18 +703,19 @@
             on:select={(e) => {
               handleLogSelect(e.detail as string);
             }}
-          />
-          {#if hasMoreLogs}
-            <div class="flex justify-center p-4 border-t border-surface">
-              <button
-                type="button"
-                on:click={loadMoreLogs}
-                class="px-4 py-2 text-sm font-medium text-accent-cyan bg-accent-cyan/10 rounded-lg hover:bg-accent-cyan/20 transition-colors"
-              >
-                Load more ({filteredLogs.length - displayLimit} remaining)
-              </button>
-            </div>
-          {/if}
+          >
+            {#if hasMoreLogs}
+              <div class="flex justify-center p-4 border-t border-surface">
+                <button
+                  type="button"
+                  on:click={loadMoreLogs}
+                  class="px-4 py-2 text-sm font-medium text-accent-cyan bg-accent-cyan/10 rounded-lg hover:bg-accent-cyan/20 transition-colors"
+                >
+                  Load more ({filteredLogs.length - displayLimit} remaining)
+                </button>
+              </div>
+            {/if}
+          </LogTable>
         </div>
 
         <div class="block h-full overflow-y-auto overflow-x-hidden md:hidden">
@@ -725,18 +726,19 @@
             on:select={(e) => {
               handleLogSelect(e.detail as string);
             }}
-          />
-          {#if hasMoreLogs}
-            <div class="flex justify-center p-4 border-t border-surface">
-              <button
-                type="button"
-                on:click={loadMoreLogs}
-                class="px-4 py-2 text-sm font-medium text-accent-cyan bg-accent-cyan/10 rounded-lg hover:bg-accent-cyan/20 transition-colors"
-              >
-                Load more ({filteredLogs.length - displayLimit} remaining)
-              </button>
-            </div>
-          {/if}
+          >
+            {#if hasMoreLogs}
+              <div class="flex justify-center p-4 border-t border-surface">
+                <button
+                  type="button"
+                  on:click={loadMoreLogs}
+                  class="px-4 py-2 text-sm font-medium text-accent-cyan bg-accent-cyan/10 rounded-lg hover:bg-accent-cyan/20 transition-colors"
+                >
+                  Load more ({filteredLogs.length - displayLimit} remaining)
+                </button>
+              </div>
+            {/if}
+          </LogCards>
         </div>
       {/if}
 
