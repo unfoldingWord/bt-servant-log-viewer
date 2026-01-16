@@ -2,8 +2,11 @@
 // The backend handles Bearer token authentication, keeping secrets secure
 
 import type { LogEntry } from "@bt-log-viewer/domain";
-import type { ParseError as ParserError, ParseStats as ParserStats } from "@bt-log-viewer/adapters";
-import { parseWorkerClient } from "../workers/ParseWorkerClient.js";
+import {
+  JsonLineParser,
+  type ParseError as ParserError,
+  type ParseStats as ParserStats,
+} from "@bt-log-viewer/adapters";
 
 const FETCH_TIMEOUT_MS = 60000; // 60 second timeout for fetching files
 
@@ -49,16 +52,17 @@ export interface ParseDiagnostics {
 /**
  * Client for fetching logs from BT-Servant
  * All requests go through our backend proxy which adds Bearer token authentication
- * Parsing happens in a Web Worker to prevent UI freezing
  */
 export class LogApiClient {
   private baseUrl: string;
   private parseDiagnostics: ParseDiagnostics[];
+  private parser: JsonLineParser;
 
   constructor(baseUrl?: string) {
     // Use relative URLs - API routes are served by the same SvelteKit app
     this.baseUrl = baseUrl ?? "";
     this.parseDiagnostics = [];
+    this.parser = new JsonLineParser();
   }
 
   /**
@@ -133,7 +137,6 @@ export class LogApiClient {
 
   /**
    * Download a specific log file and parse it into LogEntry objects
-   * Parsing happens in a Web Worker to prevent UI freezing
    */
   async downloadAndParseFile(server: ServerEnvironment, filename: string): Promise<LogEntry[]> {
     const trimmedFilename = filename.trim();
@@ -156,8 +159,8 @@ export class LogApiClient {
 
       const content = await response.text();
 
-      // Parse the log file content using Web Worker (non-blocking)
-      const result = await parseWorkerClient.parse(content, {
+      // Parse the log file content
+      const result = this.parser.parse(content, {
         fileId: trimmedFilename,
         fileName: trimmedFilename,
       });
