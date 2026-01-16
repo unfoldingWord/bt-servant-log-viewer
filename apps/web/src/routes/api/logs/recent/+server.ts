@@ -8,17 +8,20 @@ import type { RequestHandler } from "@sveltejs/kit";
 
 const recentLogsQuerySchema = z.object({
   server: z.enum(["dev", "qa", "prod"]).default("qa"),
-  days: z.coerce.number().int().min(1).max(90).default(21),
+  days: z.coerce.number().int().min(1).max(90).default(7),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
 });
 
 export const GET: RequestHandler = async ({ url }) => {
   try {
     const serverParam = url.searchParams.get("server") ?? "qa";
-    const daysParam = url.searchParams.get("days") ?? "21";
+    const daysParam = url.searchParams.get("days") ?? "7";
+    const limitParam = url.searchParams.get("limit") ?? "20";
 
-    const { server, days } = recentLogsQuerySchema.parse({
+    const { server, days, limit } = recentLogsQuerySchema.parse({
       server: serverParam,
       days: daysParam,
+      limit: limitParam,
     });
 
     if (!isValidServerEnvironment(server)) {
@@ -29,7 +32,7 @@ export const GET: RequestHandler = async ({ url }) => {
     }
 
     const config = getServerConfig(server);
-    const apiUrl = `${config.url}/admin/logs/recent?days=${String(days)}`;
+    const apiUrl = `${config.url}/admin/logs/recent?days=${String(days)}&limit=${String(limit)}`;
 
     const response = await fetch(apiUrl, {
       headers: {

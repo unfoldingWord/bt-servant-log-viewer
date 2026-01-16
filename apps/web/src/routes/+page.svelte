@@ -94,7 +94,7 @@
     errorMessage = null;
 
     try {
-      const logs = await logApiClient.loadRecentLogs(server, 14);
+      const logs = await logApiClient.loadRecentLogs(server);
 
       allLogs = logs;
       parseDiagnostics = logApiClient.getParseDiagnostics();

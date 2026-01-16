@@ -61,7 +61,7 @@ describe("JsonLineParser", () => {
       const result = parser.parse(content, options);
       const entry = requireEntry(result);
 
-      expect(entry.ts).toEqual(new Date(2025, 9, 18, 23, 8, 31)); // Month is 0-indexed
+      expect(entry.ts).toEqual(new Date("2025-10-18T23:08:31.000Z")); // Timestamps are UTC
     });
 
     it("should handle multiple entries separated by newlines", () => {

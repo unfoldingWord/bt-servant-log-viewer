@@ -120,8 +120,8 @@ export class LogApiClient {
   /**
    * Get log files from the last N days
    */
-  async getRecentFiles(server: ServerEnvironment, days = 14): Promise<LogFilesResponse> {
-    const url = `${this.baseUrl}/api/logs/recent?server=${server}&days=${String(days)}`;
+  async getRecentFiles(server: ServerEnvironment, days = 7, limit = 20): Promise<LogFilesResponse> {
+    const url = `${this.baseUrl}/api/logs/recent?server=${server}&days=${String(days)}&limit=${String(limit)}`;
 
     const response = await fetch(url);
 
@@ -231,21 +231,35 @@ export class LogApiClient {
   }
 
   /**
-   * Load the last 14 days of logs from a server
+   * Load recent logs from a server with size limits to prevent overload
    * This is the primary method used by the UI on startup
    */
   async loadRecentLogs(
     server: ServerEnvironment,
-    days = 14,
+    days = 7,
+    options?: { limit?: number; maxSizeMb?: number },
     onProgress?: (current: number, total: number, filename: string) => void
   ): Promise<LogEntry[]> {
-    // Get list of recent files
-    const filesResponse = await this.getRecentFiles(server, days);
+    const limit = options?.limit ?? 20;
+    const maxSizeBytes = (options?.maxSizeMb ?? 50) * 1024 * 1024;
+
+    // Get list of recent files (already sorted newest-first by bt-servant)
+    const filesResponse = await this.getRecentFiles(server, days, limit);
+
+    // Filter files by cumulative size to prevent memory overload
+    let cumulativeSize = 0;
+    const filesToLoad = filesResponse.files.filter((f) => {
+      if (cumulativeSize + f.size_bytes > maxSizeBytes) {
+        return false;
+      }
+      cumulativeSize += f.size_bytes;
+      return true;
+    });
 
     this.parseDiagnostics = [];
 
-    // Download and parse all files
-    const filenames = filesResponse.files.map((f) => f.name.trim());
+    // Download and parse files within size limit
+    const filenames = filesToLoad.map((f) => f.name.trim());
 
     return this.downloadAndParseFiles(server, filenames, onProgress);
   }
