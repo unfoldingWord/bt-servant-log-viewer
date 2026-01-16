@@ -14,6 +14,7 @@
 
   let allLogs: LogEntry[] = [];
   let filteredLogs: LogEntry[] = [];
+  let displayLimit = 200; // Only render this many rows at a time for performance
   let searchQuery = "";
   let selectedLogId: string | null = null;
   let filterLevels: string[] = [];
@@ -264,6 +265,16 @@
     }
 
     filteredLogs = logs;
+    // Reset display limit when filters change
+    displayLimit = 200;
+  }
+
+  // Limit displayed logs for rendering performance
+  $: displayedLogs = filteredLogs.slice(0, displayLimit);
+  $: hasMoreLogs = filteredLogs.length > displayLimit;
+
+  function loadMoreLogs(): void {
+    displayLimit += 200;
   }
 
   // Simple filtering function (will be enhanced later)
@@ -686,24 +697,46 @@
         <!-- Flat log view (Desktop: Table view, Mobile: Card view) -->
         <div class="hidden h-full md:block">
           <LogTable
-            logs={filteredLogs}
+            logs={displayedLogs}
             selectedId={selectedLogId}
             {selectedLog}
             on:select={(e) => {
               handleLogSelect(e.detail as string);
             }}
           />
+          {#if hasMoreLogs}
+            <div class="flex justify-center p-4 border-t border-surface">
+              <button
+                type="button"
+                on:click={loadMoreLogs}
+                class="px-4 py-2 text-sm font-medium text-accent-cyan bg-accent-cyan/10 rounded-lg hover:bg-accent-cyan/20 transition-colors"
+              >
+                Load more ({filteredLogs.length - displayLimit} remaining)
+              </button>
+            </div>
+          {/if}
         </div>
 
         <div class="block h-full overflow-y-auto overflow-x-hidden md:hidden">
           <LogCards
-            logs={filteredLogs}
+            logs={displayedLogs}
             selectedId={selectedLogId}
             {selectedLog}
             on:select={(e) => {
               handleLogSelect(e.detail as string);
             }}
           />
+          {#if hasMoreLogs}
+            <div class="flex justify-center p-4 border-t border-surface">
+              <button
+                type="button"
+                on:click={loadMoreLogs}
+                class="px-4 py-2 text-sm font-medium text-accent-cyan bg-accent-cyan/10 rounded-lg hover:bg-accent-cyan/20 transition-colors"
+              >
+                Load more ({filteredLogs.length - displayLimit} remaining)
+              </button>
+            </div>
+          {/if}
         </div>
       {/if}
 

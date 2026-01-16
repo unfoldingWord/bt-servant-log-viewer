@@ -144,12 +144,11 @@
       </tr>
     </thead>
     <tbody class="text-sm">
-      {#each logs as log, i (log.id)}
+      {#each logs as log (log.id)}
         <tr
           on:click={() => {
             handleRowClick(log.id);
           }}
-          style="animation-delay: {i * 20}ms"
           class="log-row group relative cursor-pointer border-b border-surface/50 hover:bg-gradient-to-r hover:from-accent-cyan/5 hover:via-accent-teal/5 hover:to-transparent"
           class:selected-row={selectedId === log.id}
         >
